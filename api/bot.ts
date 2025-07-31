@@ -33,6 +33,10 @@ I can help you get the latest schedule for Odessa boat events in Amsterdam.
 • /schedule - Get the current week's schedule
 • /help - Show this help message
 
+<b>Usage:</b>
+• In DMs: Just send /schedule
+• In groups: Send /schedule@Odessa_Schedule_Bot
+
 Just send /schedule to get started! 🌴🎶`;
         
         await sendTelegramMessage(chat.id, welcomeMessage);
@@ -42,6 +46,10 @@ Just send /schedule to get started! 🌴🎶`;
 <b>Commands:</b>
 • /schedule - Get the current week's schedule with DJ information and ticket links
 • /help - Show this help message
+
+<b>Usage:</b>
+• In DMs: Just send /schedule
+• In groups: Send /schedule@Odessa_Schedule_Bot
 
 <b>Features:</b>
 • Real-time schedule generation from Hipsy.no
@@ -55,7 +63,7 @@ Just send /schedule to get started! 🌴🎶`;
 Need help? Contact the bot administrator.`;
         
         await sendTelegramMessage(chat.id, helpMessage);
-      } else if (text === '/schedule') {
+      } else if (text === '/schedule' || text.startsWith('/schedule@')) {
         try {
           // Generate real schedule from Hipsy data
           const generator = new OdessaScheduleGenerator();
