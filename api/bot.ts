@@ -1,4 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { OdessaScheduleGenerator } from '../src/index';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
@@ -53,34 +54,33 @@ Need help? Contact the bot administrator.`;
         
         await sendTelegramMessage(chat.id, helpMessage);
       } else if (text === '/schedule') {
-        // Generate full schedule with intro text and inline keyboard
-        const scheduleMessage = `🪩 <b>Schedule 🌴🎶</b>
-
-Amsterdam's buzzing as the Summer Festival hits this weekend—last tickets available, so snag yours quick!  
-
-We're spinning vibrant melodies and free-spirited dance flows all week, with this Sunday morning session now a Sunday evening groove starting at 7pm!
-
-Jump into the city's rhythm and make this week epic!
-
-🗓️ <b>Wed:</b> ED W/ <a href="https://soundcloud.com/jethro">Jethro</a>
-🗓️ <b>Thu:</b> ED W/ <a href="https://soundcloud.com/samaya">Samaya</a>
-🗓️ <b>Fri:</b> Cacao ED + Live Music W/ <a href="https://soundcloud.com/inphiknight">Inphiknight</a>
-🗓️ <b>Sat:</b> ED W/ <a href="https://soundcloud.com/samaya">Samaya</a>
-🗓️ <b>Sun:</b> Morning ED W/ <a href="https://soundcloud.com/henners">Henners</a>`;
-        
-        // Create inline keyboard with tickets button
-        const inlineKeyboard = {
-          inline_keyboard: [
-            [
-              {
-                text: 'TICKETS 🎟️',
-                url: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
-              }
+        try {
+          // Generate real schedule from Hipsy data
+          const generator = new OdessaScheduleGenerator();
+          const scheduleMessage = await generator.generateSchedule();
+          
+          // Create inline keyboard with tickets button
+          const inlineKeyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: 'TICKETS 🎟️',
+                  url: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+                }
+              ]
             ]
-          ]
-        };
-        
-        await sendTelegramMessageWithKeyboard(chat.id, scheduleMessage, inlineKeyboard);
+          };
+          
+          await sendTelegramMessageWithKeyboard(chat.id, scheduleMessage, inlineKeyboard);
+        } catch (error) {
+          console.error('Error generating schedule:', error);
+          const errorMessage = `❌ <b>Error generating schedule</b>
+
+Sorry, I couldn't fetch the current schedule. Please try again later.
+
+If this problem persists, contact the bot administrator.`;
+          await sendTelegramMessage(chat.id, errorMessage);
+        }
       }
     }
 
