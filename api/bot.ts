@@ -121,23 +121,29 @@ async function sendTelegramVideoWithCaption(chatId: number, caption: string, rep
   const { TELEGRAM_BOT_TOKEN } = process.env;
   
   try {
-    // For now, let's send the schedule as a text message and add a video reference
-    // We can enhance this later with actual video upload
+    // Use the Google Drive video URL
+    const videoUrl = 'https://drive.google.com/file/d/1SfuOXYjCPAfzJq-4-ODv-UuemfEXuzrI/view?usp=sharing';
     
-    const enhancedCaption = `${caption}
-
-🎬 <b>Odessa Experience Video</b>
-Experience the vibe at Odessa! 🌴🎶`;
+    // Send video with caption using the URL
+    const videoResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        video: videoUrl,
+        caption: caption,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup
+      })
+    });
     
-    await sendTelegramMessageWithKeyboard(chatId, enhancedCaption, replyMarkup);
-    
-    // TODO: Implement actual video upload
-    // For now, we'll add a note about the video feature
-    const videoNote = `📹 <b>Video Feature Coming Soon!</b>
-
-We're working on adding the Odessa Hero video to schedule messages! 🚀`;
-    
-    await sendTelegramMessage(chatId, videoNote);
+    if (!videoResponse.ok) {
+      console.error('Failed to send video with caption:', await videoResponse.text());
+      // Fallback to text message if video fails
+      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+    }
     
   } catch (error) {
     console.error('Error sending Telegram video:', error);
