@@ -95,9 +95,9 @@ export class ScheduleFormatter {
         
         if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
           const link = djInfo.link;
-          eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+          eventDescription = `<b>W/ <a href="${link}">${djName}</a></b>`;
         } else {
-          eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+          eventDescription = `<b>W/ ${djName}</b>`;
         }
         
         // Special handling for multiple Sunday events
@@ -105,17 +105,17 @@ export class ScheduleFormatter {
         if (day === 'Sun' && events.length > 1) {
           if (index === 0) {
             // First Sunday event (morning)
-            dayLabel = `${day} Morning ED`;
+            dayLabel = `${day}: Morning ED`;
           } else {
             // Subsequent Sunday events (evening/night)
-            dayLabel = `${day} ${eventType}`;
+            dayLabel = `${day}: ${eventType}`;
           }
         } else {
           // Use event type in the day label for other multiple events
-          dayLabel = eventType === 'ED' ? day : `${day} ${eventType}`;
+          dayLabel = eventType === 'ED' ? `${day}: ED` : `${day}: ${eventType}`;
         }
         
-        lines.push(`🗓️ <b>${dayLabel}: ${eventDescription}</b>`);
+        lines.push(`🗓️ <b>${dayLabel} ${eventDescription}</b>`);
       });
       
       return lines.join('\n');
@@ -135,12 +135,12 @@ export class ScheduleFormatter {
       
       if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
         const link = djInfo.link;
-        eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+        eventDescription = `<b>W/ <a href="${link}">${djName}</a></b>`;
       } else {
-        eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+        eventDescription = `<b>W/ ${djName}</b>`;
       }
       
-      return `🗓️ <b>${day}: ${eventDescription}</b>`;
+      return `🗓️ <b>${day}: ${eventType} ${eventDescription}</b>`;
     }
   }
 
