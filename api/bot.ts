@@ -22,8 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       
       // Handle commands with full formatting
       if (text === '/start') {
-        const welcomeMessage = `
-🤖 <b>Welcome to the Odessa Schedule Bot!</b>
+        const welcomeMessage = `🤖 <b>Welcome to the Odessa Schedule Bot!</b>
 
 I can help you get the latest schedule for Odessa boat events in Amsterdam.
 
@@ -31,13 +30,11 @@ I can help you get the latest schedule for Odessa boat events in Amsterdam.
 • /schedule - Get the current week's schedule
 • /help - Show this help message
 
-Just send /schedule to get started! 🌴🎶
-        `.trim();
+Just send /schedule to get started! 🌴🎶`;
         
         await sendTelegramMessage(chat.id, welcomeMessage);
       } else if (text === '/help') {
-        const helpMessage = `
-🤖 <b>Odessa Schedule Bot Help</b>
+        const helpMessage = `🤖 <b>Odessa Schedule Bot Help</b>
 
 <b>Commands:</b>
 • /schedule - Get the current week's schedule with DJ information and ticket links
@@ -52,14 +49,12 @@ Just send /schedule to get started! 🌴🎶
 <b>Rate Limiting:</b>
 • You can request a schedule once every 60 seconds to prevent spam
 
-Need help? Contact the bot administrator.
-        `.trim();
+Need help? Contact the bot administrator.`;
         
         await sendTelegramMessage(chat.id, helpMessage);
       } else if (text === '/schedule') {
         // Generate full schedule with intro text and inline keyboard
-        const scheduleMessage = `
-🪩 <b>Schedule 🌴🎶</b>
+        const scheduleMessage = `🪩 <b>Schedule 🌴🎶</b>
 
 Amsterdam's buzzing as the Summer Festival hits this weekend—last tickets available, so snag yours quick!  
 
@@ -67,12 +62,11 @@ We're spinning vibrant melodies and free-spirited dance flows all week, with thi
 
 Jump into the city's rhythm and make this week epic!
 
-🗓️ <b>Wed:</b> ED W/ Jethro
-🗓️ <b>Thu:</b> ED W/ Samaya  
-🗓️ <b>Fri:</b> Cacao ED + Live Music W/ Inphiknight
-🗓️ <b>Sat:</b> ED W/ Samaya
-🗓️ <b>Sun:</b> Morning ED W/ Henners
-        `.trim();
+🗓️ <b>Wed:</b> ED W/ <a href="https://soundcloud.com/jethro">Jethro</a>
+🗓️ <b>Thu:</b> ED W/ <a href="https://soundcloud.com/samaya">Samaya</a>
+🗓️ <b>Fri:</b> Cacao ED + Live Music W/ <a href="https://soundcloud.com/inphiknight">Inphiknight</a>
+🗓️ <b>Sat:</b> ED W/ <a href="https://soundcloud.com/samaya">Samaya</a>
+🗓️ <b>Sun:</b> Morning ED W/ <a href="https://soundcloud.com/henners">Henners</a>`;
         
         // Create inline keyboard with tickets button
         const inlineKeyboard = {
@@ -109,7 +103,8 @@ async function sendTelegramMessage(chatId: number, text: string) {
       body: JSON.stringify({
         chat_id: chatId,
         text: text,
-        parse_mode: 'HTML'
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
       })
     });
 
@@ -134,6 +129,7 @@ async function sendTelegramMessageWithKeyboard(chatId: number, text: string, rep
         chat_id: chatId,
         text: text,
         parse_mode: 'HTML',
+        disable_web_page_preview: true,
         reply_markup: replyMarkup
       })
     });
