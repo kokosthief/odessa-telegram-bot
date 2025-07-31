@@ -78,19 +78,16 @@ export class ScheduleFormatter {
    * Format events for a specific day
    */
   private formatDayEvents(day: string, events: Event[]): string {
-    // Sort events by date to ensure AM/PM order
+    // Sort events by date to ensure chronological order
     events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
     // Handle multiple events on the same day
     if (events.length > 1) {
       const lines: string[] = [];
       
-      events.forEach((event, index) => {
+      events.forEach((event) => {
         const eventType = this.formatEventType(event.eventType);
         const djName = event.djName || 'TBA';
-        
-        // Determine AM/PM suffix
-        const timeSuffix = index === 0 ? '(AM)' : '(PM)';
         
         // Check if DJ has a link and create hyperlink
         const djInfo = this.djLoader.getDJInfo(djName);
@@ -103,7 +100,9 @@ export class ScheduleFormatter {
           eventDescription = `<b>${eventType} W/ ${djName}</b>`;
         }
         
-        lines.push(`🗓️ <b>${day} ${timeSuffix}: ${eventDescription}</b>`);
+        // Use event type in the day label for multiple events
+        const dayLabel = eventType === 'ED' ? day : `${day} ${eventType}`;
+        lines.push(`🗓️ <b>${dayLabel}: ${eventDescription}</b>`);
       });
       
       return lines.join('\n');
