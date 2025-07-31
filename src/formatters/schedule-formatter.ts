@@ -85,7 +85,7 @@ export class ScheduleFormatter {
     if (events.length > 1) {
       const lines: string[] = [];
       
-      events.forEach((event) => {
+      events.forEach((event, index) => {
         const eventType = this.formatEventType(event.eventType);
         const djName = event.djName || 'TBA';
         
@@ -100,8 +100,21 @@ export class ScheduleFormatter {
           eventDescription = `<b>${eventType} W/ ${djName}</b>`;
         }
         
-        // Use event type in the day label for multiple events
-        const dayLabel = eventType === 'ED' ? day : `${day} ${eventType}`;
+        // Special handling for multiple Sunday events
+        let dayLabel: string;
+        if (day === 'Sun' && events.length > 1) {
+          if (index === 0) {
+            // First Sunday event (morning)
+            dayLabel = `${day} Morning ED`;
+          } else {
+            // Subsequent Sunday events (evening/night)
+            dayLabel = `${day} ${eventType}`;
+          }
+        } else {
+          // Use event type in the day label for other multiple events
+          dayLabel = eventType === 'ED' ? day : `${day} ${eventType}`;
+        }
+        
         lines.push(`🗓️ <b>${dayLabel}: ${eventDescription}</b>`);
       });
       
