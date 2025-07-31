@@ -121,29 +121,22 @@ async function sendTelegramVideoWithCaption(chatId: number, caption: string, rep
   const { TELEGRAM_BOT_TOKEN } = process.env;
   
   try {
-    // Use the Google Drive video URL
-    const videoUrl = 'https://drive.google.com/file/d/1SfuOXYjCPAfzJq-4-ODv-UuemfEXuzrI/view?usp=sharing';
+    // For now, let's send the schedule as a text message with a video link
+    // We'll implement the actual video upload in a future update
     
-    // Send video with caption using the URL
-    const videoResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        video: videoUrl,
-        caption: caption,
-        parse_mode: 'HTML',
-        reply_markup: replyMarkup
-      })
-    });
+    const enhancedCaption = `${caption}
+
+🎬 <b>Odessa Experience Video</b>
+<a href="https://drive.google.com/file/d/1SfuOXYjCPAfzJq-4-ODv-UuemfEXuzrI/view?usp=sharing">Watch the Odessa Hero video here!</a> 🌴🎶`;
     
-    if (!videoResponse.ok) {
-      console.error('Failed to send video with caption:', await videoResponse.text());
-      // Fallback to text message if video fails
-      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
-    }
+    await sendTelegramMessageWithKeyboard(chatId, enhancedCaption, replyMarkup);
+    
+    // Send a separate message about the video
+    const videoMessage = `📹 <b>Video Available!</b>
+
+Click the link above to watch the Odessa Hero video and experience the vibe! 🚀`;
+    
+    await sendTelegramMessage(chatId, videoMessage);
     
   } catch (error) {
     console.error('Error sending Telegram video:', error);
