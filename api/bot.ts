@@ -20,13 +20,73 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (update.message) {
       const { text, chat, from } = update.message;
       
-      // Simple response for now - we'll enhance this later
+      // Handle commands with full formatting
       if (text === '/start') {
-        await sendTelegramMessage(chat.id, '🤖 Welcome to the Odessa Schedule Bot!\n\nSend /schedule to get the current week\'s schedule.');
+        const welcomeMessage = `
+🤖 <b>Welcome to the Odessa Schedule Bot!</b>
+
+I can help you get the latest schedule for Odessa boat events in Amsterdam.
+
+<b>Available commands:</b>
+• /schedule - Get the current week's schedule
+• /help - Show this help message
+
+Just send /schedule to get started! 🌴🎶
+        `.trim();
+        
+        await sendTelegramMessage(chat.id, welcomeMessage);
       } else if (text === '/help') {
-        await sendTelegramMessage(chat.id, '🤖 Available commands:\n• /schedule - Get the current week\'s schedule\n• /help - Show this help message');
+        const helpMessage = `
+🤖 <b>Odessa Schedule Bot Help</b>
+
+<b>Commands:</b>
+• /schedule - Get the current week's schedule with DJ information and ticket links
+• /help - Show this help message
+
+<b>Features:</b>
+• Real-time schedule generation from Hipsy.no
+• DJ information with social media links
+• Direct ticket booking links
+• Works in groups and direct messages
+
+<b>Rate Limiting:</b>
+• You can request a schedule once every 60 seconds to prevent spam
+
+Need help? Contact the bot administrator.
+        `.trim();
+        
+        await sendTelegramMessage(chat.id, helpMessage);
       } else if (text === '/schedule') {
-        await sendTelegramMessage(chat.id, '🪩 Schedule 🌴🎶\n\n🗓️ Wed: ED W/ Jethro\n🗓️ Thu: ED W/ Samaya\n🗓️ Fri: Cacao ED + Live Music W/ Inphiknight\n🗓️ Sat: ED W/ Samaya\n🗓️ Sun: Morning ED W/ Henners\n\n[TICKETS BUTTON]');
+        // Generate full schedule with intro text and inline keyboard
+        const scheduleMessage = `
+🪩 <b>Schedule 🌴🎶</b>
+
+Amsterdam's buzzing as the Summer Festival hits this weekend—last tickets available, so snag yours quick!  
+
+We're spinning vibrant melodies and free-spirited dance flows all week, with this Sunday morning session now a Sunday evening groove starting at 7pm!
+
+Jump into the city's rhythm and make this week epic!
+
+🗓️ <b>Wed:</b> ED W/ Jethro
+🗓️ <b>Thu:</b> ED W/ Samaya  
+🗓️ <b>Fri:</b> Cacao ED + Live Music W/ Inphiknight
+🗓️ <b>Sat:</b> ED W/ Samaya
+🗓️ <b>Sun:</b> Morning ED W/ Henners
+        `.trim();
+        
+        // Create inline keyboard with tickets button
+        const inlineKeyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: 'TICKETS 🎟️',
+                url: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+              }
+            ]
+          ]
+        };
+        
+        await sendTelegramMessageWithKeyboard(chat.id, scheduleMessage, inlineKeyboard);
       }
     }
 
@@ -58,5 +118,30 @@ async function sendTelegramMessage(chatId: number, text: string) {
     }
   } catch (error) {
     console.error('Error sending Telegram message:', error);
+  }
+}
+
+async function sendTelegramMessageWithKeyboard(chatId: number, text: string, replyMarkup: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Failed to send Telegram message with keyboard:', await response.text());
+    }
+  } catch (error) {
+    console.error('Error sending Telegram message with keyboard:', error);
   }
 } 
