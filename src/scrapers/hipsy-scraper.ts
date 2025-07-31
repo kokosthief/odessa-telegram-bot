@@ -187,10 +187,18 @@ export class HipsyScraper {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
 
-    return events.filter(event => {
+    const filteredEvents = events.filter(event => {
       const eventDate = new Date(event.date);
-      return eventDate >= startOfWeek && eventDate <= endOfWeek;
+      
+      // Normalize dates to compare only the date part (ignore time)
+      const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+      const startDateOnly = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate());
+      const endDateOnly = new Date(endOfWeek.getFullYear(), endOfWeek.getMonth(), endOfWeek.getDate());
+      
+      return eventDateOnly >= startDateOnly && eventDateOnly <= endDateOnly;
     });
+
+    return filteredEvents;
   }
 
   /**
