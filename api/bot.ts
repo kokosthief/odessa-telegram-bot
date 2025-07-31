@@ -1,5 +1,4 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { OdessaTelegramBot } from '../src/telegram/bot';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
@@ -15,22 +14,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Bot not configured' });
     }
 
-    // Create bot instance
-    const bot = new OdessaTelegramBot(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID);
-
     // Handle Telegram webhook updates
     const update = req.body;
     
     if (update.message) {
       const { text, chat, from } = update.message;
       
-      // Handle commands
+      // Simple response for now - we'll enhance this later
       if (text === '/start') {
-        await bot.handleStartCommand(update.message);
+        await sendTelegramMessage(chat.id, '🤖 Welcome to the Odessa Schedule Bot!\n\nSend /schedule to get the current week\'s schedule.');
       } else if (text === '/help') {
-        await bot.handleHelpCommand(update.message);
+        await sendTelegramMessage(chat.id, '🤖 Available commands:\n• /schedule - Get the current week\'s schedule\n• /help - Show this help message');
       } else if (text === '/schedule') {
-        await bot.handleScheduleCommand(update.message);
+        await sendTelegramMessage(chat.id, '🪩 Schedule 🌴🎶\n\n🗓️ Wed: ED W/ Jethro\n🗓️ Thu: ED W/ Samaya\n🗓️ Fri: Cacao ED + Live Music W/ Inphiknight\n🗓️ Sat: ED W/ Samaya\n🗓️ Sun: Morning ED W/ Henners\n\n[TICKETS BUTTON]');
       }
     }
 
@@ -38,5 +34,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error) {
     console.error('Webhook error:', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+async function sendTelegramMessage(chatId: number, text: string) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'HTML'
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Failed to send Telegram message:', await response.text());
+    }
+  } catch (error) {
+    console.error('Error sending Telegram message:', error);
   }
 } 
