@@ -166,7 +166,7 @@ export class ScheduleFormatter {
    * Generate intro text
    */
   private generateIntroText(): string {
-    return "🪩 <b><u>Schedule</u></b> 🌴🎶";
+    return "🪩 <b><u>This Week</u></b> 🌴🎶";
   }
 
   /**
