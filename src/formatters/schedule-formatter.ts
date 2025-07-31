@@ -95,9 +95,9 @@ export class ScheduleFormatter {
         
         if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
           const link = djInfo.link;
-          eventDescription = `<b>W/ <a href="${link}">${djName}</a></b>`;
+          eventDescription = `<b>| <a href="${link}">${djName}</a></b>`;
         } else {
-          eventDescription = `<b>W/ ${djName}</b>`;
+          eventDescription = `<b>| ${djName}</b>`;
         }
         
         // Special handling for multiple Sunday events
@@ -135,9 +135,9 @@ export class ScheduleFormatter {
       
       if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
         const link = djInfo.link;
-        eventDescription = `<b>W/ <a href="${link}">${djName}</a></b>`;
+        eventDescription = `<b>| <a href="${link}">${djName}</a></b>`;
       } else {
-        eventDescription = `<b>W/ ${djName}</b>`;
+        eventDescription = `<b>| ${djName}</b>`;
       }
       
       return `🗓️ <b>${day}: ${eventType} ${eventDescription}</b>`;

@@ -1,5 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { OdessaScheduleGenerator } from '../src/index';
+import fs from 'fs';
+import path from 'path';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
@@ -121,22 +123,38 @@ async function sendTelegramVideoWithCaption(chatId: number, caption: string, rep
   const { TELEGRAM_BOT_TOKEN } = process.env;
   
   try {
-    // For now, let's send the schedule as a text message with a video link
-    // We'll implement the actual video upload in a future update
+    // Read the video file from the project directory
+    const videoPath = path.join(process.cwd(), 'Odessa Hero.mp4');
     
-    const enhancedCaption = `${caption}
+    if (!fs.existsSync(videoPath)) {
+      console.error('Video file not found:', videoPath);
+      // Fallback to text message if video not found
+      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+      return;
+    }
+    
+    const videoBuffer = fs.readFileSync(videoPath);
+    
+    // Create form data for video upload
+    const formData = new FormData();
+    const videoBlob = new Blob([videoBuffer], { type: 'video/mp4' });
+    formData.append('video', videoBlob, 'Odessa Hero.mp4');
+    formData.append('chat_id', chatId.toString());
+    formData.append('caption', caption);
+    formData.append('parse_mode', 'HTML');
+    formData.append('reply_markup', JSON.stringify(replyMarkup));
+    
+    // Upload video to Telegram
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`, {
+      method: 'POST',
+      body: formData
+    });
 
-🎬 <b>Odessa Experience Video</b>
-<a href="https://drive.google.com/file/d/1SfuOXYjCPAfzJq-4-ODv-UuemfEXuzrI/view?usp=sharing">Watch the Odessa Hero video here!</a> 🌴🎶`;
-    
-    await sendTelegramMessageWithKeyboard(chatId, enhancedCaption, replyMarkup);
-    
-    // Send a separate message about the video
-    const videoMessage = `📹 <b>Video Available!</b>
-
-Click the link above to watch the Odessa Hero video and experience the vibe! 🚀`;
-    
-    await sendTelegramMessage(chatId, videoMessage);
+    if (!response.ok) {
+      console.error('Failed to send video:', await response.text());
+      // Fallback to text message if video fails
+      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+    }
     
   } catch (error) {
     console.error('Error sending Telegram video:', error);
