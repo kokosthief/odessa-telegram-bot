@@ -1,0 +1,85 @@
+{
+  "name": "odessa-telegram-bot",
+  "version": "1.0.0",
+  "description": "Automated schedule generation tool for Odessa boat events in Amsterdam",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "cli": "ts-node src/cli.ts",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:integration": "jest --config jest.integration.config.js",
+    "test:scraping": "jest --testNamePattern='scraping'",
+    "test:formatting": "jest --testNamePattern='formatting'",
+    "test:telegram": "jest --testNamePattern='telegram'",
+    "test:e2e": "jest --testNamePattern='e2e'",
+    "test:commands": "ts-node src/test-commands.ts",
+    "quick-start": "bash scripts/quick-start.sh",
+    "deploy": "bash scripts/deploy.sh",
+    "db:migrate": "node scripts/migrate.js",
+    "db:seed": "node scripts/seed.js",
+    "db:reset": "node scripts/reset.js",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "postinstall": "npm run type-check"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "schedule",
+    "scraping",
+    "amsterdam",
+    "odessa",
+    "events"
+  ],
+  "author": "Odessa Team",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/node": "^5.3.7",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "date-fns": "^2.30.0",
+    "dotenv": "^16.3.1",
+    "joi": "^17.11.0",
+    "node-telegram-bot-api": "^0.64.0",
+    "pg": "^8.11.3",
+    "puppeteer": "^21.5.2",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.8.10",
+    "@types/node-telegram-bot-api": "^0.64.9",
+    "@types/pg": "^8.10.7",
+    "@typescript-eslint/eslint-plugin": "^6.9.1",
+    "@typescript-eslint/parser": "^6.9.1",
+    "eslint": "^8.53.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.3",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/odessa-telegram-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/odessa-telegram-bot/issues"
+  },
+  "homepage": "https://github.com/your-username/odessa-telegram-bot#readme"
+}

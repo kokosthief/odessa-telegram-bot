@@ -1,0 +1,225 @@
+import axios from 'axios';
+import { Event, ScrapingResult } from '../types/event';
+
+export class HipsyScraper {
+  private baseUrl = 'https://api.hipsy.nl/v1';
+  private apiKey = '14288|n6b1TloPcUTwQRrJxtortKlRNB2yxL7QYSvDzkWCb26ec6a3';
+  private organisationSlug = 'odessa-amsterdam-ecstatic-dance';
+
+  constructor() {
+    // Set default headers
+    axios.defaults.headers.common['Authorization'] = `Bearer ${this.apiKey}`;
+    axios.defaults.headers.common['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+  }
+
+  /**
+   * Fetch events from Hipsy.nl API
+   * Based on the real API documentation provided
+   */
+  async getEvents(page: number = 1, period: 'past' | 'upcoming' | 'all' = 'upcoming', limit: number = 50): Promise<ScrapingResult> {
+    try {
+      console.log(`Fetching events from Hipsy.nl API page ${page}, period: ${period}`);
+      
+      const response = await axios.get(`${this.baseUrl}/organisation/${this.organisationSlug}/events`, {
+        params: {
+          page,
+          limit,
+          period
+        },
+        timeout: 10000,
+      });
+
+      if (!response.data || !response.data.data || !Array.isArray(response.data.data)) {
+        console.error('Invalid response format from Hipsy.nl API');
+        return {
+          events: [],
+          totalCount: 0,
+          success: false,
+          error: 'Invalid response format'
+        };
+      }
+
+      const events: Event[] = response.data.data.map((event: any) => ({
+        id: event.id.toString(),
+        title: event.title,
+        date: event.date,
+        picture: event.picture || event.picture_small || 'https://via.placeholder.com/150',
+        ticketUrl: event.url_ticketshop || event.url_hipsy,
+        originalDate: event.date,
+        djName: this.extractDJName(event.title),
+        eventType: this.classifyEventType(event.title),
+        description: event.description || ''
+      }));
+
+      console.log(`Successfully fetched ${events.length} events from Hipsy.nl API`);
+      
+      return {
+        events,
+        totalCount: events.length,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('Error fetching events from Hipsy.nl API:', error);
+      return {
+        events: [],
+        totalCount: 0,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Extract DJ name from event title
+   * Based on actual Hipsy.nl event titles like "Ecstatic Dance | Divana"
+   */
+  private extractDJName(title: string): string | undefined {
+    // Pattern for "Event Type | DJ Name" format
+    const pipePattern = /\|\s*([A-Za-z\s]+)$/;
+    const match = title.match(pipePattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+
+    // Fallback patterns
+    const patterns = [
+      /w\/\s*([A-Za-z\s]+)/i,  // "W/ DJ Name"
+      /with\s+([A-Za-z\s]+)/i, // "With DJ Name"
+      /feat\.\s*([A-Za-z\s]+)/i, // "Feat. DJ Name"
+      /by\s+([A-Za-z\s]+)/i,   // "By DJ Name"
+      /-\s*([A-Za-z\s]+)/i,    // "Event - DJ Name"
+    ];
+
+    for (const pattern of patterns) {
+      const match = title.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Classify event type based on title
+   */
+  private classifyEventType(title: string): 'ED' | 'Cacao ED' | 'Live Music' | 'Queerstatic' | undefined {
+    const text = title.toLowerCase();
+    
+    if (text.includes('queerstatic')) {
+      return 'Queerstatic';
+    } else if (text.includes('cacao') && (text.includes('ecstatic') || text.includes('ed'))) {
+      return 'Cacao ED';
+    } else if (text.includes('ecstatic dance') || text.includes('ed')) {
+      return 'ED';
+    } else if (text.includes('live music') || text.includes('live')) {
+      return 'Live Music';
+    }
+    
+    return undefined;
+  }
+
+  /**
+   * Get events for a specific date range (Monday to Sunday)
+   */
+  async getEventsForWeek(startDate: Date): Promise<Event[]> {
+    const allEvents: Event[] = [];
+    let currentPage = 1;
+    const maxPages = 10; // Safety limit
+
+    // First get upcoming events
+    while (currentPage <= maxPages) {
+      const result = await this.getEvents(currentPage, 'upcoming', 100);
+      
+      if (!result.success) {
+        console.error(`Failed to fetch upcoming page ${currentPage}:`, result.error);
+        break;
+      }
+
+      if (result.events.length === 0) {
+        break; // No more events
+      }
+
+      // Filter events for the target week (Monday to Sunday)
+      const weekEvents = this.filterEventsForWeek(result.events, startDate);
+      allEvents.push(...weekEvents);
+
+      currentPage++;
+      
+      // Add delay to be respectful to the API
+      await this.delay(1000);
+    }
+
+    // Reset and get past events too (in case we're mid-week)
+    currentPage = 1;
+    while (currentPage <= maxPages) {
+      const result = await this.getEvents(currentPage, 'past', 100);
+      
+      if (!result.success) {
+        console.error(`Failed to fetch past page ${currentPage}:`, result.error);
+        break;
+      }
+
+      if (result.events.length === 0) {
+        break; // No more events
+      }
+
+      // Filter events for the target week (Monday to Sunday)
+      const weekEvents = this.filterEventsForWeek(result.events, startDate);
+      allEvents.push(...weekEvents);
+
+      currentPage++;
+      
+      // Add delay to be respectful to the API
+      await this.delay(1000);
+    }
+
+    // Sort events by date
+    return allEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  /**
+   * Filter events for Monday to Sunday of the target week
+   */
+  private filterEventsForWeek(events: Event[], startDate: Date): Event[] {
+    const startOfWeek = this.getStartOfWeek(startDate);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
+
+    return events.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate >= startOfWeek && eventDate <= endOfWeek;
+    });
+  }
+
+  /**
+   * Get the start of the week (Monday)
+   */
+  private getStartOfWeek(date: Date): Date {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Monday is 1
+    return new Date(date.setDate(diff));
+  }
+
+  /**
+   * Add delay between requests
+   */
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Set the organisation slug (call this before making API calls)
+   */
+  setOrganisationSlug(slug: string): void {
+    this.organisationSlug = slug;
+  }
+
+  /**
+   * Get the current organisation slug
+   */
+  getOrganisationSlug(): string {
+    return this.organisationSlug;
+  }
+} 
