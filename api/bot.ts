@@ -71,7 +71,8 @@ Need help? Contact the bot administrator.`;
             ]
           };
           
-          await sendTelegramMessageWithKeyboard(chat.id, scheduleMessage, inlineKeyboard);
+          // Send video with schedule message
+          await sendTelegramVideoWithCaption(chat.id, scheduleMessage, inlineKeyboard);
         } catch (error) {
           console.error('Error generating schedule:', error);
           const errorMessage = `❌ <b>Error generating schedule</b>
@@ -113,6 +114,35 @@ async function sendTelegramMessage(chatId: number, text: string) {
     }
   } catch (error) {
     console.error('Error sending Telegram message:', error);
+  }
+}
+
+async function sendTelegramVideoWithCaption(chatId: number, caption: string, replyMarkup: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  
+  try {
+    // For now, let's send the schedule as a text message and add a video reference
+    // We can enhance this later with actual video upload
+    
+    const enhancedCaption = `${caption}
+
+🎬 <b>Odessa Experience Video</b>
+Experience the vibe at Odessa! 🌴🎶`;
+    
+    await sendTelegramMessageWithKeyboard(chatId, enhancedCaption, replyMarkup);
+    
+    // TODO: Implement actual video upload
+    // For now, we'll add a note about the video feature
+    const videoNote = `📹 <b>Video Feature Coming Soon!</b>
+
+We're working on adding the Odessa Hero video to schedule messages! 🚀`;
+    
+    await sendTelegramMessage(chatId, videoNote);
+    
+  } catch (error) {
+    console.error('Error sending Telegram video:', error);
+    // Fallback to text message if video fails
+    await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
   }
 }
 
