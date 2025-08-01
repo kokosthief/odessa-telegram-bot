@@ -1,11 +1,14 @@
 import { Event } from '../types/event';
 import { DJLoader } from '../utils/dj-loader';
+import { WixAPIService } from '../services/wix-api';
 
 export class ScheduleFormatter {
   private djLoader: DJLoader;
+  private wixService: WixAPIService;
 
   constructor() {
     this.djLoader = new DJLoader();
+    this.wixService = new WixAPIService();
   }
 
   /**
@@ -191,9 +194,9 @@ export class ScheduleFormatter {
   }
 
   /**
-   * Format today's schedule specifically
+   * Format today's schedule specifically with rich Wix DJ data
    */
-  formatTodaySchedule(events: Event[]): { text: string; keyboard?: any } {
+  async formatTodaySchedule(events: Event[]): Promise<{ text: string; keyboard?: any }> {
     if (events.length === 0) {
       return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
     }
@@ -204,39 +207,62 @@ export class ScheduleFormatter {
     // Generate intro text for today
     const introText = `🎭 <b>Today's Schedule</b> (${dayName})`;
     
-    // Format today's events with enhanced DJ info
-    const eventLines = events.map(event => {
+    // Format today's events with enhanced DJ info from Wix
+    const eventLines = await Promise.all(events.map(async event => {
       const eventType = this.formatEventType(event.eventType);
       const djName = event.djName || 'TBA';
       
       console.log(`Processing event with DJ: "${djName}"`);
       
-      // Get DJ info from existing loader
-      const djInfo = this.djLoader.getDJInfo(djName);
+      // Try to get DJ info from Wix first, fallback to local data
+      let djInfo = null;
+      if (this.wixService.isConfigured()) {
+        djInfo = await this.wixService.getDJByName(djName);
+      }
+      
+      // Fallback to local DJ data if Wix is not available
+      if (!djInfo) {
+        djInfo = this.djLoader.getDJInfo(djName);
+      }
       
       console.log(`DJ info found: ${djInfo ? 'YES' : 'NO'}`);
       
+      // Handle different DJ info types (Wix vs local)
       let eventDescription: string;
       
-      if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
-        const link = djInfo.link;
-        eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+      if (djInfo) {
+        // Check if it's Wix DJ data (has soundcloudUrl)
+        if ('soundcloudUrl' in djInfo && djInfo.soundcloudUrl) {
+          eventDescription = `<b>${eventType} W/ <a href="${djInfo.soundcloudUrl}">${djName}</a></b>`;
+        }
+        // Check if it's local DJ data (has link)
+        else if ('link' in djInfo && djInfo.link && djInfo.link.trim() !== '') {
+          eventDescription = `<b>${eventType} W/ <a href="${djInfo.link}">${djName}</a></b>`;
+        }
+        // No link available
+        else {
+          eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+        }
       } else {
         eventDescription = `<b>${eventType} W/ ${djName}</b>`;
       }
       
       let eventText = `🎵 ${eventDescription}`;
       
+      // Add DJ description from Wix if available
+      if (djInfo && 'description' in djInfo && djInfo.description) {
+        eventText += `\n\n📝 <i>${djInfo.description}</i>`;
+      }
+      
       return eventText;
-    });
+    }));
     
     // Join events with line breaks
     const eventsText = eventLines.join('\n\n');
     
     // Create ticket buttons for each event
-    const ticketButtons = events.map((event, index) => {
+    const ticketButtons = events.map((event) => {
       const eventType = this.formatEventType(event.eventType);
-      const djName = event.djName || 'TBA';
       const buttonText = events.length === 1 ? 'TICKETS 🎟️' : `${eventType} TICKETS 🎟️`;
       
       return [{

@@ -17,8 +17,11 @@ export class OdessaScheduleGenerator {
     try {
       console.log('Starting schedule generation...');
       
-      // Get events for current week
-      const events = await this.scraper.getEventsForWeek(new Date());
+      // Get events for upcoming week (next Wednesday to Sunday)
+      const today = new Date();
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7); // Look at next week
+      const events = await this.scraper.getEventsForWeek(nextWeek);
       
       if (events.length === 0) {
         console.log('No events found for this week');
@@ -71,7 +74,7 @@ export class OdessaScheduleGenerator {
       const today = new Date();
       
       // Get events from the scraper directly
-      const result = await this.scraper.getEvents(1, 'upcoming', 20);
+      const result = await this.scraper.getEvents(1, 'upcoming', 10);
       
       if (!result.success) {
         throw new Error('Failed to fetch events from Hipsy');
@@ -94,8 +97,8 @@ export class OdessaScheduleGenerator {
       
       console.log(`Found ${todayEvents.length} events for today`);
       
-      // Format today's events
-      const formattedToday = this.formatter.formatTodaySchedule(todayEvents);
+      // Format today's events with Wix DJ data
+      const formattedToday = await this.formatter.formatTodaySchedule(todayEvents);
       
       console.log('Today\'s schedule generated successfully');
       return formattedToday;

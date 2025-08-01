@@ -15,9 +15,8 @@ export class HipsyScraper {
   /**
    * Fetch events from Hipsy.nl API with retry logic
    */
-  async getEvents(page: number = 1, period: 'past' | 'upcoming' | 'all' = 'upcoming', limit: number = 50): Promise<ScrapingResult> {
+  async getEvents(page: number = 1, period: 'past' | 'upcoming' | 'all' = 'upcoming', limit: number = 10): Promise<ScrapingResult> {
     const maxRetries = 2;
-    let lastError: any = null;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -63,7 +62,6 @@ export class HipsyScraper {
         };
 
       } catch (error) {
-        lastError = error;
         console.error(`Error fetching events from Hipsy.nl API (attempt ${attempt}/${maxRetries}):`, error);
         
         // If this is the last attempt, return the error
@@ -154,17 +152,17 @@ export class HipsyScraper {
   }
 
   /**
-   * Get events for a specific date range (Monday to Sunday)
+   * Get events for a specific date range (Wednesday to Sunday)
    */
   async getEventsForWeek(startDate: Date): Promise<Event[]> {
     const allEvents: Event[] = [];
     let currentPage = 1;
-    const maxPages = 5; // Reduced from 10 to 5
-    const maxEvents = 30; // Stop when we have enough events
+    const maxPages = 3; // Increased to 3 pages to get more data
+    const maxEvents = 20; // Increased to get enough events for full week coverage
 
     // First get upcoming events
     while (currentPage <= maxPages && allEvents.length < maxEvents) {
-      const result = await this.getEvents(currentPage, 'upcoming', 30); // Reduced from 100 to 30
+      const result = await this.getEvents(currentPage, 'upcoming', 20); // Increased to 20 events per page
       
       if (!result.success) {
         console.error(`Failed to fetch upcoming page ${currentPage}:`, result.error);
@@ -175,26 +173,26 @@ export class HipsyScraper {
         break; // No more events
       }
 
-      // Filter events for the target week (Monday to Sunday)
+      // Filter events for the target week (Wednesday to Sunday)
       const weekEvents = this.filterEventsForWeek(result.events, startDate);
       allEvents.push(...weekEvents);
 
-      // Early termination if we have enough events
-      if (allEvents.length >= maxEvents) {
+      // Early termination if we have enough events for full week coverage
+      if (allEvents.length >= 6) { // We need max 6 events (Wed-Sun)
         break;
       }
 
       currentPage++;
       
       // Add delay to be respectful to the API
-      await this.delay(500); // Reduced from 1000ms to 500ms
+      await this.delay(500);
     }
 
-    // Only get past events if we don't have enough events yet
-    if (allEvents.length < maxEvents) {
+    // Get past events if we don't have enough events for full week coverage
+    if (allEvents.length < 6) {
       currentPage = 1;
-      while (currentPage <= maxPages && allEvents.length < maxEvents) {
-        const result = await this.getEvents(currentPage, 'past', 30); // Reduced from 100 to 30
+      while (currentPage <= maxPages && allEvents.length < 6) {
+        const result = await this.getEvents(currentPage, 'past', 20); // Increased to 20 events per page
         
         if (!result.success) {
           console.error(`Failed to fetch past page ${currentPage}:`, result.error);
@@ -205,33 +203,35 @@ export class HipsyScraper {
           break; // No more events
         }
 
-        // Filter events for the target week (Monday to Sunday)
+        // Filter events for the target week (Wednesday to Sunday)
         const weekEvents = this.filterEventsForWeek(result.events, startDate);
         allEvents.push(...weekEvents);
 
-        // Early termination if we have enough events
-        if (allEvents.length >= maxEvents) {
+        // Early termination if we have enough events for full week coverage
+        if (allEvents.length >= 6) {
           break;
         }
 
         currentPage++;
         
         // Add delay to be respectful to the API
-        await this.delay(500); // Reduced from 1000ms to 500ms
+        await this.delay(500);
       }
     }
 
-    // Sort events by date
-    return allEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Sort events by date and limit to max 6 events (Wed-Sun)
+    return allEvents
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 6); // Maximum 6 events (Wednesday through Sunday)
   }
 
   /**
-   * Filter events for Monday to Sunday of the target week
+   * Filter events for Wednesday to Sunday of the target week
    */
   private filterEventsForWeek(events: Event[], startDate: Date): Event[] {
     const startOfWeek = this.getStartOfWeek(startDate);
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
+    endOfWeek.setDate(startOfWeek.getDate() + 4); // Sunday (Wednesday + 4 days = Sunday)
 
     const filteredEvents = events.filter(event => {
       const eventDate = new Date(event.date);
@@ -248,12 +248,22 @@ export class HipsyScraper {
   }
 
   /**
-   * Get the start of the week (Monday)
+   * Get the start of the week (Wednesday)
    */
   private getStartOfWeek(date: Date): Date {
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Monday is 1
-    return new Date(date.setDate(diff));
+    // Wednesday is day 3 (0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday)
+    let diff;
+    if (day === 0) { // Sunday
+      diff = -4; // Go back 4 days to Wednesday
+    } else if (day >= 3) { // Wednesday, Thursday, Friday, Saturday
+      diff = 3 - day; // Days to subtract to get to Wednesday
+    } else { // Monday, Tuesday
+      diff = 3 - day + 7; // Days to subtract to get to Wednesday (next week)
+    }
+    const result = new Date(date);
+    result.setDate(date.getDate() + diff);
+    return result;
   }
 
   /**

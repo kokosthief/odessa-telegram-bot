@@ -28,27 +28,38 @@ This guide provides implementation patterns and standards for building an automa
 
 ```
 /
-├── src/                          # TypeScript source code
-│   ├── index.ts                  # Main application entry point
-│   ├── scrapers/                 # Web scraping components
-│   │   └── hipsy-scraper.ts     # Hipsy.no event scraping
-│   ├── formatters/               # Schedule formatting
-│   │   └── schedule-formatter.ts # Main schedule formatting logic
-│   ├── telegram/                 # Telegram integration
-│   │   └── bot.ts               # Bot with command handling
-│   ├── types/                   # TypeScript type definitions
-│   │   ├── event.ts            # Event data types
-│   │   └── dj.ts              # DJ data types
-│   ├── utils/                   # Utility functions
-│   │   └── dj-loader.ts       # DJ data management
-│   ├── cli.ts                  # Command-line interface
-│   └── test-*.ts               # Test files
-├── PRPs/                        # Product Requirements Prompts
-│   ├── templates/              # PRP templates
-│   └── schedule-command-prp.md # Command feature PRP
-├── examples/                    # Code examples and patterns
-├── CLAUDE.md                   # Project-specific rules and conventions
-├── USAGE.md                    # Comprehensive usage guide
+├── context/                     # Context engineering documentation
+│   ├── CLAUDE.md               # This file - project-specific rules
+│   ├── README.md               # Project documentation
+│   ├── PRPs/                   # Product Requirements Prompts
+│   │   ├── templates/          # PRP templates
+│   │   └── schedule-command-prp.md # Command feature PRP
+│   └── examples/               # Code examples and patterns
+│       └── README.md
+├── src/                        # TypeScript source code
+│   ├── index.ts                # Main application entry point
+│   ├── scrapers/               # Web scraping components
+│   │   └── hipsy-scraper.ts   # Hipsy.no event scraping
+│   ├── formatters/             # Schedule formatting
+│   │   └── schedule-formatter.ts # Schedule template generation
+│   ├── telegram/               # Telegram integration
+│   │   └── bot.ts             # Bot with command handling
+│   ├── types/                  # TypeScript type definitions
+│   │   ├── event.ts           # Event data types
+│   │   └── dj.ts             # DJ data types
+│   ├── utils/                  # Utility functions
+│   │   └── dj-loader.ts      # DJ data management
+│   ├── data/                  # Static data files
+│   │   └── djs.json          # DJ database with social links
+│   ├── cli.ts                 # Command-line interface
+│   └── test-*.ts              # Test files
+├── api/                        # Vercel API routes
+│   ├── bot.ts                 # Telegram webhook handler
+│   └── test.ts                # Test endpoint
+├── scripts/                    # Deployment scripts
+│   ├── quick-start.sh         # Quick setup script
+│   └── deploy.sh              # Production deployment script
+├── vercel.json                 # Vercel configuration
 ├── env.example                 # Environment variables template
 └── README.md                   # Project documentation
 ```
@@ -59,21 +70,26 @@ This guide provides implementation patterns and standards for building an automa
 - **Web Scraping**: Hipsy.no event data extraction with error handling
 - **Schedule Generation**: Real-time schedule creation with DJ information
 - **Telegram Integration**: Bot API integration with message posting
-- **Interactive Commands**: `/schedule`, `/start`, `/help` command handling
+- **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help` command handling
 - **Rate Limiting**: 60-second rate limit per user to prevent spam
 - **Error Handling**: Comprehensive error handling with user-friendly messages
+- **Video Integration**: Optimized video uploads with cached file_id
+- **DJ Database**: 20+ DJs with social media links in `src/data/djs.json`
 
 ### ✅ User Experience Features
 - **Typing Indicators**: Shows typing status during schedule generation
 - **Inline Keyboards**: Ticket booking buttons in schedule messages
 - **Multi-platform Support**: Works in group chats and direct messages
 - **User-friendly Messages**: Clear error messages and help information
+- **Today's Schedule**: `/whosplaying` command for current day events
+- **Admin Commands**: `/getfileid` and `/setfileid` for video optimization
 
 ### ✅ Development Features
 - **CLI Interface**: Command-line tools for testing and management
 - **Testing Suite**: Comprehensive test coverage for all components
 - **Type Safety**: Full TypeScript implementation with strict typing
 - **Documentation**: Complete documentation and usage guides
+- **Context Engineering**: Organized documentation in `context/` directory
 
 ## Development Commands
 
@@ -100,8 +116,7 @@ npm run test:watch            # Run tests in watch mode
 npm run test:commands         # Test command functionality
 npm run test:telegram         # Test Telegram integration
 
-# Database
-npm run db:migrate           # Run database migrations
+# Database (JSON-based)
 npm run db:seed              # Seed database with DJ data
 ```
 
@@ -128,7 +143,6 @@ cp env.example .env
 # Required environment variables:
 TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_CHAT_ID=your_chat_id
-DATABASE_URL=your_database_url
 HIPSY_BASE_URL=https://hipsy.nl
 TIMEZONE=Europe/Amsterdam
 ```
@@ -314,20 +328,30 @@ async function postScheduleToTelegram(schedule: Schedule): Promise<void> {
 3. **Data Validation**: Ensure all URLs are valid before posting
 4. **Caching**: Cache DJ lookups to avoid repeated database queries
 
-### Database Schema
+### DJ Data Structure
 
-```sql
--- DJ table structure
-CREATE TABLE djs (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE,
-  soundcloud_url VARCHAR(500),
-  mixcloud_url VARCHAR(500),
-  instagram_url VARCHAR(500),
-  bio TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
+```json
+{
+  "DJ Name": {
+    "link": "https://soundcloud.com/dj_name"
+  }
+}
+```
+
+### DJ Data Implementation
+
+```typescript
+// Example DJ lookup pattern
+async function getDJInfo(djName: string): Promise<DJ | null> {
+  try {
+    const djData = await loadDJData();
+    const normalizedName = normalizeDJName(djName);
+    return djData[normalizedName] || null;
+  } catch (error) {
+    logger.error('Failed to get DJ info:', error);
+    return null;
+  }
+}
 ```
 
 ## Error Handling Standards
@@ -335,7 +359,7 @@ CREATE TABLE djs (
 ### Critical Error Scenarios
 
 1. **Scraping Failures**: Network timeouts, blocked requests, malformed data
-2. **Database Errors**: Connection failures, missing DJ data
+2. **DJ Data Errors**: Missing DJ data, invalid URLs
 3. **Telegram Errors**: Invalid bot token, chat not found, rate limiting
 4. **Data Validation**: Invalid dates, missing required fields
 5. **Command Errors**: Rate limiting, user permission issues
@@ -366,7 +390,7 @@ async function generateSchedule(): Promise<Schedule> {
 
 1. **Scraping Tests**: Mock Hipsy responses, test data parsing
 2. **Formatting Tests**: Test schedule template generation
-3. **Database Tests**: Test DJ lookup and data validation
+3. **DJ Data Tests**: Test DJ lookup and data validation
 4. **Telegram Tests**: Mock Telegram API, test message formatting
 5. **Command Tests**: Test command handling and rate limiting
 
@@ -394,7 +418,7 @@ async function generateSchedule(): Promise<Schedule> {
 **Implement logging for:**
 
 1. **Scraping Performance**: Response times, success rates
-2. **Database Performance**: Query times, cache hit rates
+2. **DJ Data Performance**: Lookup times, cache hit rates
 3. **Telegram Performance**: Posting success rates, response times
 4. **Error Rates**: Track and alert on high error rates
 5. **Command Usage**: Track command frequency and patterns
@@ -411,7 +435,7 @@ async function generateSchedule(): Promise<Schedule> {
 ### Access Control
 
 1. **Bot Permissions**: Minimal required permissions for Telegram bot
-2. **Database Access**: Secure database credentials and connection
+2. **Environment-based Configuration**: Secure environment variables
 3. **API Keys**: Secure storage and rotation of API keys
 4. **User Rate Limiting**: Prevent abuse through rate limiting
 
@@ -420,9 +444,8 @@ async function generateSchedule(): Promise<Schedule> {
 ### Environment Setup
 
 1. **Production Environment**: Separate config for production
-2. **Database Migration**: Automated database setup
-3. **Environment Variables**: Secure management of secrets
-4. **Monitoring**: Logging and error tracking setup
+2. **Environment Variables**: Secure management of secrets
+3. **Monitoring**: Logging and error tracking setup
 
 ### Deployment Commands
 
@@ -430,10 +453,6 @@ async function generateSchedule(): Promise<Schedule> {
 # Production deployment
 npm run build
 npm run deploy
-
-# Database setup
-npm run db:migrate
-npm run db:seed
 
 # Bot deployment
 npm run cli run
@@ -469,12 +488,15 @@ npm run cli run
 1. **Web Scraping**: Hipsy.no scraper with error handling
 2. **Schedule Generation**: Real-time schedule creation
 3. **Telegram Integration**: Bot with command handling
-4. **Interactive Commands**: `/schedule`, `/start`, `/help`
+4. **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help`
 5. **Rate Limiting**: 60-second rate limit per user
 6. **Error Handling**: Comprehensive error handling
 7. **CLI Interface**: Command-line tools for management
 8. **Testing Suite**: Test coverage for all components
 9. **Documentation**: Complete documentation and guides
+10. **Video Integration**: Optimized video uploads with cached file_id
+11. **DJ Database**: 20+ DJs with social media links
+12. **Context Engineering**: Organized documentation in `context/`
 
 ### 🔄 Future Enhancements
 
@@ -482,4 +504,5 @@ npm run cli run
 2. **Advanced DJ Integration**: More comprehensive DJ information
 3. **Analytics Dashboard**: Usage statistics and monitoring
 4. **Multi-language Support**: Internationalization
-5. **Advanced Templates**: Multiple schedule format options 
+5. **Advanced Templates**: Multiple schedule format options
+6. **Database Migration**: Move from JSON to PostgreSQL for scalability 
