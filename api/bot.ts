@@ -162,7 +162,12 @@ If this problem persists, contact the bot administrator.`;
             const generator = new OdessaScheduleGenerator();
             const todaySchedule = await generator.generateTodaySchedule();
             
-            await sendTelegramMessage(chat.id, todaySchedule);
+            // Send message with keyboard if available
+            if (todaySchedule.keyboard) {
+              await sendTelegramMessageWithKeyboard(chat.id, todaySchedule.text, todaySchedule.keyboard);
+            } else {
+              await sendTelegramMessage(chat.id, todaySchedule.text);
+            }
           } catch (error) {
             console.error('Error generating today schedule:', error);
             const errorMessage = `❌ <b>Error fetching today's schedule</b>

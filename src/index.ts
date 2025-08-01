@@ -64,7 +64,7 @@ export class OdessaScheduleGenerator {
   /**
    * Generate schedule for today only
    */
-  async generateTodaySchedule(): Promise<string> {
+  async generateTodaySchedule(): Promise<{ text: string; keyboard?: any }> {
     try {
       console.log('Generating today\'s schedule...');
       
@@ -89,7 +89,7 @@ export class OdessaScheduleGenerator {
       });
       
       if (todayEvents.length === 0) {
-        return '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.';
+        return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
       }
       
       console.log(`Found ${todayEvents.length} events for today`);

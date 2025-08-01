@@ -199,9 +199,9 @@ export class ScheduleFormatter {
   /**
    * Format today's schedule specifically
    */
-  formatTodaySchedule(events: Event[]): string {
+  formatTodaySchedule(events: Event[]): { text: string; keyboard?: any } {
     if (events.length === 0) {
-      return '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.';
+      return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
     }
 
     const today = new Date();
@@ -257,7 +257,26 @@ export class ScheduleFormatter {
     // Join events with line breaks
     const eventsText = eventLines.join('\n\n');
     
-    return `${introText}\n\n${eventsText}`;
+    // Create ticket buttons for each event
+    const ticketButtons = events.map((event, index) => {
+      const eventType = this.formatEventType(event.eventType);
+      const djName = event.djName || 'TBA';
+      const buttonText = events.length === 1 ? 'TICKETS 🎟️' : `${eventType} TICKETS 🎟️`;
+      
+      return [{
+        text: buttonText,
+        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+      }];
+    });
+    
+    const keyboard = {
+      inline_keyboard: ticketButtons
+    };
+    
+    return {
+      text: `${introText}\n\n${eventsText}`,
+      keyboard: keyboard
+    };
   }
 
 } 
