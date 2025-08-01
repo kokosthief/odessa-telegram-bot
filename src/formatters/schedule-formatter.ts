@@ -4,13 +4,14 @@ import { DJDataLoader } from '../utils/dj-data-loader';
 
 export class ScheduleFormatter {
   private djLoader: DJLoader;
-  private djDataLoader: DJDataLoader;
+  private djDataLoader?: DJDataLoader;
 
   constructor() {
     this.djLoader = new DJLoader();
-    console.log('Initializing DJDataLoader...');
-    this.djDataLoader = new DJDataLoader();
-    console.log('DJDataLoader initialized');
+    // Temporarily disable DJDataLoader to fix 500 error
+    // console.log('Initializing DJDataLoader...');
+    // this.djDataLoader = new DJDataLoader();
+    // console.log('DJDataLoader initialized');
   }
 
   /**
@@ -217,8 +218,8 @@ export class ScheduleFormatter {
       console.log(`Processing event with DJ: "${djName}"`);
       
       // Get enhanced DJ info from CSV
-      const djInfo = this.djDataLoader.getDJInfo(djName);
-      const onlineLink = djInfo ? this.djDataLoader.getBestOnlineLink(djInfo) : null;
+      const djInfo = this.djDataLoader?.getDJInfo(djName);
+      const onlineLink = djInfo && this.djDataLoader ? this.djDataLoader.getBestOnlineLink(djInfo) : null;
       
       console.log(`DJ info found: ${djInfo ? 'YES' : 'NO'}, Online link: ${onlineLink ? 'YES' : 'NO'}`);
       
