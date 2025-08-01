@@ -25,6 +25,8 @@ export class DJDataLoader {
     try {
       const csvPath = path.join(process.cwd(), 'Musical_Facilitators.csv');
       console.log('Looking for CSV file at:', csvPath);
+      console.log('Current working directory:', process.cwd());
+      console.log('Files in current directory:', fs.readdirSync(process.cwd()));
       
       if (!fs.existsSync(csvPath)) {
         console.warn('Musical_Facilitators.csv not found, DJ data will not be available');
@@ -33,6 +35,9 @@ export class DJDataLoader {
 
       console.log('CSV file found, loading data...');
       const csvContent = fs.readFileSync(csvPath, 'utf-8');
+      console.log('CSV file size:', csvContent.length, 'characters');
+      console.log('First 200 characters of CSV:', csvContent.substring(0, 200));
+      
       const lines = csvContent.split('\n');
       console.log(`CSV has ${lines.length} lines`);
       
@@ -45,7 +50,7 @@ export class DJDataLoader {
         const fields = this.parseCSVLine(line);
         console.log(`Line ${i}: ${fields.length} fields, first field: "${fields[0] || 'undefined'}"`);
         
-        if (fields.length >= 8 && fields[0]) {
+        if (fields.length >= 8 && fields[0] && fields[0].trim()) {
           const djInfo: DJInfo = {
             name: fields[0]?.replace(/"/g, '').trim() || '',
             shortDescription: fields[2]?.replace(/"/g, '').trim() || '',
