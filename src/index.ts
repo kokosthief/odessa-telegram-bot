@@ -70,6 +70,7 @@ export class OdessaScheduleGenerator {
   async generateEnhancedTodaySchedule(): Promise<{ text: string; photos?: string[]; keyboard?: any }> {
     try {
       console.log('🎭 ENHANCED METHOD CALLED - Generating enhanced today\'s schedule...');
+      console.log('🔍 This is the ENHANCED method with Wix integration!');
       
       const today = new Date();
       console.log(`📅 Today's date: ${today.toDateString()}`);
