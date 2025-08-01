@@ -94,18 +94,14 @@ export class WixDJLoader {
       const requestBody = {
         collectionId: 'Team',
         query: {
-          filter: {
-            "Name": {
-              $eq: djName
-            }
-          },
           paging: {
-            limit: 1
+            limit: 10
           }
         }
       };
 
       console.log(`📤 Request body:`, JSON.stringify(requestBody, null, 2));
+      console.log(`🌐 Making request to: ${this.baseUrl}/items/query`);
 
       const response = await fetch(`${this.baseUrl}/items/query`, {
         method: 'POST',
@@ -130,6 +126,7 @@ export class WixDJLoader {
           'Authorization': this.apiKey ? 'Bearer [HIDDEN]' : 'NOT SET',
           'wix-site-id': this.siteId || 'NOT SET'
         });
+        console.error(`   Full error response:`, errorText);
         throw new Error(`Wix API error: ${response.status} ${response.statusText}`);
       }
 

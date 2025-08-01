@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v2.2 - Fixed Authorization header format
+// VERSION: Enhanced Wix Integration v2.3 - Simplified query for testing
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)
