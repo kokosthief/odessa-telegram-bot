@@ -34,6 +34,10 @@ export class WixDJLoader {
     this.apiKey = process.env['WIX_API_KEY'] || '';
     this.siteId = process.env['WIX_SITE_ID'] || '';
     this.baseUrl = 'https://www.wixapis.com/wix-data/v2';
+    console.log(`🔧 WixDJLoader initialized with:`);
+    console.log(`   Base URL: ${this.baseUrl}`);
+    console.log(`   API Key: ${this.apiKey ? '✅ Set' : '❌ Not set'}`);
+    console.log(`   Site ID: ${this.siteId ? '✅ Set' : '❌ Not set'}`);
     this.fallbackLoader = new DJLoader();
     this.cache = new Map();
     this.cacheDuration = parseInt(process.env['WIX_CACHE_DURATION'] || '3600') * 1000; // Convert to milliseconds
@@ -107,7 +111,7 @@ export class WixDJLoader {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': this.apiKey,
+          'Authorization': `Bearer ${this.apiKey}`,
           'wix-site-id': this.siteId
         },
         body: JSON.stringify(requestBody)
@@ -119,6 +123,13 @@ export class WixDJLoader {
         const errorText = await response.text();
         console.error(`❌ Wix API error: ${response.status} ${response.statusText}`);
         console.error(`   Error details: ${errorText}`);
+        console.error(`   Request URL: ${this.baseUrl}/items/query`);
+        console.error(`   Request body:`, JSON.stringify(requestBody, null, 2));
+        console.error(`   Headers:`, {
+          'Content-Type': 'application/json',
+          'Authorization': this.apiKey ? 'Bearer [HIDDEN]' : 'NOT SET',
+          'wix-site-id': this.siteId || 'NOT SET'
+        });
         throw new Error(`Wix API error: ${response.status} ${response.statusText}`);
       }
 
