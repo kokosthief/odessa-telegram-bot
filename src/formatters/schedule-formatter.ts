@@ -1,11 +1,14 @@
 import { Event } from '../types/event';
 import { DJLoader } from '../utils/dj-loader';
+import { DJDataLoader } from '../utils/dj-data-loader';
 
 export class ScheduleFormatter {
   private djLoader: DJLoader;
+  private djDataLoader: DJDataLoader;
 
   constructor() {
     this.djLoader = new DJLoader();
+    this.djDataLoader = new DJDataLoader();
   }
 
   /**
@@ -204,27 +207,48 @@ export class ScheduleFormatter {
     // Generate intro text for today
     const introText = `🎭 <b>Today's Schedule</b> (${dayName})`;
     
-    // Format today's events
+    // Format today's events with enhanced DJ info
     const eventLines = events.map(event => {
       const eventType = this.formatEventType(event.eventType);
       const djName = event.djName || 'TBA';
       
-      // Check if DJ has a link and create hyperlink
-      const djInfo = this.djLoader.getDJInfo(djName);
+      // Get enhanced DJ info from CSV
+      const djInfo = this.djDataLoader.getDJInfo(djName);
+      const onlineLink = djInfo ? this.djDataLoader.getBestOnlineLink(djInfo) : null;
+      
       let eventDescription: string;
       
-      if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
-        const link = djInfo.link;
-        eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+      if (djInfo && onlineLink) {
+        eventDescription = `<b>${eventType} W/ <a href="${onlineLink.url}">${djName}</a></b>`;
       } else {
-        eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+        // Fallback to original DJ loader
+        const fallbackDJInfo = this.djLoader.getDJInfo(djName);
+        if (fallbackDJInfo && fallbackDJInfo.link && fallbackDJInfo.link.trim() !== '') {
+          const link = fallbackDJInfo.link;
+          eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+        } else {
+          eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+        }
       }
       
-      return `🎵 ${eventDescription}`;
+      let eventText = `🎵 ${eventDescription}`;
+      
+      // Add DJ description and online link if available
+      if (djInfo) {
+        if (djInfo.shortDescription && djInfo.shortDescription.trim()) {
+          eventText += `\n💭 ${djInfo.shortDescription}`;
+        }
+        
+        if (onlineLink) {
+          eventText += `\n🎧 <b>Listen to them online:</b> <a href="${onlineLink.url}">${onlineLink.platform}</a>`;
+        }
+      }
+      
+      return eventText;
     });
     
     // Join events with line breaks
-    const eventsText = eventLines.join('\n');
+    const eventsText = eventLines.join('\n\n');
     
     return `${introText}\n\n${eventsText}`;
   }
