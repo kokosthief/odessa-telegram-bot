@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v2.4 - Added collection structure debugging
+// VERSION: Enhanced Wix Integration v2.5 - Fixed field names based on collection structure
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)

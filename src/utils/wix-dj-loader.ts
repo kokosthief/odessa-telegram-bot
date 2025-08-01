@@ -2,15 +2,14 @@ import { DJLoader } from './dj-loader';
 
 export interface WixDJData {
   _id: string;
-  Name: string;
-  Slug?: string;
-  Photo?: string;
-  "Short Description"?: string;
-  "Long Description"?: string;
-  SoundCloud?: string;
-  Instagram?: string;
-  Website?: string;
-  Email?: string;
+  title: string;
+  photo?: string;
+  shortDescription?: string;
+  longDescription?: string;
+  website?: string; // SoundCloud
+  website1?: string; // Website
+  website2?: string; // Instagram
+  email?: string;
 }
 
 export interface WixQueryResponse {
@@ -116,8 +115,13 @@ export class WixDJLoader {
       const requestBody = {
         collectionId: 'Team',
         query: {
+          filter: {
+            title: {
+              $eq: djName
+            }
+          },
           paging: {
-            limit: 10
+            limit: 1
           }
         }
       };
@@ -184,12 +188,12 @@ export class WixDJLoader {
     
     if (wixData) {
       return {
-        name: wixData.Name,
-        photo: wixData.Photo || undefined,
-        shortDescription: wixData["Short Description"] || undefined,
-        soundcloudUrl: wixData.SoundCloud || undefined,
-        instagramUrl: wixData.Instagram || undefined,
-        website: wixData.Website || undefined
+        name: wixData.title,
+        photo: wixData.photo || undefined,
+        shortDescription: wixData.shortDescription || undefined,
+        soundcloudUrl: wixData.website || undefined, // SoundCloud URL
+        instagramUrl: wixData.website2 || undefined, // Instagram URL
+        website: wixData.website1 || undefined // Website URL
       };
     }
 
