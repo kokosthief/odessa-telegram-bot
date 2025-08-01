@@ -13,61 +13,94 @@ export class HipsyScraper {
   }
 
   /**
-   * Fetch events from Hipsy.nl API
-   * Based on the real API documentation provided
+   * Fetch events from Hipsy.nl API with retry logic
    */
   async getEvents(page: number = 1, period: 'past' | 'upcoming' | 'all' = 'upcoming', limit: number = 50): Promise<ScrapingResult> {
-    try {
-      console.log(`Fetching events from Hipsy.nl API page ${page}, period: ${period}`);
-      
-      const response = await axios.get(`${this.baseUrl}/organisation/${this.organisationSlug}/events`, {
-        params: {
-          page,
-          limit,
-          period
-        },
-        timeout: 10000,
-      });
+    const maxRetries = 2;
+    let lastError: any = null;
 
-      if (!response.data || !response.data.data || !Array.isArray(response.data.data)) {
-        console.error('Invalid response format from Hipsy.nl API');
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Fetching events from Hipsy.nl API page ${page}, period: ${period} (attempt ${attempt}/${maxRetries})`);
+        
+        const response = await axios.get(`${this.baseUrl}/organisation/${this.organisationSlug}/events`, {
+          params: {
+            page,
+            limit,
+            period
+          },
+          timeout: 30000, // Increased from 10000ms to 30000ms (30 seconds)
+        });
+
+        if (!response.data || !response.data.data || !Array.isArray(response.data.data)) {
+          console.error('Invalid response format from Hipsy.nl API');
+          return {
+            events: [],
+            totalCount: 0,
+            success: false,
+            error: 'Invalid response format'
+          };
+        }
+
+        const events: Event[] = response.data.data.map((event: any) => ({
+          id: event.id.toString(),
+          title: event.title,
+          date: event.date,
+          picture: event.picture || event.picture_small || 'https://via.placeholder.com/150',
+          ticketUrl: event.url_ticketshop || event.url_hipsy,
+          originalDate: event.date,
+          djName: this.extractDJName(event.title),
+          eventType: this.classifyEventType(event.title),
+          description: event.description || ''
+        }));
+
+        console.log(`Successfully fetched ${events.length} events from Hipsy.nl API`);
+        
         return {
-          events: [],
-          totalCount: 0,
-          success: false,
-          error: 'Invalid response format'
+          events,
+          totalCount: events.length,
+          success: true
         };
+
+      } catch (error) {
+        lastError = error;
+        console.error(`Error fetching events from Hipsy.nl API (attempt ${attempt}/${maxRetries}):`, error);
+        
+        // If this is the last attempt, return the error
+        if (attempt === maxRetries) {
+          // Handle timeout errors specifically
+          if (error && typeof error === 'object' && 'code' in error && error.code === 'ECONNABORTED') {
+            console.error('API request timed out after all retries, returning empty result');
+            return {
+              events: [],
+              totalCount: 0,
+              success: false,
+              error: 'API request timed out'
+            };
+          }
+          
+          return {
+            events: [],
+            totalCount: 0,
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          };
+        }
+        
+        // Wait before retrying (exponential backoff)
+        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s
+        console.log(`Retrying in ${delay}ms...`);
+        await this.delay(delay);
       }
-
-      const events: Event[] = response.data.data.map((event: any) => ({
-        id: event.id.toString(),
-        title: event.title,
-        date: event.date,
-        picture: event.picture || event.picture_small || 'https://via.placeholder.com/150',
-        ticketUrl: event.url_ticketshop || event.url_hipsy,
-        originalDate: event.date,
-        djName: this.extractDJName(event.title),
-        eventType: this.classifyEventType(event.title),
-        description: event.description || ''
-      }));
-
-      console.log(`Successfully fetched ${events.length} events from Hipsy.nl API`);
-      
-      return {
-        events,
-        totalCount: events.length,
-        success: true
-      };
-
-    } catch (error) {
-      console.error('Error fetching events from Hipsy.nl API:', error);
-      return {
-        events: [],
-        totalCount: 0,
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
     }
+
+    // This should never be reached, but just in case
+    return {
+      events: [],
+      totalCount: 0,
+      success: false,
+      error: 'All retry attempts failed'
+    };
   }
 
   /**
