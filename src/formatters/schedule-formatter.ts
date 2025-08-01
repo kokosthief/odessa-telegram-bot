@@ -170,10 +170,63 @@ export class ScheduleFormatter {
   }
 
   /**
-   * Format schedule with DJ social media links
+   * Format schedule with DJ links
    */
   formatScheduleWithDJLinks(events: Event[]): string {
-    return this.formatWeeklySchedule(events);
+    if (events.length === 0) {
+      return 'No events found for this week.';
+    }
+
+    // Group events by day of week
+    const eventsByDay = this.groupEventsByDay(events);
+    
+    // Generate intro text
+    const introText = this.generateIntroText();
+    
+    // Format schedule lines
+    const scheduleLines = this.formatScheduleLines(eventsByDay);
+    
+    // Combine into final format
+    return `${introText}\n\n${scheduleLines}`;
+  }
+
+  /**
+   * Format today's schedule specifically
+   */
+  formatTodaySchedule(events: Event[]): string {
+    if (events.length === 0) {
+      return '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.';
+    }
+
+    const today = new Date();
+    const dayName = this.getDayName(today);
+    
+    // Generate intro text for today
+    const introText = `🎭 <b>Today's Schedule</b> (${dayName})`;
+    
+    // Format today's events
+    const eventLines = events.map(event => {
+      const eventType = this.formatEventType(event.eventType);
+      const djName = event.djName || 'TBA';
+      
+      // Check if DJ has a link and create hyperlink
+      const djInfo = this.djLoader.getDJInfo(djName);
+      let eventDescription: string;
+      
+      if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
+        const link = djInfo.link;
+        eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+      } else {
+        eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+      }
+      
+      return `🎵 ${eventDescription}`;
+    });
+    
+    // Join events with line breaks
+    const eventsText = eventLines.join('\n');
+    
+    return `${introText}\n\n${eventsText}`;
   }
 
 } 

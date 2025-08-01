@@ -60,6 +60,40 @@ export class OdessaScheduleGenerator {
       throw new Error(`Failed to generate schedule: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
+
+  /**
+   * Generate schedule for today only
+   */
+  async generateTodaySchedule(): Promise<string> {
+    try {
+      console.log('Generating today\'s schedule...');
+      
+      const today = new Date();
+      const events = await this.scraper.getEventsForWeek(today);
+      
+      // Filter events for today only
+      const todayEvents = events.filter(event => {
+        const eventDate = new Date(event.date);
+        return eventDate.toDateString() === today.toDateString();
+      });
+      
+      if (todayEvents.length === 0) {
+        return '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.';
+      }
+      
+      console.log(`Found ${todayEvents.length} events for today`);
+      
+      // Format today's events
+      const formattedToday = this.formatter.formatTodaySchedule(todayEvents);
+      
+      console.log('Today\'s schedule generated successfully');
+      return formattedToday;
+      
+    } catch (error) {
+      console.error('Error generating today schedule:', error);
+      throw new Error(`Failed to generate today's schedule: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 }
 
 // Export for use in API routes

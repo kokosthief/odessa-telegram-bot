@@ -50,6 +50,7 @@ I can help you get the latest schedule for Odessa boat events in Amsterdam.
 
 <b>Available commands:</b>
 • /schedule - Get the current week's schedule
+• /whosplaying - Check who is playing today
 • /help - Show this help message
 
 <b>Usage:</b>
@@ -64,6 +65,7 @@ Just send /schedule to get started! 🌴🎶`;
 
 <b>Commands:</b>
 • /schedule - Get the current week's schedule with DJ information and ticket links
+• /whosplaying - Check who is playing today
 • /help - Show this help message
 • /getfileid - (Admin) Store video file_id for faster uploads
 • /setfileid <id> - (Admin) Manually set video file_id
@@ -78,6 +80,7 @@ Just send /schedule to get started! 🌴🎶`;
 • Direct ticket booking links
 • Works in groups and direct messages
 • Optimized video uploads using cached file_id
+• Today's schedule checking
 
 <b>Rate Limiting:</b>
 • You can request a schedule once every 60 seconds to prevent spam
@@ -152,6 +155,22 @@ If this problem persists, contact the bot administrator.`;
             await sendTelegramMessage(chat.id, `✅ <b>Video file_id manually set!</b>\n\nFile ID: <code>${fileId}</code>\n\nFuture schedule messages will use this cached video.`);
           } else {
             await sendTelegramMessage(chat.id, `❌ <b>Invalid file_id</b>\n\nUsage: /setfileid <file_id>\n\nExample: /setfileid AQADAgADqQAD...`);
+          }
+        } else if (text === '/whosplaying' || text.startsWith('/whosplaying@')) {
+          try {
+            // Generate today's schedule from Hipsy data
+            const generator = new OdessaScheduleGenerator();
+            const todaySchedule = await generator.generateTodaySchedule();
+            
+            await sendTelegramMessage(chat.id, todaySchedule);
+          } catch (error) {
+            console.error('Error generating today schedule:', error);
+            const errorMessage = `❌ <b>Error fetching today's schedule</b>
+
+Sorry, I couldn't fetch today's schedule. Please try again later.
+
+If this problem persists, contact the bot administrator.`;
+            await sendTelegramMessage(chat.id, errorMessage);
           }
         } else {
           // Test response for any other message
