@@ -115,19 +115,15 @@ export class WixDJLoader {
       const requestBody = {
         collectionId: 'Team',
         query: {
-          filter: {
-            title: {
-              $eq: djName
-            }
-          },
           paging: {
-            limit: 1
+            limit: 5
           }
         }
       };
 
       console.log(`📤 Request body:`, JSON.stringify(requestBody, null, 2));
       console.log(`🌐 Making request to: ${this.baseUrl}/items/query`);
+      console.log(`🔍 Querying for DJ: "${djName}"`);
 
       const response = await fetch(`${this.baseUrl}/items/query`, {
         method: 'POST',
@@ -168,6 +164,11 @@ export class WixDJLoader {
       }
     } catch (error) {
       console.error('❌ Wix API query failed:', error);
+      console.error('   Error type:', typeof error);
+      if (error instanceof Error) {
+        console.error('   Error message:', error.message);
+        console.error('   Error stack:', error.stack);
+      }
       return null;
     }
   }
