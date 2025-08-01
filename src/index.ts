@@ -72,6 +72,7 @@ export class OdessaScheduleGenerator {
       console.log('Generating enhanced today\'s schedule...');
       
       const today = new Date();
+      console.log(`📅 Today's date: ${today.toDateString()}`);
       
       // Get events from the scraper directly
       const result = await this.scraper.getEvents(1, 'upcoming', 10);
@@ -102,6 +103,7 @@ export class OdessaScheduleGenerator {
       const formattedToday = await this.formatter.formatEnhancedTodaySchedule(todayEvents);
       
       console.log('Enhanced today\'s schedule generated successfully');
+      console.log('🎭 Enhanced formatting completed with Wix integration');
       return formattedToday;
       
     } catch (error) {
