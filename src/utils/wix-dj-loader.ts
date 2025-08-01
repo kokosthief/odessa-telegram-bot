@@ -91,6 +91,28 @@ export class WixDJLoader {
     console.log(`   Site ID: ${this.siteId ? '✅ Set' : '❌ Not set'}`);
 
     try {
+      // First, let's test if we can access the collection
+      console.log('🔍 Testing collection access...');
+      const collectionResponse = await fetch(`${this.baseUrl}/collections/Team`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+          'wix-site-id': this.siteId
+        }
+      });
+
+      console.log(`📥 Collection access response: ${collectionResponse.status} ${collectionResponse.statusText}`);
+      
+      if (!collectionResponse.ok) {
+        const errorText = await collectionResponse.text();
+        console.error(`❌ Cannot access collection: ${errorText}`);
+        return null;
+      }
+
+      const collectionData = await collectionResponse.json();
+      console.log('✅ Collection structure:', JSON.stringify(collectionData, null, 2));
+
       const requestBody = {
         collectionId: 'Team',
         query: {
@@ -231,23 +253,33 @@ export class WixDJLoader {
    */
   async testConnection(): Promise<boolean> {
     try {
-      if (!this.apiKey || !this.siteId) {
-        console.warn('Wix API credentials not configured');
-        return false;
-      }
-
-      const response = await fetch(`${this.baseUrl}/collections`, {
+      console.log('🧪 Testing Wix API connection...');
+      console.log(`   API Key: ${this.apiKey ? '✅ Set' : '❌ Not set'}`);
+      console.log(`   Site ID: ${this.siteId ? '✅ Set' : '❌ Not set'}`);
+      
+      // Try to get collection details first
+      const response = await fetch(`${this.baseUrl}/collections/Team`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': this.apiKey,
+          'Authorization': `Bearer ${this.apiKey}`,
           'wix-site-id': this.siteId
         }
       });
 
-      return response.ok;
+      console.log(`📥 Collection test response: ${response.status} ${response.statusText}`);
+      
+      if (response.ok) {
+        const collectionData = await response.json();
+        console.log('✅ Collection details:', JSON.stringify(collectionData, null, 2));
+        return true;
+      } else {
+        const errorText = await response.text();
+        console.error(`❌ Collection test failed: ${errorText}`);
+        return false;
+      }
     } catch (error) {
-      console.error('Wix API connection test failed:', error);
+      console.error('❌ Connection test failed:', error);
       return false;
     }
   }
