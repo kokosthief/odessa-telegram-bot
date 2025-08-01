@@ -69,7 +69,7 @@ export class OdessaScheduleGenerator {
    */
   async generateEnhancedTodaySchedule(): Promise<{ text: string; photos?: string[]; keyboard?: any }> {
     try {
-      console.log('Generating enhanced today\'s schedule...');
+      console.log('🎭 ENHANCED METHOD CALLED - Generating enhanced today\'s schedule...');
       
       const today = new Date();
       console.log(`📅 Today's date: ${today.toDateString()}`);
