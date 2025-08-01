@@ -8,7 +8,9 @@ export class ScheduleFormatter {
 
   constructor() {
     this.djLoader = new DJLoader();
+    console.log('Initializing DJDataLoader...');
     this.djDataLoader = new DJDataLoader();
+    console.log('DJDataLoader initialized');
   }
 
   /**
@@ -212,9 +214,13 @@ export class ScheduleFormatter {
       const eventType = this.formatEventType(event.eventType);
       const djName = event.djName || 'TBA';
       
+      console.log(`Processing event with DJ: "${djName}"`);
+      
       // Get enhanced DJ info from CSV
       const djInfo = this.djDataLoader.getDJInfo(djName);
       const onlineLink = djInfo ? this.djDataLoader.getBestOnlineLink(djInfo) : null;
+      
+      console.log(`DJ info found: ${djInfo ? 'YES' : 'NO'}, Online link: ${onlineLink ? 'YES' : 'NO'}`);
       
       let eventDescription: string;
       
