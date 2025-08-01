@@ -32,7 +32,7 @@ export class WixDJLoader {
   constructor() {
     this.apiKey = process.env['WIX_API_KEY'] || '';
     this.siteId = process.env['WIX_SITE_ID'] || '';
-    this.baseUrl = 'https://www.wixapis.com/graphql/v1';
+    this.baseUrl = 'https://www.wixapis.com/wix-data/v2';
     console.log(`🔧 WixDJLoader initialized with:`);
     console.log(`   Base URL: ${this.baseUrl}`);
     console.log(`   API Key: ${this.apiKey ? '✅ Set' : '❌ Not set'}`);
@@ -112,37 +112,13 @@ export class WixDJLoader {
       const collectionData = await collectionResponse.json();
       console.log('✅ Collection structure:', JSON.stringify(collectionData, null, 2));
 
-      const query = `
-        query GetDJData($queryInput: CloudDataDataQueryDataItemsRequestInput) {
-          dataItemsV2DataItems(queryInput: $queryInput) {
-            items {
-              data
-              id
-              dataCollectionId
-            }
-            pageInfo {
-              hasNextPage
-              hasPreviousPage
-              totalCount
-            }
-          }
-        }
-      `;
-
-      const variables = {
-        queryInput: {
-          dataCollectionId: "Team",
-          query: {
-            paging: {
-              limit: 5
-            }
-          }
-        }
-      };
-
       const requestBody = {
-        query: query,
-        variables: variables
+        dataCollectionId: "Team",
+        query: {
+          paging: {
+            limit: 5
+          }
+        }
       };
 
       console.log(`📤 Request body:`, JSON.stringify(requestBody, null, 2));
@@ -179,17 +155,16 @@ export class WixDJLoader {
       const result = await response.json() as any;
       console.log(`📊 Response data:`, JSON.stringify(result, null, 2));
       
-      if (result.data?.dataItemsV2DataItems?.items && result.data.dataItemsV2DataItems.items.length > 0) {
-        console.log(`✅ Found Wix data: ${result.data.dataItemsV2DataItems.items.length} items`);
+      if (result.data && result.data.length > 0) {
+        console.log(`✅ Found Wix data: ${result.data.length} items`);
         
-        // Convert GraphQL response to our format
-        const items = result.data.dataItemsV2DataItems.items;
-        const firstItem = items[0];
+        // Convert REST response to our format
+        const firstItem = result.data[0];
         
         if (firstItem && firstItem.data) {
-          // Extract data from the GraphQL response
+          // Extract data from the REST response
           const djData: WixDJData = {
-            _id: firstItem.id,
+            _id: firstItem._id || firstItem.id,
             title: firstItem.data.title || '',
             photo: firstItem.data.photo || undefined,
             shortDescription: firstItem.data.shortDescription || undefined,
