@@ -32,7 +32,7 @@ export class WixDJLoader {
   constructor() {
     this.apiKey = process.env['WIX_API_KEY'] || '';
     this.siteId = process.env['WIX_SITE_ID'] || '';
-    this.baseUrl = 'https://www.wixapis.com/wix-data/v2';
+    this.baseUrl = 'https://www.wixapis.com/wix-data/v1';
     console.log(`🔧 WixDJLoader initialized with:`);
     console.log(`   Base URL: ${this.baseUrl}`);
     console.log(`   API Key: ${this.apiKey ? '✅ Set' : '❌ Not set'}`);
