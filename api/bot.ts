@@ -151,6 +151,9 @@ If this problem persists, contact the bot administrator.`;
         } else {
           await sendTelegramMessage(chat.id, `❌ <b>Invalid file_id</b>\n\nUsage: /setfileid <file_id>\n\nExample: /setfileid AQADAgADqQAD...`);
         }
+      } else {
+        // Test response for any other message
+        await sendTelegramMessage(chat.id, `🤖 <b>Bot is working!</b>\n\nYou sent: "${text}"\n\nTry /schedule or /help`);
       }
     }
 
