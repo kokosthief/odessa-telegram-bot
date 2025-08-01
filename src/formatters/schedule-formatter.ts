@@ -8,7 +8,9 @@ export class ScheduleFormatter {
 
   constructor() {
     this.djLoader = new DJLoader();
+    console.log('🔧 Creating WixDJLoader...');
     this.wixDJLoader = new WixDJLoader();
+    console.log('✅ WixDJLoader created successfully');
   }
 
   /**
@@ -185,6 +187,10 @@ export class ScheduleFormatter {
    * Format today's schedule with enhanced DJ information
    */
   async formatEnhancedTodaySchedule(events: Event[]): Promise<{ text: string; photos?: string[]; keyboard?: any }> {
+    console.log('🎭 Formatting enhanced today schedule...');
+    console.log(`📊 Processing ${events.length} events`);
+    console.log('🔍 WixDJLoader available:', !!this.wixDJLoader);
+    
     if (events.length === 0) {
       return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
     }
