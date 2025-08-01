@@ -71,7 +71,7 @@ export class OdessaScheduleGenerator {
       const today = new Date();
       
       // Get events from the scraper directly
-      const result = await this.scraper.getEvents(1, 'upcoming', 100);
+      const result = await this.scraper.getEvents(1, 'upcoming', 20);
       
       if (!result.success) {
         throw new Error('Failed to fetch events from Hipsy');

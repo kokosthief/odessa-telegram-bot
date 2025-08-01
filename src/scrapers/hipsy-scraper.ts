@@ -126,11 +126,12 @@ export class HipsyScraper {
   async getEventsForWeek(startDate: Date): Promise<Event[]> {
     const allEvents: Event[] = [];
     let currentPage = 1;
-    const maxPages = 10; // Safety limit
+    const maxPages = 5; // Reduced from 10 to 5
+    const maxEvents = 30; // Stop when we have enough events
 
     // First get upcoming events
-    while (currentPage <= maxPages) {
-      const result = await this.getEvents(currentPage, 'upcoming', 100);
+    while (currentPage <= maxPages && allEvents.length < maxEvents) {
+      const result = await this.getEvents(currentPage, 'upcoming', 30); // Reduced from 100 to 30
       
       if (!result.success) {
         console.error(`Failed to fetch upcoming page ${currentPage}:`, result.error);
@@ -145,34 +146,46 @@ export class HipsyScraper {
       const weekEvents = this.filterEventsForWeek(result.events, startDate);
       allEvents.push(...weekEvents);
 
-      currentPage++;
-      
-      // Add delay to be respectful to the API
-      await this.delay(1000);
-    }
-
-    // Reset and get past events too (in case we're mid-week)
-    currentPage = 1;
-    while (currentPage <= maxPages) {
-      const result = await this.getEvents(currentPage, 'past', 100);
-      
-      if (!result.success) {
-        console.error(`Failed to fetch past page ${currentPage}:`, result.error);
+      // Early termination if we have enough events
+      if (allEvents.length >= maxEvents) {
         break;
       }
 
-      if (result.events.length === 0) {
-        break; // No more events
-      }
-
-      // Filter events for the target week (Monday to Sunday)
-      const weekEvents = this.filterEventsForWeek(result.events, startDate);
-      allEvents.push(...weekEvents);
-
       currentPage++;
       
       // Add delay to be respectful to the API
-      await this.delay(1000);
+      await this.delay(500); // Reduced from 1000ms to 500ms
+    }
+
+    // Only get past events if we don't have enough events yet
+    if (allEvents.length < maxEvents) {
+      currentPage = 1;
+      while (currentPage <= maxPages && allEvents.length < maxEvents) {
+        const result = await this.getEvents(currentPage, 'past', 30); // Reduced from 100 to 30
+        
+        if (!result.success) {
+          console.error(`Failed to fetch past page ${currentPage}:`, result.error);
+          break;
+        }
+
+        if (result.events.length === 0) {
+          break; // No more events
+        }
+
+        // Filter events for the target week (Monday to Sunday)
+        const weekEvents = this.filterEventsForWeek(result.events, startDate);
+        allEvents.push(...weekEvents);
+
+        // Early termination if we have enough events
+        if (allEvents.length >= maxEvents) {
+          break;
+        }
+
+        currentPage++;
+        
+        // Add delay to be respectful to the API
+        await this.delay(500); // Reduced from 1000ms to 500ms
+      }
     }
 
     // Sort events by date
