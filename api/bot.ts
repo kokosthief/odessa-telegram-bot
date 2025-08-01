@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v2.8 - Added Wix loader debugging
+// VERSION: Enhanced Wix Integration v2.9 - Switched to GraphQL API
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)
