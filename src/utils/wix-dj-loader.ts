@@ -2,15 +2,15 @@ import { DJLoader } from './dj-loader';
 
 export interface WixDJData {
   _id: string;
-  name: string;
-  slug?: string;
-  photo?: string;
-  shortDescription?: string;
-  longDescription?: string;
-  soundcloudUrl?: string;
-  instagramUrl?: string;
-  website?: string;
-  email?: string;
+  Name: string;
+  Slug?: string;
+  Photo?: string;
+  "Short Description"?: string;
+  "Long Description"?: string;
+  SoundCloud?: string;
+  Instagram?: string;
+  Website?: string;
+  Email?: string;
 }
 
 export interface WixQueryResponse {
@@ -88,10 +88,10 @@ export class WixDJLoader {
 
     try {
       const requestBody = {
-        collectionId: 'Musical Facilitators',
+        collectionId: 'Team',
         query: {
           filter: {
-            name: {
+            "Name": {
               $eq: djName
             }
           },
@@ -154,12 +154,12 @@ export class WixDJLoader {
     
     if (wixData) {
       return {
-        name: wixData.name,
-        photo: wixData.photo || undefined,
-        shortDescription: wixData.shortDescription || undefined,
-        soundcloudUrl: wixData.soundcloudUrl || undefined,
-        instagramUrl: wixData.instagramUrl || undefined,
-        website: wixData.website || undefined
+        name: wixData.Name,
+        photo: wixData.Photo || undefined,
+        shortDescription: wixData["Short Description"] || undefined,
+        soundcloudUrl: wixData.SoundCloud || undefined,
+        instagramUrl: wixData.Instagram || undefined,
+        website: wixData.Website || undefined
       };
     }
 

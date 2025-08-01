@@ -50,9 +50,9 @@ async function debugWixIntegration() {
     
     if (djInfo) {
       console.log('   ✅ Found DJ in Wix:');
-      console.log(`      Name: ${djInfo.name}`);
-      console.log(`      Photo: ${djInfo.photo ? 'Available' : 'Not available'}`);
-      console.log(`      Description: ${djInfo.shortDescription ? 'Available' : 'Not available'}`);
+      console.log(`      Name: ${djInfo.Name}`);
+      console.log(`      Photo: ${djInfo.Photo ? 'Available' : 'Not available'}`);
+      console.log(`      Description: ${djInfo["Short Description"] ? 'Available' : 'Not available'}`);
     } else {
       console.log('   ❌ DJ not found in Wix');
     }
