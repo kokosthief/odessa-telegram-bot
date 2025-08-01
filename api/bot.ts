@@ -64,6 +64,7 @@ Just send /schedule to get started! 🌴🎶`;
 • /schedule - Get the current week's schedule with DJ information and ticket links
 • /help - Show this help message
 • /getfileid - (Admin) Store video file_id for faster uploads
+• /setfileid <id> - (Admin) Manually set video file_id
 
 <b>Usage:</b>
 • In DMs: Just send /schedule
@@ -114,16 +115,41 @@ If this problem persists, contact the bot administrator.`;
       } else if (text === '/getfileid' || text.startsWith('/getfileid@')) {
         // Admin command to get file_id from a video message
         // Reply to a video message with this command to get its file_id
-        if (update.message && update.message.reply_to_message && update.message.reply_to_message.video) {
-          const fileId = extractVideoFileId(update.message.reply_to_message);
+        console.log('getfileid command received');
+        console.log('Message structure:', JSON.stringify(update.message, null, 2));
+        
+        if (update.message && update.message.reply_to_message) {
+          console.log('Reply message structure:', JSON.stringify(update.message.reply_to_message, null, 2));
+          
+          // Check for video in different possible locations
+          const replyMessage = update.message.reply_to_message;
+          let fileId = null;
+          
+          if (replyMessage.video) {
+            fileId = replyMessage.video.file_id;
+            console.log('Found video in replyMessage.video');
+          } else if (replyMessage.document && replyMessage.document.mime_type && replyMessage.document.mime_type.startsWith('video/')) {
+            fileId = replyMessage.document.file_id;
+            console.log('Found video in replyMessage.document');
+          }
+          
           if (fileId) {
             setVideoFileId(fileId);
             await sendTelegramMessage(chat.id, `✅ <b>Video file_id stored!</b>\n\nFile ID: <code>${fileId}</code>\n\nFuture schedule messages will use this cached video.`);
           } else {
-            await sendTelegramMessage(chat.id, `❌ <b>No video found</b>\n\nPlease reply to a video message with this command.`);
+            await sendTelegramMessage(chat.id, `❌ <b>No video found in reply</b>\n\nPlease reply to a video message with this command.\n\nDebug info: ${JSON.stringify(replyMessage, null, 2)}`);
           }
         } else {
           await sendTelegramMessage(chat.id, `📋 <b>How to get file_id:</b>\n\n1. Send a video to this chat\n2. Reply to that video with /getfileid\n3. The bot will store the file_id for future use\n\nThis makes future schedule messages much faster!`);
+        }
+      } else if (text.startsWith('/setfileid ')) {
+        // Manual command to set file_id directly
+        const fileId = text.replace('/setfileid ', '').trim();
+        if (fileId && fileId.length > 10) {
+          setVideoFileId(fileId);
+          await sendTelegramMessage(chat.id, `✅ <b>Video file_id manually set!</b>\n\nFile ID: <code>${fileId}</code>\n\nFuture schedule messages will use this cached video.`);
+        } else {
+          await sendTelegramMessage(chat.id, `❌ <b>Invalid file_id</b>\n\nUsage: /setfileid <file_id>\n\nExample: /setfileid AQADAgADqQAD...`);
         }
       }
     }
