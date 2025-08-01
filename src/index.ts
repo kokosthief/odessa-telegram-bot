@@ -69,12 +69,23 @@ export class OdessaScheduleGenerator {
       console.log('Generating today\'s schedule...');
       
       const today = new Date();
-      const events = await this.scraper.getEventsForWeek(today);
+      
+      // Get events from the scraper directly
+      const result = await this.scraper.getEvents(1, 'upcoming', 100);
+      
+      if (!result.success) {
+        throw new Error('Failed to fetch events from Hipsy');
+      }
       
       // Filter events for today only
-      const todayEvents = events.filter(event => {
+      const todayEvents = result.events.filter(event => {
         const eventDate = new Date(event.date);
-        return eventDate.toDateString() === today.toDateString();
+        
+        // Normalize dates to compare only the date part (ignore time)
+        const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        
+        return eventDateOnly.getTime() === todayOnly.getTime();
       });
       
       if (todayEvents.length === 0) {
