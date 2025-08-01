@@ -3,6 +3,23 @@ import { OdessaScheduleGenerator } from '../src/index';
 import fs from 'fs';
 import path from 'path';
 
+// Store the video file_id for reuse
+let videoFileId: string | null = null;
+
+// Function to manually set the video file_id (for admin use)
+function setVideoFileId(fileId: string) {
+  videoFileId = fileId;
+  console.log('Manually set video file_id:', fileId);
+}
+
+// Function to extract file_id from a message (for admin use)
+function extractVideoFileId(message: any): string | null {
+  if (message && message.video && message.video.file_id) {
+    return message.video.file_id;
+  }
+  return null;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -46,6 +63,7 @@ Just send /schedule to get started! 🌴🎶`;
 <b>Commands:</b>
 • /schedule - Get the current week's schedule with DJ information and ticket links
 • /help - Show this help message
+• /getfileid - (Admin) Store video file_id for faster uploads
 
 <b>Usage:</b>
 • In DMs: Just send /schedule
@@ -56,6 +74,7 @@ Just send /schedule to get started! 🌴🎶`;
 • DJ information with social media links
 • Direct ticket booking links
 • Works in groups and direct messages
+• Optimized video uploads using cached file_id
 
 <b>Rate Limiting:</b>
 • You can request a schedule once every 60 seconds to prevent spam
@@ -91,6 +110,20 @@ Sorry, I couldn't fetch the current schedule. Please try again later.
 
 If this problem persists, contact the bot administrator.`;
           await sendTelegramMessage(chat.id, errorMessage);
+        }
+      } else if (text === '/getfileid' || text.startsWith('/getfileid@')) {
+        // Admin command to get file_id from a video message
+        // Reply to a video message with this command to get its file_id
+        if (update.message && update.message.reply_to_message && update.message.reply_to_message.video) {
+          const fileId = extractVideoFileId(update.message.reply_to_message);
+          if (fileId) {
+            setVideoFileId(fileId);
+            await sendTelegramMessage(chat.id, `✅ <b>Video file_id stored!</b>\n\nFile ID: <code>${fileId}</code>\n\nFuture schedule messages will use this cached video.`);
+          } else {
+            await sendTelegramMessage(chat.id, `❌ <b>No video found</b>\n\nPlease reply to a video message with this command.`);
+          }
+        } else {
+          await sendTelegramMessage(chat.id, `📋 <b>How to get file_id:</b>\n\n1. Send a video to this chat\n2. Reply to that video with /getfileid\n3. The bot will store the file_id for future use\n\nThis makes future schedule messages much faster!`);
         }
       }
     }
@@ -131,7 +164,35 @@ async function sendTelegramVideoWithCaption(chatId: number, caption: string, rep
   const { TELEGRAM_BOT_TOKEN } = process.env;
   
   try {
-    // Read the video file from the project directory
+    // If we have a stored file_id, use it (much faster)
+    if (videoFileId) {
+      console.log('Using cached file_id for video upload');
+      const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          video: videoFileId,
+          caption: caption,
+          parse_mode: 'HTML',
+          reply_markup: replyMarkup
+        })
+      });
+
+      if (response.ok) {
+        console.log('Successfully sent video using cached file_id');
+        return;
+      } else {
+        console.log('Cached file_id failed, falling back to file upload');
+        // If file_id fails, clear it and fall back to file upload
+        videoFileId = null;
+      }
+    }
+    
+    // First time or fallback: Upload the video file
+    console.log('Uploading video file to Telegram');
     const videoPath = path.join(process.cwd(), 'Odessa Hero.mp4');
     
     if (!fs.existsSync(videoPath)) {
@@ -158,7 +219,14 @@ async function sendTelegramVideoWithCaption(chatId: number, caption: string, rep
       body: formData
     });
 
-    if (!response.ok) {
+    if (response.ok) {
+      const result = await response.json();
+      // Store the file_id for future use
+      if (result.ok && result.result.video && result.result.video.file_id) {
+        videoFileId = result.result.video.file_id;
+        console.log('Stored video file_id for future use:', videoFileId);
+      }
+    } else {
       console.error('Failed to send video:', await response.text());
       // Fallback to text message if video fails
       await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
