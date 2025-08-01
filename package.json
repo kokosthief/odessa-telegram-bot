@@ -21,6 +21,8 @@
     "test:telegram": "jest --testNamePattern='telegram'",
     "test:e2e": "jest --testNamePattern='e2e'",
     "test:commands": "ts-node src/test-commands.ts",
+    "test:wix-integration": "ts-node src/test-wix-integration.ts",
+    "test:enhanced-whosplaying": "ts-node src/test-enhanced-whosplaying.ts",
     "quick-start": "bash scripts/quick-start.sh",
     "deploy": "bash scripts/deploy.sh",
     "db:migrate": "node scripts/migrate.js",

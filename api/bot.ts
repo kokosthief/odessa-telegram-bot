@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
+// VERSION: Enhanced Wix Integration v2.0 - Force redeploy
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)
@@ -158,18 +159,32 @@ If this problem persists, contact the bot administrator.`;
           }
         } else if (text === '/whosplaying' || text.startsWith('/whosplaying@')) {
           try {
-            // Generate today's schedule from Hipsy data
-            const generator = new OdessaScheduleGenerator();
-            const todaySchedule = await generator.generateTodaySchedule();
+            console.log('🎭 /whosplaying command received - generating enhanced schedule...');
             
-            // Send message with keyboard if available
-            if (todaySchedule.keyboard) {
+            // Generate enhanced today's schedule with Wix DJ data
+            const generator = new OdessaScheduleGenerator();
+            const todaySchedule = await generator.generateEnhancedTodaySchedule();
+            
+            console.log(`📋 Enhanced schedule generated:`);
+            console.log(`   Text length: ${todaySchedule.text.length} characters`);
+            console.log(`   Photos: ${todaySchedule.photos ? todaySchedule.photos.length : 0} photos`);
+            console.log(`   Keyboard: ${todaySchedule.keyboard ? 'Available' : 'Not available'}`);
+            
+            // Send message with photos if available
+            if (todaySchedule.photos && todaySchedule.photos.length > 0) {
+              console.log('📸 Sending message with photos...');
+              await sendTelegramMessageWithPhotos(chat.id, todaySchedule.text, todaySchedule.photos, todaySchedule.keyboard);
+            } else if (todaySchedule.keyboard) {
+              console.log('⌨️ Sending message with keyboard...');
               await sendTelegramMessageWithKeyboard(chat.id, todaySchedule.text, todaySchedule.keyboard);
             } else {
+              console.log('📝 Sending text-only message...');
               await sendTelegramMessage(chat.id, todaySchedule.text);
             }
+            
+            console.log('✅ Enhanced /whosplaying command completed successfully');
           } catch (error) {
-            console.error('Error generating today schedule:', error);
+            console.error('Error generating enhanced today schedule:', error);
             const errorMessage = `❌ <b>Error fetching today's schedule</b>
 
 Sorry, I couldn't fetch today's schedule. Please try again later.
@@ -318,5 +333,68 @@ async function sendTelegramMessageWithKeyboard(chatId: number, text: string, rep
     }
   } catch (error) {
     console.error('Error sending Telegram message with keyboard:', error);
+  }
+}
+
+async function sendTelegramMessageWithPhotos(chatId: number, text: string, photos: string[], replyMarkup?: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  
+  try {
+    // Send the first photo with caption and keyboard
+    const firstPhoto = photos[0];
+    const caption = photos.length > 1 ? `${text}\n\n📸 +${photos.length - 1} more photos` : text;
+    
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        photo: firstPhoto,
+        caption: caption,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Failed to send Telegram photo:', await response.text());
+      // Fallback to text message if photo fails
+      if (replyMarkup) {
+        await sendTelegramMessageWithKeyboard(chatId, text, replyMarkup);
+      } else {
+        await sendTelegramMessage(chatId, text);
+      }
+      return;
+    }
+
+    // Send additional photos without captions
+    for (let i = 1; i < photos.length; i++) {
+      try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            chat_id: chatId,
+            photo: photos[i]
+          })
+        });
+      } catch (error) {
+        console.error(`Failed to send additional photo ${i}:`, error);
+      }
+    }
+    
+    console.log(`Successfully sent ${photos.length} photos to chat ${chatId}`);
+  } catch (error) {
+    console.error('Error sending Telegram photos:', error);
+    // Fallback to text message if photos fail
+    if (replyMarkup) {
+      await sendTelegramMessageWithKeyboard(chatId, text, replyMarkup);
+    } else {
+      await sendTelegramMessage(chatId, text);
+    }
   }
 } 

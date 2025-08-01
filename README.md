@@ -2,13 +2,12 @@
 
 An automated schedule generation tool for Odessa boat events in Amsterdam. This system scrapes event data from Hipsy.no, formats it into custom schedules with DJ information, and posts to Telegram groups with interactive command support.
 
-## 🚀 **PRODUCTION STATUS: READY FOR DEPLOYMENT**
+## 🚀 **PRODUCTION STATUS: LIVE & DEPLOYED**
 
-- **🌐 Live URL**: https://odessa-telegram-bot.vercel.app (needs redeployment)
-- **🤖 Bot Ready**: All code tested and working locally
-- **📊 Webhook Status**: Will be active after deployment
+- **🌐 Live URL**: https://odessa-telegram-bot.vercel.app
+- **🤖 Bot Active**: Receiving and responding to Telegram messages
+- **📊 Webhook Status**: Active and processing commands
 - **📱 Commands Working**: All interactive commands functional
-- **🚀 Deployment**: Ready to deploy to Vercel
 
 ## 📋 **QUICK START**
 
@@ -22,6 +21,10 @@ An automated schedule generation tool for Odessa boat events in Amsterdam. This 
 ```bash
 # Install dependencies
 npm install
+
+# Set up environment variables
+cp env.example .env
+# Edit .env with your actual values
 
 # Start development
 npm run dev

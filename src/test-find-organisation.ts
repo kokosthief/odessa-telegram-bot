@@ -3,7 +3,7 @@ import axios from 'axios';
 async function findOrganisation() {
   console.log('🔍 Finding the correct organisation slug...');
   
-  const apiKey = '14288|n6b1TloPcUTwQRrJxtortKlRNB2yxL7QYSvDzkWCb26ec6a3';
+  const apiKey = process.env['HIPSY_API_KEY'] || '';
   
   try {
     // First, let's try to list all organisations to find the right one

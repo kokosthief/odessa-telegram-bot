@@ -17,9 +17,11 @@ export class OdessaScheduleGenerator {
     try {
       console.log('Starting schedule generation...');
       
-      // Get events for current week (this Wednesday to Sunday)
+      // Get events for upcoming week (next Wednesday to Sunday)
       const today = new Date();
-      const events = await this.scraper.getEventsForWeek(today);
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7); // Look at next week
+      const events = await this.scraper.getEventsForWeek(nextWeek);
       
       if (events.length === 0) {
         console.log('No events found for this week');
@@ -63,7 +65,52 @@ export class OdessaScheduleGenerator {
   }
 
   /**
-   * Generate schedule for today only
+   * Generate enhanced today's schedule with Wix DJ data
+   */
+  async generateEnhancedTodaySchedule(): Promise<{ text: string; photos?: string[]; keyboard?: any }> {
+    try {
+      console.log('Generating enhanced today\'s schedule...');
+      
+      const today = new Date();
+      
+      // Get events from the scraper directly
+      const result = await this.scraper.getEvents(1, 'upcoming', 10);
+      
+      if (!result.success) {
+        throw new Error('Failed to fetch events from Hipsy');
+      }
+      
+      // Filter events for today only
+      const todayEvents = result.events.filter(event => {
+        const eventDate = new Date(event.date);
+        
+        // Normalize dates to compare only the date part (ignore time)
+        const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+        const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        
+        return eventDateOnly.getTime() === todayOnly.getTime();
+      });
+      
+      if (todayEvents.length === 0) {
+        return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
+      }
+      
+      console.log(`Found ${todayEvents.length} events for today`);
+      
+      // Format today's events with enhanced DJ info
+      const formattedToday = await this.formatter.formatEnhancedTodaySchedule(todayEvents);
+      
+      console.log('Enhanced today\'s schedule generated successfully');
+      return formattedToday;
+      
+    } catch (error) {
+      console.error('Error generating enhanced today schedule:', error);
+      throw new Error(`Failed to generate today's schedule: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Generate schedule for today only (legacy method for backward compatibility)
    */
   async generateTodaySchedule(): Promise<{ text: string; keyboard?: any }> {
     try {
@@ -95,8 +142,8 @@ export class OdessaScheduleGenerator {
       
       console.log(`Found ${todayEvents.length} events for today`);
       
-      // Format today's events with Wix DJ data
-      const formattedToday = await this.formatter.formatTodaySchedule(todayEvents);
+      // Format today's events
+      const formattedToday = this.formatter.formatTodaySchedule(todayEvents);
       
       console.log('Today\'s schedule generated successfully');
       return formattedToday;

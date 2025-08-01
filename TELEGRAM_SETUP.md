@@ -32,7 +32,7 @@ TELEGRAM_BOT_TOKEN=your_bot_token_here
 TELEGRAM_CHAT_ID=your_chat_id_here
 
 # Hipsy.nl API Configuration
-HIPSY_API_KEY=14288|n6b1TloPcUTwQRrJxtortKlRNB2yxL7QYSvDzkWCb26ec6a3
+HIPSY_API_KEY=your_hipsy_api_key_here
 HIPSY_ORGANISATION_SLUG=odessa-amsterdam-ecstatic-dance
 
 # Application Configuration

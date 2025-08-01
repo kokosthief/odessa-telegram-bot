@@ -3,7 +3,7 @@ import { Event, ScrapingResult } from '../types/event';
 
 export class HipsyScraper {
   private baseUrl = 'https://api.hipsy.nl/v1';
-  private apiKey = '14288|n6b1TloPcUTwQRrJxtortKlRNB2yxL7QYSvDzkWCb26ec6a3';
+  private apiKey = process.env['HIPSY_API_KEY'] || '';
   private organisationSlug = 'odessa-amsterdam-ecstatic-dance';
 
   constructor() {

@@ -91,7 +91,53 @@ Team-Odessa-Telegram-Bot/
 
 - Node.js (v18 or higher)
 - Telegram Bot Token
-- Hipsy.no access
+- Hipsy.no API access
+
+### Setup Instructions
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/kokosthief/odessa-telegram-bot.git
+   cd odessa-telegram-bot
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your actual values
+   ```
+
+4. **Set up Telegram Bot**
+   - Create a bot via @BotFather on Telegram
+   - Get your bot token and chat ID
+   - Add them to your .env file
+
+5. **Get Hipsy API Key**
+   - Contact Hipsy.nl for API access
+   - Add the API key to your .env file
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+The application uses environment variables for all sensitive configuration. Copy `env.example` to `.env` and fill in your values:
+
+**Required Variables:**
+- `TELEGRAM_BOT_TOKEN` - Your Telegram bot token from @BotFather
+- `TELEGRAM_CHAT_ID` - The chat ID where the bot should post
+- `HIPSY_API_KEY` - Your Hipsy.nl API key
+
+**Optional Variables:**
+- `NODE_ENV` - Set to 'production' for production deployment
+- `LOG_LEVEL` - Logging level (debug, info, warn, error)
+- `TIMEZONE` - Timezone for date handling (default: Europe/Amsterdam)
+
+See `env.example` for the complete list of available variables.
 
 ## 🚀 Usage
 

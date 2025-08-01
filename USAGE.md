@@ -112,8 +112,8 @@ Show help information and available commands.
 The following environment variables are configured in Vercel:
 
 ```
-TELEGRAM_BOT_TOKEN=8356476635:AAG8xzGi7AN-4xdGRe8mmAisef2t_EaO7t4
-TELEGRAM_CHAT_ID=6099054421
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_CHAT_ID=your_chat_id_here
 NODE_ENV=production
 ```
 

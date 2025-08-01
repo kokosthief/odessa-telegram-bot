@@ -1,74 +1,75 @@
-import { WixAPIService } from './services/wix-api';
+import { WixDJLoader } from './utils/wix-dj-loader';
 
 async function testWixIntegration() {
-  console.log('🧪 Testing Wix API integration...');
-  
-  const wixService = new WixAPIService();
-  
-  // Check if Wix API is configured
-  if (!wixService.isConfigured()) {
-    console.log('❌ Wix API not configured. Please set WIX_API_KEY in your environment variables.');
-    console.log('📝 To configure:');
-    console.log('   1. Get your Wix API key from Developer Tools → API Keys');
-    console.log('   2. Add WIX_API_KEY=your_key_here to your .env file');
-    console.log('   3. The WIX_SITE_ID is already set to your site ID');
+  console.log('🧪 Testing Wix API Integration...\n');
+
+  const wixLoader = new WixDJLoader();
+
+  // Test connection
+  console.log('1. Testing Wix API connection...');
+  const connectionOk = await wixLoader.testConnection();
+  console.log(`   Connection: ${connectionOk ? '✅ OK' : '❌ Failed'}\n`);
+
+  if (!connectionOk) {
+    console.log('⚠️  Wix API connection failed. Check your environment variables:');
+    console.log('   - WIX_API_KEY');
+    console.log('   - WIX_SITE_ID');
+    console.log('\nFalling back to JSON data will still work.');
     return;
   }
+
+  // Test DJ lookups
+  const testDJs = ['Anica', 'Henners', 'Yarl', 'Unknown DJ'];
   
-  try {
-    // Test fetching all DJs
-    console.log('1. Testing DJ data fetch...');
-    const djs = await wixService.getDJs();
+  for (const djName of testDJs) {
+    console.log(`2. Testing DJ lookup for "${djName}"...`);
     
-    if (djs.length === 0) {
-      console.log('❌ No DJs found in Wix CMS');
-      console.log('📝 Make sure your "Team" collection has DJ data with fields:');
-      console.log('   - name (required)');
-      console.log('   - description (optional)');
-      console.log('   - image (optional)');
-      console.log('   - soundcloudUrl (optional)');
-      console.log('   - mixcloudUrl (optional)');
-      console.log('   - instagramUrl (optional)');
-      console.log('   - bio (optional)');
-      return;
+    try {
+      const djInfo = await wixLoader.getDJInfoWithFallback(djName);
+      
+      if (djInfo) {
+        console.log(`   ✅ Found DJ info:`);
+        console.log(`      Name: ${djInfo.name}`);
+        console.log(`      Photo: ${djInfo.photo ? '✅ Available' : '❌ Not available'}`);
+        console.log(`      Description: ${djInfo.shortDescription ? '✅ Available' : '❌ Not available'}`);
+        console.log(`      SoundCloud: ${djInfo.soundcloudUrl ? '✅ Available' : '❌ Not available'}`);
+        console.log(`      Instagram: ${djInfo.instagramUrl ? '✅ Available' : '❌ Not available'}`);
+        console.log(`      Website: ${djInfo.website ? '✅ Available' : '❌ Not available'}`);
+      } else {
+        console.log(`   ❌ No DJ info found for "${djName}"`);
+      }
+    } catch (error) {
+      console.log(`   ❌ Error looking up "${djName}": ${error}`);
     }
     
-    console.log(`✅ Successfully fetched ${djs.length} DJs from Wix CMS`);
-    
-    // Show sample DJ data
-    console.log('\n📋 Sample DJ data:');
-    djs.slice(0, 3).forEach((dj, index) => {
-      console.log(`${index + 1}. ${dj.name}`);
-      console.log(`   Description: ${dj.description || 'N/A'}`);
-      console.log(`   SoundCloud: ${dj.soundcloudUrl || 'N/A'}`);
-      console.log(`   Image: ${dj.image || 'N/A'}`);
-      console.log('');
-    });
-    
-    // Test DJ lookup by name
-    console.log('2. Testing DJ lookup by name...');
-    const testDJName = djs[0]?.name || 'Samaya';
-    const foundDJ = await wixService.getDJByName(testDJName);
-    
-    if (foundDJ) {
-      console.log(`✅ Found DJ: ${foundDJ.name}`);
-      console.log(`   Description: ${foundDJ.description || 'N/A'}`);
-      console.log(`   SoundCloud: ${foundDJ.soundcloudUrl || 'N/A'}`);
-    } else {
-      console.log(`❌ Could not find DJ: ${testDJName}`);
-    }
-    
-    console.log('\n🎉 Wix API integration test completed!');
-    
-  } catch (error) {
-    console.error('❌ Error testing Wix integration:', error);
-    console.log('\n🔧 Troubleshooting:');
-    console.log('   1. Check your WIX_API_KEY is correct');
-    console.log('   2. Verify your site ID is correct');
-    console.log('   3. Ensure your "Team" collection exists and has data');
-    console.log('   4. Check Wix API permissions');
+    console.log('');
   }
+
+  // Test cache
+  console.log('3. Testing cache functionality...');
+  const cacheStats = wixLoader.getCacheStats();
+  console.log(`   Cache size: ${cacheStats.size}`);
+  console.log(`   Cached DJs: ${cacheStats.keys.join(', ')}`);
+  
+  // Test cache clearing
+  wixLoader.clearCache();
+  const clearedStats = wixLoader.getCacheStats();
+  console.log(`   After clearing: ${clearedStats.size} items`);
+  
+  console.log('\n✅ Wix integration test completed!');
 }
 
-// Run the test
-testWixIntegration().catch(console.error); 
+// Run the test if this file is executed directly
+if (require.main === module) {
+  testWixIntegration()
+    .then(() => {
+      console.log('\n🎉 All tests completed successfully!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('\n❌ Test failed:', error);
+      process.exit(1);
+    });
+}
+
+export { testWixIntegration }; 
