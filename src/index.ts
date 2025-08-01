@@ -17,11 +17,9 @@ export class OdessaScheduleGenerator {
     try {
       console.log('Starting schedule generation...');
       
-      // Get events for upcoming week (next Wednesday to Sunday)
+      // Get events for current week (this Wednesday to Sunday)
       const today = new Date();
-      const nextWeek = new Date(today);
-      nextWeek.setDate(today.getDate() + 7); // Look at next week
-      const events = await this.scraper.getEventsForWeek(nextWeek);
+      const events = await this.scraper.getEventsForWeek(today);
       
       if (events.length === 0) {
         console.log('No events found for this week');
