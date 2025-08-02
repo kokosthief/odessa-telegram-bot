@@ -40,6 +40,13 @@ export class OdessaScheduleGenerator {
         console.log(`📋 Event ${index + 1}: "${event.title}" on ${eventDate.toDateString()} (${event.djName}) - ${event.eventType}`);
       });
       
+      // Show date range of events
+      if (allResult.events.length > 0) {
+        const firstEvent = new Date(allResult.events[0]?.date || '');
+        const lastEvent = new Date(allResult.events[allResult.events.length - 1]?.date || '');
+        console.log(`📅 Event date range: ${firstEvent.toDateString()} to ${lastEvent.toDateString()}`);
+      }
+      
       // Filter to current week only (Wednesday to Sunday)
       const today = new Date();
       const currentWeekEvents = this.filterToCurrentWeek(allResult.events, today);
@@ -73,7 +80,9 @@ export class OdessaScheduleGenerator {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 4); // Sunday (Wednesday + 4 days)
     
-    console.log(`Filtering events: ${startOfWeek.toDateString()} to ${endOfWeek.toDateString()}`);
+    console.log(`🔍 Current date: ${today.toDateString()}`);
+    console.log(`📅 Filtering events: ${startOfWeek.toDateString()} to ${endOfWeek.toDateString()}`);
+    console.log(`📊 Total events to filter: ${events.length}`);
     
     return events.filter(event => {
       const eventDate = new Date(event.date);
@@ -82,7 +91,7 @@ export class OdessaScheduleGenerator {
       const endDateOnly = new Date(endOfWeek.getFullYear(), endOfWeek.getMonth(), endOfWeek.getDate());
       
       const isInRange = eventDateOnly >= startDateOnly && eventDateOnly <= endDateOnly;
-      console.log(`Event "${event.title}" on ${eventDateOnly.toDateString()}: ${isInRange ? 'INCLUDED' : 'EXCLUDED'}`);
+      console.log(`📋 Event "${event.title}" on ${eventDateOnly.toDateString()}: ${isInRange ? '✅ INCLUDED' : '❌ EXCLUDED'} (${event.djName})`);
       
       return isInRange;
     });
