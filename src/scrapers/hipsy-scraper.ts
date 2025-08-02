@@ -268,6 +268,7 @@ export class HipsyScraper {
     endOfWeek.setDate(startOfWeek.getDate() + 4); // Sunday (Wednesday + 4 days = Sunday)
 
     console.log(`🎭 filterEventsForWeek: startDate=${startDate.toDateString()}, startOfWeek=${startOfWeek.toDateString()}, endOfWeek=${endOfWeek.toDateString()}`);
+    console.log(`🎭 filterEventsForWeek: date range = ${startOfWeek.toDateString()} to ${endOfWeek.toDateString()}`);
     console.log(`🎭 filterEventsForWeek: processing ${events.length} events`);
 
     const filteredEvents = events.filter(event => {
@@ -297,16 +298,9 @@ export class HipsyScraper {
     
     console.log(`🎭 getStartOfWeek: today=${today.toDateString()}, currentDay=${currentDay}`);
     
-    // Calculate days to subtract to get to the most recent Wednesday
-    let daysToSubtract;
-    if (currentDay === 0) { // Sunday
-      daysToSubtract = 4; // Go back 4 days to Wednesday
-    } else if (currentDay >= 3) { // Wednesday, Thursday, Friday, Saturday
-      daysToSubtract = currentDay - 3; // Days since Wednesday
-    } else { // Monday, Tuesday
-      daysToSubtract = currentDay + 4; // Days to next Wednesday
-    }
-    
+    // Simple logic: if today is Saturday (day 6), we want Wednesday (day 3)
+    // So we subtract 3 days: 6 - 3 = 3 days to subtract
+    const daysToSubtract = currentDay - 3;
     const result = new Date(today);
     result.setDate(today.getDate() - daysToSubtract);
     
