@@ -1,5 +1,6 @@
 import { HipsyScraper } from './scrapers/hipsy-scraper';
 import { ScheduleFormatter } from './formatters/schedule-formatter';
+import { Event } from './types/event';
 
 export class OdessaScheduleGenerator {
   private scraper: HipsyScraper;
@@ -17,31 +18,26 @@ export class OdessaScheduleGenerator {
     try {
       console.log('Starting schedule generation...');
       
-      // Get events using simple approach (like the working version)
-      const result = await this.scraper.getEvents(1, 'upcoming', 20);
+      // Get upcoming events (simple approach)
+      const result = await this.scraper.getEvents(1, 'upcoming', 10);
       
       if (!result.success) {
         throw new Error('Failed to fetch events from Hipsy');
       }
       
       if (result.events.length === 0) {
-        console.log('No events found');
         return 'No events found for this week.';
       }
       
       console.log(`Found ${result.events.length} events`);
       
-      // Filter events for current week only (simple approach)
+      // Filter to current week only (Wednesday to Sunday)
       const today = new Date();
-      const currentWeekEvents = result.events.filter(event => {
-        const eventDate = new Date(event.date);
-        const daysDiff = Math.floor((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        return daysDiff >= -3 && daysDiff <= 7; // Events from 3 days ago to 7 days from now
-      });
+      const currentWeekEvents = this.filterToCurrentWeek(result.events, today);
       
       console.log(`Filtered to ${currentWeekEvents.length} events for current week`);
       
-      // Format the schedule with enhanced DJ info
+      // Format the schedule
       const formattedSchedule = await this.formatter.formatScheduleWithDJLinks(currentWeekEvents);
       
       console.log('Schedule generated successfully');
@@ -54,25 +50,50 @@ export class OdessaScheduleGenerator {
   }
 
   /**
-   * Generate schedule for a specific week
+   * Filter events to current week (Wednesday to Sunday)
    */
-  async generateScheduleForWeek(startDate: Date): Promise<string> {
-    try {
-      console.log(`Generating schedule for week starting ${startDate.toISOString()}`);
+  private filterToCurrentWeek(events: Event[], today: Date): Event[] {
+    // Get the start of the current week (Wednesday)
+    const startOfWeek = this.getStartOfWeek(today);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 4); // Sunday (Wednesday + 4 days)
+    
+    console.log(`Filtering events: ${startOfWeek.toDateString()} to ${endOfWeek.toDateString()}`);
+    
+    return events.filter(event => {
+      const eventDate = new Date(event.date);
+      const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+      const startDateOnly = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate());
+      const endDateOnly = new Date(endOfWeek.getFullYear(), endOfWeek.getMonth(), endOfWeek.getDate());
       
-      const events = await this.scraper.getEventsForWeek(startDate);
+      const isInRange = eventDateOnly >= startDateOnly && eventDateOnly <= endDateOnly;
+      console.log(`Event "${event.title}" on ${eventDateOnly.toDateString()}: ${isInRange ? 'INCLUDED' : 'EXCLUDED'}`);
       
-      if (events.length === 0) {
-        return `No events found for the week of ${startDate.toDateString()}.`;
-      }
-      
-      const formattedSchedule = this.formatter.formatScheduleWithDJLinks(events);
-      return formattedSchedule;
-      
-    } catch (error) {
-      console.error('Error generating schedule for specific week:', error);
-      throw new Error(`Failed to generate schedule: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return isInRange;
+    });
+  }
+
+  /**
+   * Get the start of the current week (Wednesday)
+   */
+  private getStartOfWeek(date: Date): Date {
+    const day = date.getDay();
+    const result = new Date(date);
+    
+    // Calculate days to subtract to get to Wednesday
+    let daysToSubtract;
+    if (day === 0) { // Sunday
+      daysToSubtract = 4; // Go back 4 days to Wednesday
+    } else if (day >= 3) { // Wednesday, Thursday, Friday, Saturday
+      daysToSubtract = day - 3; // Days since Wednesday
+    } else { // Monday, Tuesday
+      daysToSubtract = day + 4; // Days to next Wednesday
     }
+    
+    result.setDate(date.getDate() - daysToSubtract);
+    console.log(`getStartOfWeek: today=${date.toDateString()}, day=${day}, daysToSubtract=${daysToSubtract}, result=${result.toDateString()}`);
+    
+    return result;
   }
 
   /**

@@ -8,9 +8,7 @@ export class ScheduleFormatter {
 
   constructor() {
     this.djLoader = new DJLoader();
-    console.log('🔧 Creating WixDJLoader...');
     this.wixDJLoader = new WixDJLoader();
-    console.log('✅ WixDJLoader created successfully');
   }
 
   /**
@@ -23,13 +21,13 @@ export class ScheduleFormatter {
 
     // Group events by day of week
     const eventsByDay = this.groupEventsByDay(events);
-    
+
     // Generate intro text
     const introText = this.generateIntroText();
-    
+
     // Format schedule lines
     const scheduleLines = this.formatScheduleLines(eventsByDay);
-    
+
     // Combine into final format
     return `${introText}\n\n${scheduleLines}`;
   }
@@ -39,17 +37,17 @@ export class ScheduleFormatter {
    */
   private groupEventsByDay(events: Event[]): { [key: string]: Event[] } {
     const grouped: { [key: string]: Event[] } = {};
-    
+
     events.forEach(event => {
       const date = new Date(event.date);
       const dayName = this.getDayName(date);
-      
+
       if (!grouped[dayName]) {
         grouped[dayName] = [];
       }
       grouped[dayName].push(event);
     });
-    
+
     return grouped;
   }
 
@@ -67,7 +65,7 @@ export class ScheduleFormatter {
   private formatScheduleLines(eventsByDay: { [key: string]: Event[] }): string {
     const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const lines: string[] = [];
-    
+
     dayOrder.forEach(day => {
       const dayEvents = eventsByDay[day];
       if (dayEvents && dayEvents.length > 0) {
@@ -75,25 +73,7 @@ export class ScheduleFormatter {
         lines.push(eventLine);
       }
     });
-    
-    return lines.join('\n');
-  }
 
-  /**
-   * Format schedule lines for each day with enhanced DJ info from Wix
-   */
-  private async formatScheduleLinesEnhanced(eventsByDay: { [key: string]: Event[] }): Promise<string> {
-    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const lines: string[] = [];
-    
-    for (const day of dayOrder) {
-      const dayEvents = eventsByDay[day];
-      if (dayEvents && dayEvents.length > 0) {
-        const eventLine = await this.formatDayEventsEnhanced(day, dayEvents);
-        lines.push(eventLine);
-      }
-    }
-    
     return lines.join('\n');
   }
 
@@ -103,123 +83,67 @@ export class ScheduleFormatter {
   private formatDayEvents(day: string, events: Event[]): string {
     // Sort events by date to ensure chronological order
     events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    // Handle multiple events on the same day
-    if (events.length > 1) {
-      const lines: string[] = [];
-      
-      events.forEach((event) => {
-        const eventType = this.formatEventType(event.eventType);
-        const djName = event.djName || 'TBA';
-        
-        // Check if DJ has a link and create hyperlink
-        const djInfo = this.djLoader.getDJInfo(djName);
-        let eventDescription: string;
-        
-        if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
-          const link = djInfo.link;
-          eventDescription = `<b> <a href="${link}">${djName}</a></b>`;
-        } else {
-          eventDescription = `<b> ${djName}</b>`;
-        }
-        
-        const line = `🗓️ ${day}: <b>${eventType}</b> w/ ${eventDescription}`;
-        lines.push(line);
-      });
-      
-      return lines.join('\n');
-          } else {
-        // Single event for the day
-        const event = events[0];
-        if (!event) {
-          return `🗓️ ${day}: No events`;
-        }
-        
-        const eventType = this.formatEventType(event.eventType);
-        const djName = event.djName || 'TBA';
-        
-        // Check if DJ has a link and create hyperlink
-        const djInfo = this.djLoader.getDJInfo(djName);
-        let eventDescription: string;
-        
-        if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
-          const link = djInfo.link;
-          eventDescription = `<b><a href="${link}">${djName}</a></b>`;
-        } else {
-          eventDescription = `<b>${djName}</b>`;
-        }
-        
-        return `🗓️ ${day}: <b>${eventType}</b> w/ ${eventDescription}`;
-      }
-  }
 
-  /**
-   * Format events for a specific day with enhanced DJ info from Wix
-   */
-  private async formatDayEventsEnhanced(day: string, events: Event[]): Promise<string> {
-    // Sort events by date to ensure chronological order
-    events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
     // Handle multiple events on the same day
     if (events.length > 1) {
       const lines: string[] = [];
-      
-      for (const event of events) {
+
+      events.forEach((event, index) => {
         const eventType = this.formatEventType(event.eventType);
         const djName = event.djName || 'TBA';
-        
-        // Get enhanced DJ info from Wix with fallback
-        const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+
+        // Check if DJ has a link and create hyperlink
+        const djInfo = this.djLoader.getDJInfo(djName);
         let eventDescription: string;
-        
-        if (djInfo && djInfo.soundcloudUrl && djInfo.soundcloudUrl.trim() !== '') {
-          eventDescription = `<b> <a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
-        } else if (djInfo && djInfo.website && djInfo.website.trim() !== '') {
-          eventDescription = `<b> <a href="${djInfo.website}">${djInfo.name}</a></b>`;
+
+        if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
+          const link = djInfo.link;
+          eventDescription = `<b>| <a href="${link}">${djName}</a></b>`;
         } else {
-          // Fallback to existing DJ loader
-          const fallbackInfo = this.djLoader.getDJInfo(djName);
-          if (fallbackInfo && fallbackInfo.link && fallbackInfo.link.trim() !== '') {
-            eventDescription = `<b> <a href="${fallbackInfo.link}">${djName}</a></b>`;
-          } else {
-            eventDescription = `<b> ${djName}</b>`;
-          }
+          eventDescription = `<b>| ${djName}</b>`;
         }
-        
-        const line = `🗓️ ${day}: <b>${eventType}</b> w/ ${eventDescription}`;
-        lines.push(line);
-      }
-      
+
+        // Special handling for multiple Sunday events
+        let dayLabel: string;
+        if (day === 'Sun' && events.length > 1) {
+          if (index === 0) {
+            // First Sunday event (morning)
+            dayLabel = `${day}: Morning ED`;
+          } else {
+            // Subsequent Sunday events (evening/night)
+            dayLabel = `${day}: ${eventType}`;
+          }
+        } else {
+          // Use event type in the day label for other multiple events
+          dayLabel = eventType === 'ED' ? `${day}: ED` : `${day}: ${eventType}`;
+        }
+
+        lines.push(`🗓️ <b>${dayLabel} ${eventDescription}</b>`);
+      });
+
       return lines.join('\n');
     } else {
-      // Single event for the day
+      // Single event
       const event = events[0];
       if (!event) {
-        return `🗓️ ${day}: No events`;
+        return `🗓️ <b>${day}: No events</b>`;
       }
-      
+
       const eventType = this.formatEventType(event.eventType);
       const djName = event.djName || 'TBA';
-      
-      // Get enhanced DJ info from Wix with fallback
-      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+
+      // Check if DJ has a link and create hyperlink
+      const djInfo = this.djLoader.getDJInfo(djName);
       let eventDescription: string;
-      
-      if (djInfo && djInfo.soundcloudUrl && djInfo.soundcloudUrl.trim() !== '') {
-        eventDescription = `<b><a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
-      } else if (djInfo && djInfo.website && djInfo.website.trim() !== '') {
-        eventDescription = `<b><a href="${djInfo.website}">${djInfo.name}</a></b>`;
+
+      if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
+        const link = djInfo.link;
+        eventDescription = `<b>| <a href="${link}">${djName}</a></b>`;
       } else {
-        // Fallback to existing DJ loader
-        const fallbackInfo = this.djLoader.getDJInfo(djName);
-        if (fallbackInfo && fallbackInfo.link && fallbackInfo.link.trim() !== '') {
-          eventDescription = `<b><a href="${fallbackInfo.link}">${djName}</a></b>`;
-        } else {
-          eventDescription = `<b>${djName}</b>`;
-        }
+        eventDescription = `<b>| ${djName}</b>`;
       }
-      
-      return `🗓️ ${day}: <b>${eventType}</b> w/ ${eventDescription}`;
+
+      return `🗓️ <b>${day}: ${eventType} ${eventDescription}</b>`;
     }
   }
 
@@ -249,28 +173,78 @@ export class ScheduleFormatter {
   }
 
   /**
-   * Format schedule with DJ links
+   * Format schedule with DJ social media links
    */
   async formatScheduleWithDJLinks(events: Event[]): Promise<string> {
-    if (events.length === 0) {
-      return 'No events found for this week.';
-    }
-
-    // Group events by day of week
-    const eventsByDay = this.groupEventsByDay(events);
-    
-    // Generate intro text
-    const introText = this.generateIntroText();
-    
-    // Format schedule lines with enhanced DJ info
-    const scheduleLines = await this.formatScheduleLinesEnhanced(eventsByDay);
-    
-    // Combine into final format
-    return `${introText}\n\n${scheduleLines}`;
+    return this.formatWeeklySchedule(events);
   }
 
   /**
-   * Format today's schedule with enhanced DJ information
+   * Format today's schedule specifically (legacy method for backward compatibility)
+   */
+  formatTodaySchedule(events: Event[]): { text: string; keyboard?: any } {
+    if (events.length === 0) {
+      return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
+    }
+
+    const today = new Date();
+    const dayName = this.getDayName(today);
+    
+    // Generate intro text for today
+    const introText = `🎭 <b>Today's Schedule</b> (${dayName})`;
+    
+    // Format today's events with enhanced DJ info
+    const eventLines = events.map(event => {
+      const eventType = this.formatEventType(event.eventType);
+      const djName = event.djName || 'TBA';
+      
+      console.log(`Processing event with DJ: "${djName}"`);
+      
+      // Get DJ info from existing loader
+      const djInfo = this.djLoader.getDJInfo(djName);
+      
+      console.log(`DJ info found: ${djInfo ? 'YES' : 'NO'}`);
+      
+      let eventDescription: string;
+      
+      if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
+        const link = djInfo.link;
+        eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+      } else {
+        eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+      }
+      
+      let eventText = `🎵 ${eventDescription}`;
+      
+      return eventText;
+    });
+    
+    // Join events with line breaks
+    const eventsText = eventLines.join('\n\n');
+    
+    // Create ticket buttons for each event
+    const ticketButtons = events.map((event) => {
+      const eventType = this.formatEventType(event.eventType);
+      const buttonText = events.length === 1 ? 'TICKETS 🎟️' : `${eventType} TICKETS 🎟️`;
+      
+      return [{
+        text: buttonText,
+        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+      }];
+    });
+    
+    const keyboard = {
+      inline_keyboard: ticketButtons
+    };
+    
+    return {
+      text: `${introText}\n\n${eventsText}`,
+      keyboard: keyboard
+    };
+  }
+
+  /**
+   * Format enhanced today's schedule with Wix DJ data
    */
   async formatEnhancedTodaySchedule(events: Event[]): Promise<{ text: string; photos?: string[]; keyboard?: any }> {
     console.log('🎭 Formatting enhanced today schedule...');
@@ -338,8 +312,6 @@ export class ScheduleFormatter {
         eventText += `\n\n${djInfo.shortDescription}`;
       }
       
-      // Don't add text links - we'll add them as buttons instead
-      
       console.log(`🎭 Final event text: ${eventText}`);
       eventLines.push(eventText);
     }
@@ -387,69 +359,4 @@ export class ScheduleFormatter {
     
     return result;
   }
-
-  /**
-   * Format today's schedule specifically (legacy method for backward compatibility)
-   */
-  formatTodaySchedule(events: Event[]): { text: string; keyboard?: any } {
-    if (events.length === 0) {
-      return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
-    }
-
-    const today = new Date();
-    const dayName = this.getDayName(today);
-    
-    // Generate intro text for today
-    const introText = `🎭 <b>Today's Schedule</b> (${dayName})`;
-    
-    // Format today's events with enhanced DJ info
-    const eventLines = events.map(event => {
-      const eventType = this.formatEventType(event.eventType);
-      const djName = event.djName || 'TBA';
-      
-      console.log(`Processing event with DJ: "${djName}"`);
-      
-      // Get DJ info from existing loader
-      const djInfo = this.djLoader.getDJInfo(djName);
-      
-      console.log(`DJ info found: ${djInfo ? 'YES' : 'NO'}`);
-      
-      let eventDescription: string;
-      
-      if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
-        const link = djInfo.link;
-        eventDescription = `<b>${eventType} w/ <a href="${link}">${djName}</a></b>`;
-      } else {
-        eventDescription = `<b>${eventType} w/ ${djName}</b>`;
-      }
-      
-      let eventText = `🎵 ${eventDescription}`;
-      
-      return eventText;
-    });
-    
-    // Join events with line breaks
-    const eventsText = eventLines.join('\n\n');
-    
-    // Create ticket buttons for each event
-    const ticketButtons = events.map((event) => {
-      const eventType = this.formatEventType(event.eventType);
-      const buttonText = events.length === 1 ? 'TICKETS 🎟️' : `${eventType} TICKETS 🎟️`;
-      
-      return [{
-        text: buttonText,
-        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
-      }];
-    });
-    
-    const keyboard = {
-      inline_keyboard: ticketButtons
-    };
-    
-    return {
-      text: `${introText}\n\n${eventsText}`,
-      keyboard: keyboard
-    };
-  }
-
 } 
