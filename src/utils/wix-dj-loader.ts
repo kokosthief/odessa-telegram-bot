@@ -115,6 +115,9 @@ export class WixDJLoader {
       const requestBody = {
         dataCollectionId: "Team",
         query: {
+          filter: {
+            title: djName
+          },
           paging: {
             limit: 5
           }
@@ -124,6 +127,8 @@ export class WixDJLoader {
       console.log(`📤 Request body:`, JSON.stringify(requestBody, null, 2));
       console.log(`🌐 Making request to: ${this.baseUrl}/items/query`);
       console.log(`🔍 Querying for DJ: "${djName}"`);
+      console.log(`🔍 Available Wix DJs: ["RubyDub", "Faralduín", "Rachi", "Leela", "Lizzy"]`);
+      console.log(`🔍 Exact match: ${["RubyDub", "Faralduín", "Rachi", "Leela", "Lizzy"].includes(djName) ? 'YES' : 'NO'}`);
 
       const response = await fetch(`${this.baseUrl}/items/query`, {
         method: 'POST',
