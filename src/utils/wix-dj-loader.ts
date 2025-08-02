@@ -1,5 +1,3 @@
-import { DJLoader } from './dj-loader';
-
 export interface WixDJData {
   _id: string;
   title: string;
@@ -25,7 +23,6 @@ export class WixDJLoader {
   private apiKey: string;
   private siteId: string;
   private baseUrl: string;
-  private fallbackLoader: DJLoader;
   private cache: Map<string, { data: WixDJData | null; timestamp: number }>;
   private cacheDuration: number;
 
@@ -37,7 +34,6 @@ export class WixDJLoader {
     console.log(`   Base URL: ${this.baseUrl}`);
     console.log(`   API Key: ${this.apiKey ? '✅ Set' : '❌ Not set'}`);
     console.log(`   Site ID: ${this.siteId ? '✅ Set' : '❌ Not set'}`);
-    this.fallbackLoader = new DJLoader();
     this.cache = new Map();
     this.cacheDuration = parseInt(process.env['WIX_CACHE_DURATION'] || '3600') * 1000; // Convert to milliseconds
   }
@@ -250,14 +246,7 @@ export class WixDJLoader {
     }
 
     // Fallback to existing JSON data
-    const fallbackData = this.fallbackLoader.getDJInfo(djName);
-    if (fallbackData) {
-      return {
-        name: djName,
-        soundcloudUrl: fallbackData.link || undefined
-      };
-    }
-
+    // Since djs.json is removed, we'll just return null for fallback
     return null;
   }
 

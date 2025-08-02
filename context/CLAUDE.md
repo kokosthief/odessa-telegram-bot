@@ -1,6 +1,6 @@
 # Odessa Telegram Bot - Implementation Guide
 
-This guide provides implementation patterns and standards for building an automated schedule generation tool for Odessa boat events in Amsterdam. The system scrapes event data from Hipsy.no, formats it into custom schedules, and posts to Telegram groups with interactive command support.
+This guide provides implementation patterns and standards for building an automated today's schedule checking tool for Odessa boat events in Amsterdam. The system scrapes event data from Hipsy.no, formats it into enhanced today's schedules with DJ information and photos, and responds to Telegram commands with interactive support.
 
 ## Core Principles
 
@@ -22,7 +22,7 @@ This guide provides implementation patterns and standards for building an automa
 
 ## Project Architecture
 
-**IMPORTANT: This is a Node.js/TypeScript application for automated schedule generation with web scraping, Telegram integration, and interactive command handling.**
+**IMPORTANT: This is a Node.js/TypeScript application for automated today's schedule checking with web scraping, Telegram integration, and interactive command handling.**
 
 ### Current Project Structure
 
@@ -33,22 +33,23 @@ This guide provides implementation patterns and standards for building an automa
 │   ├── README.md               # Project documentation
 │   ├── PRPs/                   # Product Requirements Prompts
 │   │   ├── templates/          # PRP templates
-│   │   └── schedule-command-prp.md # Command feature PRP
+│   │   └── enhanced-whosplaying-prp.md # Enhanced command PRP
 │   └── examples/               # Code examples and patterns
 │       └── README.md
 ├── src/                        # TypeScript source code
 │   ├── index.ts                # Main application entry point
 │   ├── scrapers/               # Web scraping components
 │   │   └── hipsy-scraper.ts   # Hipsy.no event scraping
-│   ├── formatters/             # Schedule formatting
-│   │   └── schedule-formatter.ts # Schedule template generation
+│   ├── formatters/             # Today's schedule formatting
+│   │   └── whosplaying-formatter.ts # Today's schedule formatting
 │   ├── telegram/               # Telegram integration
 │   │   └── bot.ts             # Bot with command handling
 │   ├── types/                  # TypeScript type definitions
 │   │   ├── event.ts           # Event data types
 │   │   └── dj.ts             # DJ data types
 │   ├── utils/                  # Utility functions
-│   │   └── dj-loader.ts      # DJ data management
+│   │   ├── dj-loader.ts      # Legacy DJ data management
+│   │   └── wix-dj-loader.ts  # Enhanced Wix DJ data management
 │   ├── data/                  # Static data files
 │   │   └── djs.json          # DJ database with social links
 │   ├── cli.ts                 # Command-line interface
@@ -68,21 +69,21 @@ This guide provides implementation patterns and standards for building an automa
 
 ### ✅ Core Functionality
 - **Web Scraping**: Hipsy.no event data extraction with error handling
-- **Schedule Generation**: Real-time schedule creation with DJ information
+- **Today's Schedule Generation**: Real-time today's schedule creation with DJ information
 - **Telegram Integration**: Bot API integration with message posting
-- **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help` command handling
+- **Interactive Commands**: `/whosplaying`, `/start`, `/help` command handling
 - **Rate Limiting**: 60-second rate limit per user to prevent spam
 - **Error Handling**: Comprehensive error handling with user-friendly messages
-- **Video Integration**: Optimized video uploads with cached file_id
+- **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
 - **DJ Database**: 20+ DJs with social media links in `src/data/djs.json`
 
 ### ✅ User Experience Features
 - **Typing Indicators**: Shows typing status during schedule generation
-- **Inline Keyboards**: Ticket booking buttons in schedule messages
+- **Inline Keyboards**: Ticket booking and SoundCloud buttons in messages
 - **Multi-platform Support**: Works in group chats and direct messages
 - **User-friendly Messages**: Clear error messages and help information
 - **Today's Schedule**: `/whosplaying` command for current day events
-- **Admin Commands**: `/getfileid` and `/setfileid` for video optimization
+- **Photo Uploads**: DJ photos from Wix CMS in enhanced messages
 
 ### ✅ Development Features
 - **CLI Interface**: Command-line tools for testing and management
@@ -113,7 +114,8 @@ npm run format                # Format code with Prettier
 npm run test                  # Run unit tests
 npm run test:integration      # Run integration tests
 npm run test:watch            # Run tests in watch mode
-npm run test:commands         # Test command functionality
+npm run test:enhanced-whosplaying # Test enhanced whosplaying
+npm run test:wix-integration # Test Wix API integration
 npm run test:telegram         # Test Telegram integration
 
 # Database (JSON-based)
@@ -128,8 +130,7 @@ npm run cli run              # Start interactive bot with command handling
 
 # Testing & Validation
 npm run cli test             # Test bot connection
-npm run cli generate         # Generate schedule (without posting)
-npm run cli post             # Generate and post to Telegram
+npm run cli whosplaying      # Generate today's schedule (without posting)
 ```
 
 ### Environment Configuration
@@ -174,18 +175,18 @@ interface DJ {
   mixcloudUrl?: string;
   instagramUrl?: string;
   bio?: string;
+  photo?: string;
+  shortDescription?: string;
 }
 ```
 
-### Schedule Format
+### Today's Schedule Format
 
 ```typescript
-interface Schedule {
-  weekStart: Date;
-  weekEnd: Date;
-  events: Event[];
-  introText: string;
-  formattedSchedule: string;
+interface TodaySchedule {
+  text: string;
+  photos?: string[];
+  keyboard?: any;
 }
 ```
 
@@ -222,34 +223,30 @@ async function scrapeHipsyEvents(dateRange: DateRange): Promise<Event[]> {
 }
 ```
 
-## Schedule Formatting Guidelines
+## Today's Schedule Formatting Guidelines
 
 ### Template Structure
 
-**Follow this exact format for schedule posts:**
+**Follow this exact format for today's schedule posts:**
 
 ```
-🪩 Schedule 🌴🎶  
+🌟 <b>today</b> with <b>DJ Name</b> ✨
 
-[Intro text variation]
+🎶 <b>Event Type</b> with <b>DJ Name</b> 🎶
 
-🗓️ Wed: [Event Type] W/ [DJ Name]
-🗓️ Thu: [Event Type] W/ [DJ Name]
-🗓️ Fri: [Event Type] W/ [DJ Name]
-🗓️ Sat: [Event Type] W/ [DJ Name]
-🗓️ Sun: [Event Type] W/ [DJ Name]
+[DJ Description if available]
 
-[TICKETS BUTTON]
+[TICKETS BUTTON] [SOUNDCLOUD BUTTON]
 ```
 
-### Intro Text Variations
+### Enhanced DJ Information
 
-**Implement multiple intro text variations to avoid repetition:**
+**Implement enhanced DJ data with photos and descriptions:**
 
-- Summer festival themes
-- Weather-based themes
-- Special event announcements
-- General vibe descriptions
+- Photos from Wix CMS
+- Short descriptions from Wix CMS
+- Social media links (SoundCloud, etc.)
+- Fallback to existing JSON data when Wix unavailable
 
 ### Event Type Mapping
 
@@ -275,7 +272,7 @@ async function scrapeHipsyEvents(dateRange: DateRange): Promise<Event[]> {
 
 ```typescript
 // Example command handling pattern
-bot.onText(/\/schedule/, async (msg) => {
+bot.onText(/\/whosplaying/, async (msg) => {
   try {
     // Check rate limiting
     if (isRateLimited(msg.from.id)) {
@@ -286,17 +283,25 @@ bot.onText(/\/schedule/, async (msg) => {
     // Show typing indicator
     await bot.sendChatAction(msg.chat.id, 'typing');
     
-    // Generate schedule
-    const schedule = await generator.generateSchedule();
+    // Generate today's schedule
+    const todaySchedule = await generator.generateEnhancedTodaySchedule();
     
-    // Send response with inline keyboard
-    await bot.sendMessage(msg.chat.id, schedule, {
-      parse_mode: 'HTML',
-      reply_markup: inlineKeyboard
-    });
+    // Send response with photos and keyboard
+    if (todaySchedule.photos && todaySchedule.photos.length > 0) {
+      await bot.sendPhoto(msg.chat.id, todaySchedule.photos[0], {
+        caption: todaySchedule.text,
+        parse_mode: 'HTML',
+        reply_markup: todaySchedule.keyboard
+      });
+    } else {
+      await bot.sendMessage(msg.chat.id, todaySchedule.text, {
+        parse_mode: 'HTML',
+        reply_markup: todaySchedule.keyboard
+      });
+    }
   } catch (error) {
     // Handle errors gracefully
-    await bot.sendMessage(msg.chat.id, 'Sorry, I could not generate the schedule right now.');
+    await bot.sendMessage(msg.chat.id, 'Sorry, I could not fetch today\'s schedule right now.');
   }
 });
 ```
@@ -305,13 +310,23 @@ bot.onText(/\/schedule/, async (msg) => {
 
 ```typescript
 // Example posting pattern
-async function postScheduleToTelegram(schedule: Schedule): Promise<void> {
+async function postTodayScheduleToTelegram(schedule: TodaySchedule): Promise<void> {
   try {
-    const message = formatScheduleForTelegram(schedule);
-    await telegramBot.sendMessage(chatId, message, { parse_mode: 'HTML' });
-    logger.info('Schedule posted successfully');
+    if (schedule.photos && schedule.photos.length > 0) {
+      await telegramBot.sendPhoto(chatId, schedule.photos[0], {
+        caption: schedule.text,
+        parse_mode: 'HTML',
+        reply_markup: schedule.keyboard
+      });
+    } else {
+      await telegramBot.sendMessage(chatId, schedule.text, {
+        parse_mode: 'HTML',
+        reply_markup: schedule.keyboard
+      });
+    }
+    logger.info('Today\'s schedule posted successfully');
   } catch (error) {
-    logger.error('Failed to post schedule:', error);
+    logger.error('Failed to post today\'s schedule:', error);
     throw new Error('Telegram posting failed');
   }
 }
@@ -327,13 +342,16 @@ async function postScheduleToTelegram(schedule: Schedule): Promise<void> {
 2. **Fallback Handling**: Graceful handling of missing DJ data
 3. **Data Validation**: Ensure all URLs are valid before posting
 4. **Caching**: Cache DJ lookups to avoid repeated database queries
+5. **Wix Integration**: Enhanced DJ data with photos and descriptions
 
 ### DJ Data Structure
 
 ```json
 {
   "DJ Name": {
-    "link": "https://soundcloud.com/dj_name"
+    "link": "https://soundcloud.com/dj_name",
+    "photo": "https://wix-cms-photo-url",
+    "shortDescription": "DJ description from Wix"
   }
 }
 ```
@@ -344,6 +362,13 @@ async function postScheduleToTelegram(schedule: Schedule): Promise<void> {
 // Example DJ lookup pattern
 async function getDJInfo(djName: string): Promise<DJ | null> {
   try {
+    // Try Wix CMS first
+    const wixDJInfo = await wixDJLoader.getDJInfoWithFallback(djName);
+    if (wixDJInfo) {
+      return wixDJInfo;
+    }
+    
+    // Fallback to JSON data
     const djData = await loadDJData();
     const normalizedName = normalizeDJName(djName);
     return djData[normalizedName] || null;
@@ -363,21 +388,22 @@ async function getDJInfo(djName: string): Promise<DJ | null> {
 3. **Telegram Errors**: Invalid bot token, chat not found, rate limiting
 4. **Data Validation**: Invalid dates, missing required fields
 5. **Command Errors**: Rate limiting, user permission issues
+6. **Wix API Errors**: Connection failures, data availability issues
 
 ### Error Handling Pattern
 
 ```typescript
 // Example error handling pattern
-async function generateSchedule(): Promise<Schedule> {
+async function generateTodaySchedule(): Promise<TodaySchedule> {
   try {
     const events = await scrapeEvents();
     const validatedEvents = validateEvents(events);
-    const schedule = await formatSchedule(validatedEvents);
+    const schedule = await formatTodaySchedule(validatedEvents);
     return schedule;
   } catch (error) {
-    logger.error('Schedule generation failed:', error);
+    logger.error('Today\'s schedule generation failed:', error);
     // Implement fallback or retry logic
-    throw new Error('Schedule generation failed');
+    throw new Error('Today\'s schedule generation failed');
   }
 }
 ```
@@ -389,16 +415,17 @@ async function generateSchedule(): Promise<Schedule> {
 **Required test coverage:**
 
 1. **Scraping Tests**: Mock Hipsy responses, test data parsing
-2. **Formatting Tests**: Test schedule template generation
+2. **Formatting Tests**: Test today's schedule template generation
 3. **DJ Data Tests**: Test DJ lookup and data validation
 4. **Telegram Tests**: Mock Telegram API, test message formatting
 5. **Command Tests**: Test command handling and rate limiting
+6. **Wix Integration Tests**: Test Wix API integration and fallback
 
 ### Integration Tests
 
 **Test complete workflows:**
 
-1. **End-to-End**: Full schedule generation and posting
+1. **End-to-End**: Full today's schedule generation and posting
 2. **Error Scenarios**: Test failure handling and recovery
 3. **Data Validation**: Test with various data quality scenarios
 4. **Command Workflows**: Test complete command handling
@@ -422,6 +449,7 @@ async function generateSchedule(): Promise<Schedule> {
 3. **Telegram Performance**: Posting success rates, response times
 4. **Error Rates**: Track and alert on high error rates
 5. **Command Usage**: Track command frequency and patterns
+6. **Wix API Performance**: Connection status, cache performance
 
 ## Security Guidelines
 
@@ -486,15 +514,15 @@ npm run cli run
 ### ✅ Completed Features
 
 1. **Web Scraping**: Hipsy.no scraper with error handling
-2. **Schedule Generation**: Real-time schedule creation
+2. **Today's Schedule Generation**: Real-time today's schedule creation
 3. **Telegram Integration**: Bot with command handling
-4. **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help`
+4. **Interactive Commands**: `/whosplaying`, `/start`, `/help`
 5. **Rate Limiting**: 60-second rate limit per user
 6. **Error Handling**: Comprehensive error handling
 7. **CLI Interface**: Command-line tools for management
 8. **Testing Suite**: Test coverage for all components
 9. **Documentation**: Complete documentation and guides
-10. **Video Integration**: Optimized video uploads with cached file_id
+10. **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
 11. **DJ Database**: 20+ DJs with social media links
 12. **Context Engineering**: Organized documentation in `context/`
 
@@ -504,5 +532,5 @@ npm run cli run
 2. **Advanced DJ Integration**: More comprehensive DJ information
 3. **Analytics Dashboard**: Usage statistics and monitoring
 4. **Multi-language Support**: Internationalization
-5. **Advanced Templates**: Multiple schedule format options
+5. **Advanced Templates**: Multiple today's schedule format options
 6. **Database Migration**: Move from JSON to PostgreSQL for scalability 

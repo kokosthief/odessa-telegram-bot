@@ -1,6 +1,6 @@
-# Odessa Telegram Bot - Automated Schedule Generator
+# Odessa Telegram Bot - Who's Playing Today
 
-An automated schedule generation tool for Odessa boat events in Amsterdam. This system scrapes event data from Hipsy.no, formats it into custom schedules with DJ information, and posts to Telegram groups with interactive command support.
+An automated schedule checking tool for Odessa boat events in Amsterdam. This system scrapes event data from Hipsy.no, formats it into enhanced today's schedules with DJ information and photos, and responds to Telegram commands with interactive support.
 
 ## 🚀 Current Status
 
@@ -12,20 +12,21 @@ An automated schedule generation tool for Odessa boat events in Amsterdam. This 
 
 ### ✅ **Core Features Implemented**
 - **Web Scraping**: Hipsy.no event data extraction with robust error handling
-- **Schedule Generation**: Real-time schedule creation with DJ information
+- **Today's Schedule**: Real-time today's schedule creation with DJ information
 - **Telegram Integration**: Bot API with interactive command handling
-- **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help`
+- **Interactive Commands**: `/whosplaying`, `/start`, `/help`
 - **Rate Limiting**: 60-second rate limit per user to prevent spam
 - **Error Handling**: Comprehensive error handling with user-friendly messages
-- **Video Integration**: Optimized video uploads with cached file_id
+- **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
 - **DJ Database**: 20+ DJs with social media links in `src/data/djs.json`
 
 ### ✅ **User Experience Features**
 - **Typing Indicators**: Shows typing status during schedule generation
-- **Inline Keyboards**: Ticket booking buttons in schedule messages
+- **Inline Keyboards**: Ticket booking and SoundCloud buttons in messages
 - **Multi-platform Support**: Works in group chats and direct messages
 - **Rich Formatting**: HTML formatting with bold text and emojis
-- **Today's Schedule**: `/whosplaying` command for current day events
+- **Enhanced DJ Info**: Photos and descriptions from Wix CMS
+- **Photo Uploads**: DJ photos in today's schedule messages
 
 ## 📋 Project Structure
 
@@ -36,7 +37,7 @@ Team-Odessa-Telegram-Bot/
 │   ├── README.md               # This file - project documentation
 │   ├── PRPs/                   # Product Requirements Prompts
 │   │   ├── templates/          # PRP templates
-│   │   └── schedule-command-prp.md # Command feature PRP
+│   │   └── enhanced-whosplaying-prp.md # Enhanced command PRP
 │   └── examples/               # Code examples and patterns
 │       └── README.md
 ├── src/                        # TypeScript source code
@@ -44,14 +45,15 @@ Team-Odessa-Telegram-Bot/
 │   ├── scrapers/               # Web scraping components
 │   │   └── hipsy-scraper.ts   # Hipsy.no event scraping
 │   ├── formatters/             # Schedule formatting
-│   │   └── schedule-formatter.ts # Schedule template generation
+│   │   └── whosplaying-formatter.ts # Today's schedule formatting
 │   ├── telegram/               # Telegram integration
 │   │   └── bot.ts             # Bot with command handling
 │   ├── types/                  # TypeScript type definitions
 │   │   ├── event.ts           # Event data types
 │   │   └── dj.ts             # DJ data types
 │   ├── utils/                  # Utility functions
-│   │   └── dj-loader.ts      # DJ data management
+│   │   ├── dj-loader.ts      # DJ data management
+│   │   └── wix-dj-loader.ts  # Enhanced Wix DJ data management
 │   ├── data/                  # Static data files
 │   │   └── djs.json          # DJ database with social links
 │   ├── cli.ts                 # Command-line interface
@@ -62,13 +64,6 @@ Team-Odessa-Telegram-Bot/
 ├── scripts/                    # Deployment scripts
 │   ├── quick-start.sh         # Quick setup script
 │   └── deploy.sh              # Production deployment script
-├── PRPs/                       # Product Requirements Prompts
-├── examples/                   # Code examples and patterns
-├── CLAUDE.md                   # Project-specific rules and conventions
-├── USAGE.md                    # Comprehensive usage guide
-├── DEPLOYMENT.md               # GitHub + Vercel deployment guide
-├── PRODUCTION_LAUNCH.md        # Production setup guide
-├── FEATURES.md                 # Complete feature summary
 ├── vercel.json                 # Vercel configuration
 ├── env.example                 # Environment variables template
 └── README.md                   # This file
@@ -77,9 +72,10 @@ Team-Odessa-Telegram-Bot/
 ## 🛠️ Technology Stack
 
 - **Runtime**: Node.js with TypeScript
-- **Database**: JSON-based DJ data (`src/data/djs.json`)
+- **Database**: JSON-based DJ data (`src/data/djs.json`) + Wix CMS
 - **Web Scraping**: Puppeteer/Cheerio for HTML parsing
 - **Telegram**: node-telegram-bot-api for Bot API integration
+- **Wix Integration**: Wix Data API for enhanced DJ information
 - **Testing**: Jest for unit and integration tests
 - **Logging**: Winston for structured logging
 - **Deployment**: Vercel for serverless deployment
@@ -146,31 +142,25 @@ See `env.example` for the complete list of available variables.
 The bot supports interactive commands in Telegram:
 
 **Available Commands:**
-- `/schedule` - Get the current week's schedule with DJ information and ticket links
-- `/whosplaying` - Check who is playing today
+- `/whosplaying` - Check who is playing today with DJ photos and descriptions
 - `/start` - Welcome message and bot introduction
 - `/help` - Show help information and available commands
-- `/getfileid` - (Admin) Store video file_id for faster uploads
-- `/setfileid <id>` - (Admin) Manually set video file_id
 
 **Features:**
 - Works in both group chats and direct messages
 - Rate limiting (60 seconds between requests per user)
-- Real-time schedule generation from Hipsy.no
+- Real-time today's schedule generation from Hipsy.no
 - Error handling with user-friendly messages
 - Typing indicators during generation
 - Rich HTML formatting with bold text
-- Interactive inline keyboards with ticket buttons
-- Optimized video uploads using cached file_id
+- Interactive inline keyboards with ticket and SoundCloud buttons
+- Enhanced DJ information with photos from Wix CMS
 
 ### CLI Commands
 
 ```bash
-# Generate schedule (without posting)
-npm run cli generate
-
-# Generate and post to Telegram
-npm run cli post
+# Generate today's schedule (without posting)
+npm run cli whosplaying
 
 # Test bot connection
 npm run cli test
@@ -178,8 +168,11 @@ npm run cli test
 # Start interactive bot with command handling
 npm run cli run
 
-# Test command functionality
-npm run test:commands
+# Test enhanced whosplaying functionality
+npm run test:enhanced-whosplaying
+
+# Test Wix integration
+npm run test:wix-integration
 
 # Quick setup
 npm run quick-start
@@ -188,9 +181,9 @@ npm run quick-start
 npm run deploy
 ```
 
-### Schedule Generation
+### Today's Schedule Generation
 
-The application provides a simple API for generating and posting schedules:
+The application provides a simple API for generating today's schedules:
 
 ```typescript
 // Example usage
@@ -198,14 +191,11 @@ import { OdessaScheduleGenerator } from './src/index';
 
 const generator = new OdessaScheduleGenerator();
 
-// Generate and post this week's schedule
-const schedule = await generator.generateSchedule();
+// Generate enhanced today's schedule with photos
+const todaySchedule = await generator.generateEnhancedTodaySchedule();
 
-// Generate schedule for specific date range
-const scheduleForWeek = await generator.generateScheduleForWeek(new Date('2024-01-01'));
-
-// Generate today's schedule
-const todaySchedule = await generator.generateTodaySchedule();
+// Generate legacy today's schedule (fallback)
+const legacySchedule = await generator.generateTodaySchedule();
 ```
 
 ## 🌐 Production Deployment
@@ -216,7 +206,7 @@ const todaySchedule = await generator.generateTodaySchedule();
 ✅ **Webhook Configured**: Receiving Telegram messages  
 ✅ **Environment Variables**: Set and working  
 ✅ **Automatic Deployments**: From GitHub main branch  
-✅ **Video Integration**: Optimized video uploads with cached file_id  
+✅ **Enhanced DJ Info**: Photos and descriptions from Wix CMS  
 
 ### Deployment Features
 
@@ -226,17 +216,15 @@ const todaySchedule = await generator.generateTodaySchedule();
 - **Monitoring**: Built-in logging and analytics
 - **CI/CD**: Automatic deployments from GitHub
 
-```
-
 ## 🔧 Development
 
 ### Project Structure
 
 - **`src/scrapers/`**: Web scraping components for Hipsy.no
-- **`src/formatters/`**: Schedule formatting and template generation
+- **`src/formatters/`**: Today's schedule formatting with enhanced DJ info
 - **`src/telegram/`**: Telegram Bot API integration with command handling
 - **`src/types/`**: TypeScript type definitions
-- **`src/utils/`**: Utility functions for date handling, validation, etc.
+- **`src/utils/`**: Utility functions for DJ data management
 - **`src/data/`**: Static data files including DJ database
 - **`api/`**: Vercel serverless functions for webhook handling
 
@@ -263,11 +251,11 @@ npm run test:integration
 # Run tests with coverage
 npm run test:coverage
 
-# Test command functionality
-npm run test:commands
+# Test enhanced whosplaying functionality
+npm run test:enhanced-whosplaying
 
-# Test Telegram integration
-npm run test:telegram
+# Test Wix integration
+npm run test:wix-integration
 ```
 
 ## 📈 Monitoring
@@ -288,8 +276,9 @@ The application uses structured logging with different levels:
 - Telegram posting success rate
 - Command usage frequency
 - Error rates and types
-- Schedule generation time
+- Today's schedule generation time
 - Rate limiting violations
+- Wix API performance and cache hit rates
 
 ### Example Logs
 
@@ -297,15 +286,17 @@ The application uses structured logging with different levels:
 🤖 Starting Odessa Schedule Bot...
 ✅ Bot connected: @your_bot_username (ID: 123456789)
 ✅ Bot is now running and listening for commands!
-🤖 Generating schedule for user 123456 in chat -987654321
-✅ Schedule sent successfully to user 123456
+🎭 /whosplaying command received - generating enhanced schedule...
+📊 Processing 2 events
+✅ Enhanced schedule generated successfully
+📸 Sending schedule with photos...
 ```
 
 ## 🔒 Security
 
 ### Rate Limiting
 
-- 60-second rate limit per user for `/schedule` command
+- 60-second rate limit per user for `/whosplaying` command
 - Prevents spam and abuse
 - User-friendly error messages
 
@@ -328,7 +319,12 @@ The application uses structured logging with different levels:
    - Check bot permissions in group chats
    - Verify bot token is correct
 
-4. **Vercel Deployment Issues**
+4. **Wix Integration Issues**
+   - Check Wix API connectivity
+   - Verify DJ data availability
+   - Check cache configuration
+
+5. **Vercel Deployment Issues**
    - Check environment variables in Vercel dashboard
    - Verify webhook URL is correct
    - Check function logs in Vercel dashboard

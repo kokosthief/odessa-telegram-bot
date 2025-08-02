@@ -2,7 +2,7 @@
 
 ## 🎯 Project Overview
 
-The Odessa Telegram Bot is a fully functional, production-ready automated schedule generation tool for Odessa boat events in Amsterdam. The system scrapes event data from Hipsy.no, formats it into custom schedules with DJ information, and posts to Telegram groups with interactive command support.
+The Odessa Telegram Bot is a fully functional, production-ready automated today's schedule checking tool for Odessa boat events in Amsterdam. The system scrapes event data from Hipsy.no, formats it into enhanced today's schedules with DJ information and photos, and responds to Telegram commands with interactive support.
 
 ## ✅ **PRODUCTION STATUS: LIVE & DEPLOYED**
 
@@ -22,14 +22,14 @@ The Odessa Telegram Bot is a fully functional, production-ready automated schedu
 - ✅ **Rate Limiting**: Proper delays to avoid being blocked
 - ✅ **Optimized Fetching**: Limited to maximum 10 events per request for efficiency
 
-### Schedule Generation
-- ✅ **Real-time Generation**: On-demand schedule creation from live data
+### Today's Schedule Generation
+- ✅ **Real-time Generation**: On-demand today's schedule creation from live data
 - ✅ **DJ Integration**: Automatic DJ name detection and social media linking
-- ✅ **Template System**: Custom formatted schedules with emojis and styling
-- ✅ **Multi-day Support**: Wednesday through Sunday event coverage
-- ✅ **Today's Schedule**: Special `/whosplaying` command for current day
+- ✅ **Enhanced DJ Info**: Photos and descriptions from Wix CMS
+- ✅ **Template System**: Custom formatted today's schedules with emojis and styling
+- ✅ **Today's Focus**: `/whosplaying` command for current day events
 - ✅ **Efficient Processing**: Processes maximum 10 events for optimal performance
-- ✅ **Upcoming Week Focus**: Shows next week's schedule (Wednesday-Sunday) for better planning
+- ✅ **Enhanced Experience**: Rich DJ profiles with photos and descriptions
 
 ### Enhanced DJ Information (NEW)
 - ✅ **Wix CMS Integration**: DJ photos and descriptions from Wix Data API
@@ -39,12 +39,11 @@ The Odessa Telegram Bot is a fully functional, production-ready automated schedu
 - ✅ **Enhanced /whosplaying**: Photos and descriptions in today's schedule
 
 ### Telegram Integration
-- ✅ **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help`
+- ✅ **Interactive Commands**: `/whosplaying`, `/start`, `/help`
 - ✅ **Rate Limiting**: 60-second limit per user to prevent spam
 - ✅ **Rich Formatting**: HTML formatting with bold text and emojis
-- ✅ **Inline Keyboards**: Ticket booking buttons in messages
+- ✅ **Inline Keyboards**: Ticket booking and SoundCloud buttons in messages
 - ✅ **Photo Uploads**: Enhanced messages with DJ photos from Wix CMS
-- ✅ **Video Integration**: Optimized video uploads with cached file_id
 - ✅ **Error Handling**: User-friendly error messages
 - ✅ **Multi-platform**: Works in groups and direct messages
 
@@ -66,19 +65,14 @@ The Odessa Telegram Bot is a fully functional, production-ready automated schedu
 ## 📊 **CURRENT COMMANDS & FEATURES**
 
 ### User Commands
-- **`/schedule`** - Get current week's schedule with DJ info and ticket links
-- **`/whosplaying`** - Check who is playing today (ENHANCED with photos and descriptions)
+- **`/whosplaying`** - Check who is playing today with DJ photos and descriptions
 - **`/start`** - Welcome message and bot introduction
 - **`/help`** - Show help information and available commands
 
-### Admin Commands
-- **`/getfileid`** - Store video file_id for faster uploads
-- **`/setfileid <id>`** - Manually set video file_id
-
 ### Technical Features
 - **Rate Limiting**: 60-second cooldown per user
-- **Video Optimization**: Cached file_id for faster video uploads
-- **Photo Uploads**: DJ photos from Wix CMS in enhanced messages
+- **Enhanced DJ Info**: Photos and descriptions from Wix CMS
+- **Photo Uploads**: DJ photos in today's schedule messages
 - **Error Recovery**: Graceful handling of all failure scenarios
 - **Rich Formatting**: HTML with bold text, emojis, and inline keyboards
 
@@ -102,12 +96,11 @@ Team-Odessa-Telegram-Bot/
 │   ├── README.md               # Project documentation
 │   ├── PRPs/                   # Product Requirements Prompts
 │   │   ├── templates/          # PRP templates
-│   │   ├── schedule-command-prp.md # Command feature PRP
 │   │   └── enhanced-whosplaying-prp.md # Enhanced command PRP
 │   └── examples/               # Code examples and patterns
 ├── src/                        # TypeScript source code
 │   ├── scrapers/               # Web scraping components
-│   ├── formatters/             # Schedule formatting
+│   ├── formatters/             # Today's schedule formatting
 │   ├── telegram/               # Telegram integration
 │   ├── types/                  # TypeScript type definitions
 │   ├── utils/                  # Utility functions
@@ -123,12 +116,12 @@ Team-Odessa-Telegram-Bot/
 ## 📈 **PERFORMANCE METRICS**
 
 ### Current Performance
-- **Response Time**: < 5 seconds for schedule generation
+- **Response Time**: < 5 seconds for today's schedule generation
 - **Success Rate**: > 95% for successful schedule generation
 - **Error Recovery**: Graceful fallbacks for all failure scenarios
 - **Rate Limiting**: Effective spam prevention
-- **Video Uploads**: Optimized with cached file_id
 - **Photo Uploads**: Enhanced messages with DJ photos
+- **Wix API**: Optimized with caching and fallback
 
 ### Monitoring
 - **Logging**: Structured logging for all operations
@@ -154,15 +147,14 @@ npm run type-check            # Run TypeScript compiler check
 
 # Testing
 npm run test                  # Run unit tests
-npm run test:commands         # Test command functionality
-npm run test:telegram         # Test Telegram integration
+npm run test:enhanced-whosplaying # Test enhanced whosplaying
 npm run test:wix-integration # Test Wix API integration
-npm run test:enhanced-whosplaying # Test enhanced command
+npm run test:telegram         # Test Telegram integration
 
 # Bot Management
 npm run cli run              # Start interactive bot
-npm run cli generate         # Generate schedule (without posting)
-npm run cli post             # Generate and post to Telegram
+npm run cli whosplaying      # Generate today's schedule (without posting)
+npm run cli test             # Test bot connection
 ```
 
 ## 🎯 **NEXT STEPS & ENHANCEMENTS**
@@ -171,7 +163,7 @@ npm run cli post             # Generate and post to Telegram
 1. **Performance Optimization**: Cache generated schedules for faster responses
 2. **Enhanced DJ Integration**: More comprehensive DJ information and social links
 3. **Analytics Dashboard**: Usage statistics and monitoring interface
-4. **Advanced Templates**: Multiple schedule format options
+4. **Advanced Templates**: Multiple today's schedule format options
 
 ### Future Enhancements
 1. **Database Migration**: Move from JSON to PostgreSQL for scalability
@@ -192,8 +184,8 @@ npm run cli post             # Generate and post to Telegram
 - **Scraping Reliability**: Dependent on Hipsy.no website structure
 - **DJ Data**: Limited to manually maintained JSON database + Wix CMS
 - **Rate Limits**: Telegram API rate limiting constraints
-- **Video Uploads**: Requires manual file_id caching for optimization
 - **Wix API**: Dependent on Wix Data API availability and structure
+- **Today's Focus**: Only shows today's events, not weekly schedules
 
 ### Mitigation Strategies
 - **Error Recovery**: Comprehensive fallback mechanisms
@@ -230,9 +222,9 @@ npm run cli post             # Generate and post to Telegram
 - ✅ **Enhanced DJ Info**: Photos and descriptions from Wix CMS
 
 ### User Impact
-- **Automated Schedule Generation**: No manual schedule creation needed
+- **Automated Today's Schedule**: No manual schedule checking needed
 - **Real-time Data**: Always up-to-date event information
-- **DJ Information**: Easy access to DJ social media links
+- **DJ Information**: Easy access to DJ social media links and photos
 - **Enhanced Experience**: Rich DJ profiles with photos and descriptions
 - **Ticket Booking**: Direct links to event tickets
 - **User-friendly Interface**: Simple commands and clear responses
@@ -240,5 +232,5 @@ npm run cli post             # Generate and post to Telegram
 ---
 
 **Last Updated**: December 2024  
-**Status**: Production Ready & Live with Enhanced Features  
+**Status**: Production Ready & Live with Enhanced Today's Schedule Features  
 **Next Review**: Monthly performance and feature assessment 
