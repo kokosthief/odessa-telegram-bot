@@ -286,17 +286,24 @@ export class ScheduleFormatter {
     const today = new Date();
     const dayName = this.getDayName(today);
     
-    // Generate intro text for today
-    const introText = `🎭 <b>Today's Schedule</b> (${dayName})`;
+    // Generate exciting intro text for today
+    const introText = `🌟 <b>Tonight's Magic</b> (${dayName}) ✨`;
     
     // Format today's events with enhanced DJ info
     const eventLines: string[] = [];
     const photos: string[] = [];
     
     for (const event of events) {
+      console.log(`🎭 Raw event data:`, {
+        eventType: event.eventType,
+        djName: event.djName,
+        title: event.title
+      });
+      
       const eventType = this.formatEventType(event.eventType);
       const djName = event.djName || 'TBA';
       
+      console.log(`🎭 Formatted event type: "${eventType}" from raw: "${event.eventType}"`);
       console.log(`Processing event with DJ: "${djName}"`);
       
       // Get enhanced DJ info from Wix with fallback
@@ -348,7 +355,7 @@ export class ScheduleFormatter {
         }
       }
       
-      let eventText = `🎵 ${eventDescription}`;
+      let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶\n\n${eventDescription}`;
       eventLines.push(eventText);
     }
     

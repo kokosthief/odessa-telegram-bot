@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v3.9 - Fixed Wix API response structure mapping
+// VERSION: Enhanced Wix Integration v4.0 - Added event type debugging and improved messaging
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)
