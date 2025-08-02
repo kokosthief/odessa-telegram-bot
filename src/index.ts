@@ -18,22 +18,29 @@ export class OdessaScheduleGenerator {
     try {
       console.log('Starting schedule generation...');
       
-      // Get upcoming events (simple approach)
-      const result = await this.scraper.getEvents(1, 'upcoming', 10);
+      // Get both past and upcoming events to ensure we have the full current week
+      const [pastResult, upcomingResult] = await Promise.all([
+        this.scraper.getEvents(1, 'past', 10), // Get past events
+        this.scraper.getEvents(1, 'upcoming', 10) // Get upcoming events
+      ]);
       
-      if (!result.success) {
+      if (!pastResult.success || !upcomingResult.success) {
         throw new Error('Failed to fetch events from Hipsy');
       }
       
-      if (result.events.length === 0) {
+      // Combine past and upcoming events
+      const allEvents = [...pastResult.events, ...upcomingResult.events];
+      
+      if (allEvents.length === 0) {
         return 'No events found for this week.';
       }
       
-      console.log(`Found ${result.events.length} events`);
+      console.log(`Found ${pastResult.events.length} past events and ${upcomingResult.events.length} upcoming events`);
+      console.log(`Total events: ${allEvents.length}`);
       
       // Filter to current week only (Wednesday to Sunday)
       const today = new Date();
-      const currentWeekEvents = this.filterToCurrentWeek(result.events, today);
+      const currentWeekEvents = this.filterToCurrentWeek(allEvents, today);
       
       console.log(`Filtered to ${currentWeekEvents.length} events for current week`);
       
