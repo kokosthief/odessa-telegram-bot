@@ -17,11 +17,9 @@ export class OdessaScheduleGenerator {
     try {
       console.log('Starting schedule generation...');
       
-      // Get events for upcoming week (next Wednesday to Sunday)
+      // Get events for current week (this week, not next week)
       const today = new Date();
-      const nextWeek = new Date(today);
-      nextWeek.setDate(today.getDate() + 7); // Look at next week
-      const events = await this.scraper.getEventsForWeek(nextWeek);
+      const events = await this.scraper.getEventsForWeek(today);
       
       if (events.length === 0) {
         console.log('No events found for this week');
@@ -98,13 +96,8 @@ export class OdessaScheduleGenerator {
       }
       
       console.log(`Found ${todayEvents.length} events for today`);
-      console.log('📋 Today\'s events:', todayEvents.map(e => `${e.title} - ${e.djName} - ${e.eventType}`));
-      console.log('🔍 Full event details:', todayEvents.map(e => ({
-        title: e.title,
-        djName: e.djName,
-        eventType: e.eventType,
-        date: e.date
-      })));
+      console.log('📋 Today\'s events:', todayEvents.map(e => `${e.djName} - ${e.eventType}`));
+      console.log('🎵 DJ names from Hipsy:', todayEvents.map(e => e.djName));
       
       // Format today's events with enhanced DJ info
       const formattedToday = await this.formatter.formatEnhancedTodaySchedule(todayEvents);

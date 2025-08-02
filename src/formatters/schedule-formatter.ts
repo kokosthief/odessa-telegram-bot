@@ -105,8 +105,7 @@ export class ScheduleFormatter {
           eventDescription = `<b>| ${djName}</b>`;
         }
         
-        const eventTitle = event.title || `${eventType} Event`;
-        const line = `🗓️ ${day}: ${eventTitle} W/ ${eventDescription}`;
+        const line = `🗓️ ${day}: ${eventType} W/ ${eventDescription}`;
         lines.push(line);
       });
       
@@ -132,8 +131,7 @@ export class ScheduleFormatter {
           eventDescription = `<b>${djName}</b>`;
         }
         
-        const eventTitle = event.title || `${eventType} Event`;
-        return `🗓️ ${day}: ${eventTitle} W/ ${eventDescription}`;
+        return `🗓️ ${day}: ${eventType} W/ ${eventDescription}`;
       }
   }
 
@@ -217,24 +215,24 @@ export class ScheduleFormatter {
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
       
       console.log(`Enhanced DJ info found: ${djInfo ? 'YES' : 'NO'}`);
+      if (djInfo) {
+        console.log(`✅ Found Wix data for: ${djInfo.name}`);
+        console.log(`   Photo: ${djInfo.photo ? 'YES' : 'NO'}`);
+        console.log(`   Description: ${djInfo.shortDescription ? 'YES' : 'NO'}`);
+      } else {
+        console.log(`❌ No Wix data found for: "${djName}"`);
+      }
       
-      // Build the full event description with title and DJ
       let eventDescription: string;
       
-      // Start with the event title
-      const eventTitle = event.title || `${eventType} Event`;
-      console.log(`🎭 Processing event: "${eventTitle}" with DJ: "${djName}"`);
-      eventDescription = `<b>${eventTitle}</b>`;
-      
-      // Add DJ information
       if (djInfo) {
         // Use enhanced DJ info if available
         if (djInfo.soundcloudUrl && djInfo.soundcloudUrl.trim() !== '') {
-          eventDescription += `\n🎵 <b>${eventType} W/ <a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
+          eventDescription = `<b>${eventType} W/ <a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
         } else if (djInfo.website && djInfo.website.trim() !== '') {
-          eventDescription += `\n🎵 <b>${eventType} W/ <a href="${djInfo.website}">${djInfo.name}</a></b>`;
+          eventDescription = `<b>${eventType} W/ <a href="${djInfo.website}">${djInfo.name}</a></b>`;
         } else {
-          eventDescription += `\n🎵 <b>${eventType} W/ ${djInfo.name}</b>`;
+          eventDescription = `<b>${eventType} W/ ${djInfo.name}</b>`;
         }
         
         // Add photo if available
@@ -252,13 +250,13 @@ export class ScheduleFormatter {
         
         if (fallbackInfo && fallbackInfo.link && fallbackInfo.link.trim() !== '') {
           const link = fallbackInfo.link;
-          eventDescription += `\n🎵 <b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+          eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
         } else {
-          eventDescription += `\n🎵 <b>${eventType} W/ ${djName}</b>`;
+          eventDescription = `<b>${eventType} W/ ${djName}</b>`;
         }
       }
       
-      let eventText = eventDescription;
+      let eventText = `🎵 ${eventDescription}`;
       eventLines.push(eventText);
     }
     
