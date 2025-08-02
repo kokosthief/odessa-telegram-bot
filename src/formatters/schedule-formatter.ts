@@ -283,11 +283,11 @@ export class ScheduleFormatter {
       return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
     }
 
-    const today = new Date();
-    const dayName = this.getDayName(today);
-    
-    // Generate exciting intro text for today
-    const introText = `🌟 <b>Tonight's Magic</b> (${dayName}) ✨`;
+    // Generate exciting intro text for today with DJ name
+    const djName = events[0]?.djName || 'TBA';
+    const isEvening = new Date().getHours() >= 12; // Afternoon/evening events
+    const timeText = isEvening ? 'on the boat tonight' : 'today';
+    const introText = `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨`;
     
     // Format today's events with enhanced DJ info
     const eventLines: string[] = [];
@@ -320,42 +320,31 @@ export class ScheduleFormatter {
         console.log(`❌ No Wix data found for: "${djName}"`);
       }
       
-      let eventDescription: string;
+      // Build the enhanced event text
+      let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
       
+      // Add photo if available
+      if (djInfo && djInfo.photo) {
+        console.log(`📸 Adding photo to array: ${djInfo.photo}`);
+        photos.push(djInfo.photo);
+      }
+      
+      // Add description if available
+      if (djInfo && djInfo.shortDescription) {
+        console.log(`📝 Adding description to text: ${djInfo.shortDescription}`);
+        eventText += `\n\n${djInfo.shortDescription}`;
+      }
+      
+      // Add links if available
       if (djInfo) {
-        // Use enhanced DJ info if available
         if (djInfo.soundcloudUrl && djInfo.soundcloudUrl.trim() !== '') {
-          eventDescription = `<b>${eventType} W/ <a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
+          eventText += `\n\n🎵 <a href="${djInfo.soundcloudUrl}">Listen on SoundCloud</a>`;
         } else if (djInfo.website && djInfo.website.trim() !== '') {
-          eventDescription = `<b>${eventType} W/ <a href="${djInfo.website}">${djInfo.name}</a></b>`;
-        } else {
-          eventDescription = `<b>${eventType} W/ ${djInfo.name}</b>`;
-        }
-        
-        // Add photo if available
-        if (djInfo.photo) {
-          console.log(`📸 Adding photo to array: ${djInfo.photo}`);
-          photos.push(djInfo.photo);
-        }
-        
-        // Add description if available
-        if (djInfo.shortDescription) {
-          console.log(`📝 Adding description to text: ${djInfo.shortDescription}`);
-          eventDescription += `\n\n${djInfo.shortDescription}`;
-        }
-      } else {
-        // Fallback to existing DJ loader
-        const fallbackInfo = this.djLoader.getDJInfo(djName);
-        
-        if (fallbackInfo && fallbackInfo.link && fallbackInfo.link.trim() !== '') {
-          const link = fallbackInfo.link;
-          eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
-        } else {
-          eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+          eventText += `\n\n🌐 <a href="${djInfo.website}">Visit Website</a>`;
         }
       }
       
-      let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶\n\n${eventDescription}`;
+      console.log(`🎭 Final event text: ${eventText}`);
       eventLines.push(eventText);
     }
     
