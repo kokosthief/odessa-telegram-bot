@@ -201,6 +201,26 @@ export class WixDJLoader {
   }
 
   /**
+   * Convert Wix image URL to public URL
+   */
+  private convertWixImageUrl(wixUrl: string): string {
+    if (!wixUrl || !wixUrl.startsWith('wix:image://')) {
+      return wixUrl;
+    }
+    
+    // Extract the image ID from the Wix URL
+    // Format: wix:image://v1/36fde5_da56c5be75d04cd381fda3786928b0c9~mv2.jpg/Inphiknight-500x500.jpg
+    const match = wixUrl.match(/wix:image:\/\/v1\/([^\/]+)\/[^#]+/);
+    if (match) {
+      const imageId = match[1];
+      // Convert to public Wix image URL
+      return `https://static.wixstatic.com/media/${imageId}`;
+    }
+    
+    return wixUrl;
+  }
+
+  /**
    * Get DJ info with fallback to existing JSON data
    */
   async getDJInfoWithFallback(djName: string): Promise<{
@@ -215,9 +235,13 @@ export class WixDJLoader {
     const wixData = await this.getEnhancedDJInfo(djName);
     
     if (wixData) {
+      console.log(`✅ Wix data found for ${djName}:`);
+      console.log(`   Photo: ${wixData.photo ? 'YES' : 'NO'}`);
+      console.log(`   Description: ${wixData.shortDescription ? 'YES' : 'NO'}`);
+      
       return {
         name: wixData.title,
-        photo: wixData.photo || undefined,
+        photo: wixData.photo ? this.convertWixImageUrl(wixData.photo) : undefined,
         shortDescription: wixData.shortDescription || undefined,
         soundcloudUrl: wixData.website || undefined, // SoundCloud URL
         instagramUrl: wixData.website2 || undefined, // Instagram URL

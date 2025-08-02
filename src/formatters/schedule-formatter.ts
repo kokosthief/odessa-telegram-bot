@@ -306,7 +306,9 @@ export class ScheduleFormatter {
       if (djInfo) {
         console.log(`✅ Found Wix data for: ${djInfo.name}`);
         console.log(`   Photo: ${djInfo.photo ? 'YES' : 'NO'}`);
+        console.log(`   Photo URL: ${djInfo.photo || 'NONE'}`);
         console.log(`   Description: ${djInfo.shortDescription ? 'YES' : 'NO'}`);
+        console.log(`   Description text: ${djInfo.shortDescription || 'NONE'}`);
       } else {
         console.log(`❌ No Wix data found for: "${djName}"`);
       }
@@ -325,11 +327,13 @@ export class ScheduleFormatter {
         
         // Add photo if available
         if (djInfo.photo) {
+          console.log(`📸 Adding photo to array: ${djInfo.photo}`);
           photos.push(djInfo.photo);
         }
         
         // Add description if available
         if (djInfo.shortDescription) {
+          console.log(`📝 Adding description to text: ${djInfo.shortDescription}`);
           eventDescription += `\n\n${djInfo.shortDescription}`;
         }
       } else {
