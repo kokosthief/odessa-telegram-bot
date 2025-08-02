@@ -31,8 +31,18 @@ export class OdessaScheduleGenerator {
       
       console.log(`Found ${result.events.length} events`);
       
+      // Filter events for current week only (simple approach)
+      const today = new Date();
+      const currentWeekEvents = result.events.filter(event => {
+        const eventDate = new Date(event.date);
+        const daysDiff = Math.floor((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        return daysDiff >= -3 && daysDiff <= 7; // Events from 3 days ago to 7 days from now
+      });
+      
+      console.log(`Filtered to ${currentWeekEvents.length} events for current week`);
+      
       // Format the schedule with enhanced DJ info
-      const formattedSchedule = await this.formatter.formatScheduleWithDJLinks(result.events);
+      const formattedSchedule = await this.formatter.formatScheduleWithDJLinks(currentWeekEvents);
       
       console.log('Schedule generated successfully');
       return formattedSchedule;
