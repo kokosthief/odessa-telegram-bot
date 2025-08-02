@@ -234,10 +234,10 @@ export class ScheduleFormatter {
     switch (eventType.toLowerCase()) {
       case 'ecstatic dance':
       case 'ed':
-        return 'ED';
+        return 'Ecstatic Dance';
       case 'cacao ecstatic dance':
       case 'cacao ed':
-        return 'Cacao ED';
+        return 'Cacao Ecstatic Dance';
       case 'live music':
       case 'live':
         return 'Live Music';

@@ -174,8 +174,10 @@ export class HipsyScraper {
   async getEventsForWeek(startDate: Date): Promise<Event[]> {
     const allEvents: Event[] = [];
     let currentPage = 1;
-    const maxPages = 3; // Increased to 3 pages to get more data
-    const maxEvents = 20; // Increased to get enough events for full week coverage
+    const maxPages = 5; // Increased to 5 pages to get more historical data
+    const maxEvents = 50; // Increased to get enough events for full week coverage
+
+    console.log(`🎭 getEventsForWeek: searching for events starting from ${startDate.toDateString()}`);
 
     // First get upcoming events
     while (currentPage <= maxPages && allEvents.length < maxEvents) {
@@ -187,15 +189,21 @@ export class HipsyScraper {
       }
 
       if (result.events.length === 0) {
+        console.log(`🎭 getEventsForWeek: no more upcoming events on page ${currentPage}`);
         break; // No more events
       }
+
+      console.log(`🎭 getEventsForWeek: fetched ${result.events.length} upcoming events from page ${currentPage}`);
 
       // Filter events for the target week (Wednesday to Sunday)
       const weekEvents = this.filterEventsForWeek(result.events, startDate);
       allEvents.push(...weekEvents);
 
+      console.log(`🎭 getEventsForWeek: after filtering, have ${allEvents.length} events for target week`);
+
       // Early termination if we have enough events for full week coverage
       if (allEvents.length >= 6) { // We need max 6 events (Wed-Sun)
+        console.log(`🎭 getEventsForWeek: found enough events (${allEvents.length}), stopping search`);
         break;
       }
 
@@ -207,6 +215,7 @@ export class HipsyScraper {
 
     // Get past events if we don't have enough events for full week coverage
     if (allEvents.length < 6) {
+      console.log(`🎭 getEventsForWeek: only found ${allEvents.length} events, searching past events...`);
       currentPage = 1;
       while (currentPage <= maxPages && allEvents.length < 6) {
         const result = await this.getEvents(currentPage, 'past', 20); // Increased to 20 events per page
@@ -217,15 +226,21 @@ export class HipsyScraper {
         }
 
         if (result.events.length === 0) {
+          console.log(`🎭 getEventsForWeek: no more past events on page ${currentPage}`);
           break; // No more events
         }
+
+        console.log(`🎭 getEventsForWeek: fetched ${result.events.length} past events from page ${currentPage}`);
 
         // Filter events for the target week (Wednesday to Sunday)
         const weekEvents = this.filterEventsForWeek(result.events, startDate);
         allEvents.push(...weekEvents);
 
+        console.log(`🎭 getEventsForWeek: after filtering past events, have ${allEvents.length} events for target week`);
+
         // Early termination if we have enough events for full week coverage
         if (allEvents.length >= 6) {
+          console.log(`🎭 getEventsForWeek: found enough events (${allEvents.length}), stopping search`);
           break;
         }
 
@@ -235,6 +250,8 @@ export class HipsyScraper {
         await this.delay(500);
       }
     }
+
+    console.log(`🎭 getEventsForWeek: final result - ${allEvents.length} events found for target week`);
 
     // Sort events by date and limit to max 6 events (Wed-Sun)
     return allEvents
