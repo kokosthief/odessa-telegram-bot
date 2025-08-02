@@ -229,16 +229,22 @@ export class ScheduleFormatter {
   private formatEventType(eventType?: string): string {
     if (!eventType) return 'Event';
     
+    console.log(`🎭 Formatting event type: "${eventType}"`);
+    
     switch (eventType.toLowerCase()) {
       case 'ecstatic dance':
+      case 'ed':
         return 'ED';
       case 'cacao ecstatic dance':
+      case 'cacao ed':
         return 'Cacao ED';
       case 'live music':
+      case 'live':
         return 'Live Music';
       case 'queerstatic':
         return 'Queerstatic';
       default:
+        console.log(`🎭 Unknown event type: "${eventType}", returning "Event"`);
         return 'Event';
     }
   }
@@ -304,6 +310,8 @@ export class ScheduleFormatter {
       const djName = event.djName || 'TBA';
       
       console.log(`🎭 Formatted event type: "${eventType}" from raw: "${event.eventType}"`);
+      console.log(`🎭 Event title: "${event.title}"`);
+      console.log(`🎭 Event type detection: "${event.eventType}" -> "${eventType}"`);
       console.log(`Processing event with DJ: "${djName}"`);
       
       // Get enhanced DJ info from Wix with fallback
@@ -335,14 +343,7 @@ export class ScheduleFormatter {
         eventText += `\n\n${djInfo.shortDescription}`;
       }
       
-      // Add links if available
-      if (djInfo) {
-        if (djInfo.soundcloudUrl && djInfo.soundcloudUrl.trim() !== '') {
-          eventText += `\n\n🎵 <a href="${djInfo.soundcloudUrl}">Listen on SoundCloud</a>`;
-        } else if (djInfo.website && djInfo.website.trim() !== '') {
-          eventText += `\n\n🌐 <a href="${djInfo.website}">Visit Website</a>`;
-        }
-      }
+      // Don't add text links - we'll add them as buttons instead
       
       console.log(`🎭 Final event text: ${eventText}`);
       eventLines.push(eventText);
@@ -351,19 +352,33 @@ export class ScheduleFormatter {
     // Join events with line breaks
     const eventsText = eventLines.join('\n\n');
     
-    // Create ticket buttons for each event
-    const ticketButtons = events.map((event) => {
+    // Create ticket and SoundCloud buttons for each event
+    const keyboardButtons = await Promise.all(events.map(async (event) => {
       const eventType = this.formatEventType(event.eventType);
-      const buttonText = events.length === 1 ? 'TICKETS 🎟️' : `${eventType} TICKETS 🎟️`;
+      const ticketButtonText = events.length === 1 ? 'TICKETS 🎟️' : `${eventType} TICKETS 🎟️`;
       
-      return [{
-        text: buttonText,
+      // Get DJ info for SoundCloud link
+      const djName = event.djName || 'TBA';
+      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+      
+      const buttons = [{
+        text: ticketButtonText,
         url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
       }];
-    });
+      
+      // Add SoundCloud button if available
+      if (djInfo && djInfo.soundcloudUrl) {
+        buttons.push({
+          text: '🎵 SOUNDCLOUD',
+          url: djInfo.soundcloudUrl
+        });
+      }
+      
+      return buttons;
+    }));
     
     const keyboard = {
-      inline_keyboard: ticketButtons
+      inline_keyboard: keyboardButtons
     };
     
     const result: { text: string; photos?: string[]; keyboard?: any } = {

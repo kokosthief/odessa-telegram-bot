@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v4.1 - Fixed event type display and improved intro text
+// VERSION: Enhanced Wix Integration v4.2 - Added SoundCloud buttons and enhanced event type debugging
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)
