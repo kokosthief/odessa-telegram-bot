@@ -46,7 +46,7 @@ export class HipsyScraper {
           title: event.title,
           date: event.date,
           picture: event.picture || event.picture_small || 'https://via.placeholder.com/150',
-          ticketUrl: event.url_ticketshop || event.url_hipsy,
+          ticketUrl: this.convertToPublicUrl(event.url_ticketshop || event.url_hipsy),
           originalDate: event.date,
           djName: this.extractDJName(event.title),
           eventType: this.classifyEventType(event.title),
@@ -273,6 +273,22 @@ export class HipsyScraper {
     }
     
     return result;
+  }
+
+  /**
+   * Convert API URL to public URL format
+   */
+  private convertToPublicUrl(apiUrl: string): string {
+    if (!apiUrl) return '';
+    
+    // Convert from: https://api.hipsy.nl/shop/128405-ecstatic-dance-inphiknight
+    // To: https://hipsy.nl/event/128405-ecstatic-dance-inphiknight
+    const match = apiUrl.match(/https:\/\/api\.hipsy\.nl\/shop\/(.+)/);
+    if (match) {
+      return `https://hipsy.nl/event/${match[1]}`;
+    }
+    
+    return apiUrl; // Return original if no match
   }
 
   /**
