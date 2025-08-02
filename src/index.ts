@@ -28,8 +28,8 @@ export class OdessaScheduleGenerator {
       
       console.log(`Found ${events.length} events for this week`);
       
-      // Format the schedule
-      const formattedSchedule = this.formatter.formatScheduleWithDJLinks(events);
+      // Format the schedule with enhanced DJ info
+      const formattedSchedule = await this.formatter.formatScheduleWithDJLinks(events);
       
       console.log('Schedule generated successfully');
       return formattedSchedule;

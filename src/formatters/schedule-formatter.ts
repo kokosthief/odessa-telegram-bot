@@ -80,6 +80,24 @@ export class ScheduleFormatter {
   }
 
   /**
+   * Format schedule lines for each day with enhanced DJ info from Wix
+   */
+  private async formatScheduleLinesEnhanced(eventsByDay: { [key: string]: Event[] }): Promise<string> {
+    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const lines: string[] = [];
+    
+    for (const day of dayOrder) {
+      const dayEvents = eventsByDay[day];
+      if (dayEvents && dayEvents.length > 0) {
+        const eventLine = await this.formatDayEventsEnhanced(day, dayEvents);
+        lines.push(eventLine);
+      }
+    }
+    
+    return lines.join('\n');
+  }
+
+  /**
    * Format events for a specific day
    */
   private formatDayEvents(day: string, events: Event[]): string {
@@ -136,6 +154,76 @@ export class ScheduleFormatter {
   }
 
   /**
+   * Format events for a specific day with enhanced DJ info from Wix
+   */
+  private async formatDayEventsEnhanced(day: string, events: Event[]): Promise<string> {
+    // Sort events by date to ensure chronological order
+    events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    // Handle multiple events on the same day
+    if (events.length > 1) {
+      const lines: string[] = [];
+      
+      for (const event of events) {
+        const eventType = this.formatEventType(event.eventType);
+        const djName = event.djName || 'TBA';
+        
+        // Get enhanced DJ info from Wix with fallback
+        const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+        let eventDescription: string;
+        
+        if (djInfo && djInfo.soundcloudUrl && djInfo.soundcloudUrl.trim() !== '') {
+          eventDescription = `<b>| <a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
+        } else if (djInfo && djInfo.website && djInfo.website.trim() !== '') {
+          eventDescription = `<b>| <a href="${djInfo.website}">${djInfo.name}</a></b>`;
+        } else {
+          // Fallback to existing DJ loader
+          const fallbackInfo = this.djLoader.getDJInfo(djName);
+          if (fallbackInfo && fallbackInfo.link && fallbackInfo.link.trim() !== '') {
+            eventDescription = `<b>| <a href="${fallbackInfo.link}">${djName}</a></b>`;
+          } else {
+            eventDescription = `<b>| ${djName}</b>`;
+          }
+        }
+        
+        const line = `🗓️ ${day}: ${eventType} W/ ${eventDescription}`;
+        lines.push(line);
+      }
+      
+      return lines.join('\n');
+    } else {
+      // Single event for the day
+      const event = events[0];
+      if (!event) {
+        return `🗓️ ${day}: No events`;
+      }
+      
+      const eventType = this.formatEventType(event.eventType);
+      const djName = event.djName || 'TBA';
+      
+      // Get enhanced DJ info from Wix with fallback
+      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+      let eventDescription: string;
+      
+      if (djInfo && djInfo.soundcloudUrl && djInfo.soundcloudUrl.trim() !== '') {
+        eventDescription = `<b><a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
+      } else if (djInfo && djInfo.website && djInfo.website.trim() !== '') {
+        eventDescription = `<b><a href="${djInfo.website}">${djInfo.name}</a></b>`;
+      } else {
+        // Fallback to existing DJ loader
+        const fallbackInfo = this.djLoader.getDJInfo(djName);
+        if (fallbackInfo && fallbackInfo.link && fallbackInfo.link.trim() !== '') {
+          eventDescription = `<b><a href="${fallbackInfo.link}">${djName}</a></b>`;
+        } else {
+          eventDescription = `<b>${djName}</b>`;
+        }
+      }
+      
+      return `🗓️ ${day}: ${eventType} W/ ${eventDescription}`;
+    }
+  }
+
+  /**
    * Format event type for display
    */
   private formatEventType(eventType?: string): string {
@@ -165,7 +253,7 @@ export class ScheduleFormatter {
   /**
    * Format schedule with DJ links
    */
-  formatScheduleWithDJLinks(events: Event[]): string {
+  async formatScheduleWithDJLinks(events: Event[]): Promise<string> {
     if (events.length === 0) {
       return 'No events found for this week.';
     }
@@ -176,8 +264,8 @@ export class ScheduleFormatter {
     // Generate intro text
     const introText = this.generateIntroText();
     
-    // Format schedule lines
-    const scheduleLines = this.formatScheduleLines(eventsByDay);
+    // Format schedule lines with enhanced DJ info
+    const scheduleLines = await this.formatScheduleLinesEnhanced(eventsByDay);
     
     // Combine into final format
     return `${introText}\n\n${scheduleLines}`;

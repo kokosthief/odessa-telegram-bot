@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v3.5 - Fixed schedule week and added DJ name debugging
+// VERSION: Enhanced Wix Integration v3.6 - Fixed schedule week range and enhanced DJ links
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)

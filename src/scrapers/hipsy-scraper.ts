@@ -263,6 +263,15 @@ export class HipsyScraper {
     }
     const result = new Date(date);
     result.setDate(date.getDate() + diff);
+    
+    // If we're past Wednesday this week, look back to the previous Wednesday
+    // This ensures we get the full week including past events
+    const today = new Date();
+    const currentDay = today.getDay();
+    if (currentDay > 3) { // If we're past Wednesday (Thursday, Friday, Saturday, Sunday)
+      result.setDate(result.getDate() - 7); // Go back one more week
+    }
+    
     return result;
   }
 
