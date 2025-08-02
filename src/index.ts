@@ -98,7 +98,13 @@ export class OdessaScheduleGenerator {
       }
       
       console.log(`Found ${todayEvents.length} events for today`);
-      console.log('📋 Today\'s events:', todayEvents.map(e => `${e.djName} - ${e.eventType}`));
+      console.log('📋 Today\'s events:', todayEvents.map(e => `${e.title} - ${e.djName} - ${e.eventType}`));
+      console.log('🔍 Full event details:', todayEvents.map(e => ({
+        title: e.title,
+        djName: e.djName,
+        eventType: e.eventType,
+        date: e.date
+      })));
       
       // Format today's events with enhanced DJ info
       const formattedToday = await this.formatter.formatEnhancedTodaySchedule(todayEvents);
