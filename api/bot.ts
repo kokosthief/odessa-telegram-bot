@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v5.3 - Fetch both past and upcoming events for full week
+// VERSION: Enhanced Wix Integration v5.4 - Better logging for past/upcoming events debugging
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)
