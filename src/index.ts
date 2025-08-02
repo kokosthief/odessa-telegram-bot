@@ -18,44 +18,38 @@ export class OdessaScheduleGenerator {
     try {
       console.log('Starting schedule generation...');
       
-      // Fetch past events first
-      console.log('🔍 Fetching PAST events...');
-      const pastResult = await this.scraper.getEvents(1, 'past', 10);
-      console.log(`📅 Past events result: ${pastResult.success ? 'SUCCESS' : 'FAILED'}, found ${pastResult.events.length} events`);
+      // Fetch ALL events (past, present, future) to ensure we get the complete week
+      console.log('🔍 Fetching ALL events (past + upcoming)...');
+      const allResult = await this.scraper.getEvents(1, 'all', 50); // Fetch more events
+      console.log(`📅 All events result: ${allResult.success ? 'SUCCESS' : 'FAILED'}, found ${allResult.events.length} events`);
       
-      // Fetch upcoming events
-      console.log('🔍 Fetching UPCOMING events...');
-      const upcomingResult = await this.scraper.getEvents(1, 'upcoming', 10);
-      console.log(`📅 Upcoming events result: ${upcomingResult.success ? 'SUCCESS' : 'FAILED'}, found ${upcomingResult.events.length} events`);
-      
-      if (!pastResult.success || !upcomingResult.success) {
-        console.error('❌ Failed to fetch events:', { past: pastResult.error, upcoming: upcomingResult.error });
+      if (!allResult.success) {
+        console.error('❌ Failed to fetch events:', allResult.error);
         throw new Error('Failed to fetch events from Hipsy');
       }
       
-      // Combine past and upcoming events
-      const allEvents = [...pastResult.events, ...upcomingResult.events];
-      
-      if (allEvents.length === 0) {
+      if (allResult.events.length === 0) {
         return 'No events found for this week.';
       }
       
-      console.log(`📊 Total events found: ${allEvents.length} (${pastResult.events.length} past + ${upcomingResult.events.length} upcoming)`);
+      console.log(`📊 Total events found: ${allResult.events.length}`);
       
       // Log all events for debugging
-      allEvents.forEach((event, index) => {
-        console.log(`📋 Event ${index + 1}: "${event.title}" on ${new Date(event.date).toDateString()} (${event.djName})`);
+      allResult.events.forEach((event, index) => {
+        const eventDate = new Date(event.date);
+        console.log(`📋 Event ${index + 1}: "${event.title}" on ${eventDate.toDateString()} (${event.djName}) - ${event.eventType}`);
       });
       
       // Filter to current week only (Wednesday to Sunday)
       const today = new Date();
-      const currentWeekEvents = this.filterToCurrentWeek(allEvents, today);
+      const currentWeekEvents = this.filterToCurrentWeek(allResult.events, today);
       
       console.log(`🎯 Filtered to ${currentWeekEvents.length} events for current week`);
       
       // Log filtered events
       currentWeekEvents.forEach((event, index) => {
-        console.log(`✅ Week event ${index + 1}: "${event.title}" on ${new Date(event.date).toDateString()} (${event.djName})`);
+        const eventDate = new Date(event.date);
+        console.log(`✅ Week event ${index + 1}: "${event.title}" on ${eventDate.toDateString()} (${event.djName}) - ${event.eventType}`);
       });
       
       // Format the schedule
