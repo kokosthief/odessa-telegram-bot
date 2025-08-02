@@ -160,11 +160,11 @@ export class WixDJLoader {
       const result = await response.json() as any;
       console.log(`📊 Response data:`, JSON.stringify(result, null, 2));
       
-      if (result.data && result.data.length > 0) {
-        console.log(`✅ Found Wix data: ${result.data.length} items`);
+      if (result.dataItems && result.dataItems.length > 0) {
+        console.log(`✅ Found Wix data: ${result.dataItems.length} items`);
         
         // Convert REST response to our format
-        const firstItem = result.data[0];
+        const firstItem = result.dataItems[0];
         
         if (firstItem && firstItem.data) {
           // Extract data from the REST response
