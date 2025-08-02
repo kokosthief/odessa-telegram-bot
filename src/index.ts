@@ -1,6 +1,6 @@
 import { HipsyScraper } from './scrapers/hipsy-scraper';
 import { ScheduleFormatter } from './formatters/schedule-formatter';
-import { Event } from './types/event';
+// import { Event } from './types/event';
 
 export class OdessaScheduleGenerator {
   private scraper: HipsyScraper;
@@ -53,15 +53,16 @@ export class OdessaScheduleGenerator {
       }
       
       // Filter to current week only (Wednesday to Sunday)
-      const today = new Date();
-      const currentWeekEvents = this.filterToCurrentWeek(allResult.events, today);
+      // TEMPORARY: Don't filter by week, just show all events to debug
+      console.log(`🎯 TEMPORARY: Showing ALL events without week filtering`);
+      const currentWeekEvents = allResult.events; // Don't filter for now
       
-      console.log(`🎯 Filtered to ${currentWeekEvents.length} events for current week`);
+      console.log(`🎯 Showing ${currentWeekEvents.length} events (no filtering)`);
       
       // Log filtered events
       currentWeekEvents.forEach((event, index) => {
         const eventDate = new Date(event.date);
-        console.log(`✅ Week event ${index + 1}: "${event.title}" on ${eventDate.toDateString()} (${event.djName}) - ${event.eventType}`);
+        console.log(`✅ Event ${index + 1}: "${event.title}" on ${eventDate.toDateString()} (${event.djName}) - ${event.eventType}`);
       });
       
       // Format the schedule
@@ -79,6 +80,7 @@ export class OdessaScheduleGenerator {
   /**
    * Filter events to current week (Wednesday to Sunday)
    */
+  /*
   private filterToCurrentWeek(events: Event[], today: Date): Event[] {
     // Get the start of the current week (Wednesday)
     const startOfWeek = this.getStartOfWeek(today);
@@ -101,10 +103,12 @@ export class OdessaScheduleGenerator {
       return isInRange;
     });
   }
+  */
 
   /**
    * Get the start of the current week (Wednesday)
    */
+  /*
   private getStartOfWeek(date: Date): Date {
     const day = date.getDay();
     const result = new Date(date);
@@ -124,6 +128,7 @@ export class OdessaScheduleGenerator {
     
     return result;
   }
+  */
 
   /**
    * Generate enhanced today's schedule with Wix DJ data
