@@ -138,16 +138,23 @@ export class HipsyScraper {
   private classifyEventType(title: string): 'ED' | 'Cacao ED' | 'Live Music' | 'Queerstatic' | undefined {
     const text = title.toLowerCase();
     
+    console.log(`🎭 Classifying event type for title: "${title}" -> lowercase: "${text}"`);
+    
     if (text.includes('queerstatic')) {
+      console.log(`🎭 Found Queerstatic in: "${text}"`);
       return 'Queerstatic';
     } else if (text.includes('cacao') && (text.includes('ecstatic') || text.includes('ed'))) {
+      console.log(`🎭 Found Cacao ED in: "${text}"`);
       return 'Cacao ED';
     } else if (text.includes('ecstatic dance') || text.includes('ed')) {
+      console.log(`🎭 Found ED in: "${text}"`);
       return 'ED';
     } else if (text.includes('live music') || text.includes('live')) {
+      console.log(`🎭 Found Live Music in: "${text}"`);
       return 'Live Music';
     }
     
+    console.log(`🎭 No event type found in: "${text}"`);
     return undefined;
   }
 

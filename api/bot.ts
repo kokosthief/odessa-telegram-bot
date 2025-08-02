@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v4.3 - Fixed Hipsy URL conversion to public format
+// VERSION: Enhanced Wix Integration v4.4 - Added event type debugging logs
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)

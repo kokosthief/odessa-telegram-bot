@@ -306,6 +306,9 @@ export class ScheduleFormatter {
         title: event.title
       });
       
+      console.log(`🎭 Hipsy event title: "${event.title}"`);
+      console.log(`🎭 Hipsy event type: "${event.eventType}"`);
+      
       const eventType = this.formatEventType(event.eventType);
       const djName = event.djName || 'TBA';
       
