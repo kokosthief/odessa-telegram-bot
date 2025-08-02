@@ -17,19 +17,22 @@ export class OdessaScheduleGenerator {
     try {
       console.log('Starting schedule generation...');
       
-      // Get events for current week (this week, not next week)
-      const today = new Date();
-      const events = await this.scraper.getEventsForWeek(today);
+      // Get events using simple approach (like the working version)
+      const result = await this.scraper.getEvents(1, 'upcoming', 20);
       
-      if (events.length === 0) {
-        console.log('No events found for this week');
+      if (!result.success) {
+        throw new Error('Failed to fetch events from Hipsy');
+      }
+      
+      if (result.events.length === 0) {
+        console.log('No events found');
         return 'No events found for this week.';
       }
       
-      console.log(`Found ${events.length} events for this week`);
+      console.log(`Found ${result.events.length} events`);
       
       // Format the schedule with enhanced DJ info
-      const formattedSchedule = await this.formatter.formatScheduleWithDJLinks(events);
+      const formattedSchedule = await this.formatter.formatScheduleWithDJLinks(result.events);
       
       console.log('Schedule generated successfully');
       return formattedSchedule;

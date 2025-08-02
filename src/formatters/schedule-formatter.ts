@@ -227,24 +227,16 @@ export class ScheduleFormatter {
    * Format event type for display
    */
   private formatEventType(eventType?: string): string {
-    if (!eventType) return 'Event';
-    
-    console.log(`🎭 Formatting event type: "${eventType}"`);
-    
-    switch (eventType.toLowerCase()) {
-      case 'ecstatic dance':
-      case 'ed':
-        return 'Ecstatic Dance';
-      case 'cacao ecstatic dance':
-      case 'cacao ed':
-        return 'Cacao Ecstatic Dance';
-      case 'live music':
-      case 'live':
+    switch (eventType) {
+      case 'ED':
+        return 'ED';
+      case 'Cacao ED':
+        return 'Cacao ED';
+      case 'Live Music':
         return 'Live Music';
-      case 'queerstatic':
+      case 'Queerstatic':
         return 'Queerstatic';
       default:
-        console.log(`🎭 Unknown event type: "${eventType}", returning "Event"`);
         return 'Event';
     }
   }
