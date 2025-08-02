@@ -290,6 +290,10 @@ export class HipsyScraper {
     
     console.log(`🎭 getStartOfWeek: input date=${date.toDateString()}, day=${day}, diff=${diff}, result=${result.toDateString()}`);
     
+    // For debugging: let's see what the actual current date is
+    const today = new Date();
+    console.log(`🎭 getStartOfWeek: today=${today.toDateString()}, today.getDay()=${today.getDay()}`);
+    
     return result;
   }
 

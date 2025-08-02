@@ -123,7 +123,7 @@ export class ScheduleFormatter {
           eventDescription = `<b>| ${djName}</b>`;
         }
         
-        const line = `🗓️ ${day}: ${eventType} W/ ${eventDescription}`;
+        const line = `🗓️ ${day}: <b>${eventType}</b> W/ ${eventDescription}`;
         lines.push(line);
       });
       
@@ -149,7 +149,7 @@ export class ScheduleFormatter {
           eventDescription = `<b>${djName}</b>`;
         }
         
-        return `🗓️ ${day}: ${eventType} W/ ${eventDescription}`;
+        return `🗓️ ${day}: <b>${eventType}</b> W/ ${eventDescription}`;
       }
   }
 
@@ -186,7 +186,7 @@ export class ScheduleFormatter {
           }
         }
         
-        const line = `🗓️ ${day}: ${eventType} W/ ${eventDescription}`;
+        const line = `🗓️ ${day}: <b>${eventType}</b> W/ ${eventDescription}`;
         lines.push(line);
       }
       
@@ -219,7 +219,7 @@ export class ScheduleFormatter {
         }
       }
       
-      return `🗓️ ${day}: ${eventType} W/ ${eventDescription}`;
+      return `🗓️ ${day}: <b>${eventType}</b> W/ ${eventDescription}`;
     }
   }
 
