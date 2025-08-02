@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v4.7 - Changed ED to Ecstatic Dance and enhanced week search
+// VERSION: Enhanced Wix Integration v4.8 - Fixed week calculation logic
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)

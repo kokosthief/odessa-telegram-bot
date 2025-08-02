@@ -263,7 +263,7 @@ export class HipsyScraper {
    * Filter events for Wednesday to Sunday of the target week
    */
   private filterEventsForWeek(events: Event[], startDate: Date): Event[] {
-    const startOfWeek = this.getStartOfWeek(startDate);
+    const startOfWeek = this.getStartOfWeek();
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 4); // Sunday (Wednesday + 4 days = Sunday)
 
@@ -291,25 +291,26 @@ export class HipsyScraper {
   /**
    * Get the start of the week (Wednesday)
    */
-  private getStartOfWeek(date: Date): Date {
-    const day = date.getDay();
-    // Wednesday is day 3 (0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday)
-    let diff;
-    if (day === 0) { // Sunday
-      diff = -4; // Go back 4 days to Wednesday
-    } else if (day >= 3) { // Wednesday, Thursday, Friday, Saturday
-      diff = 3 - day; // Days to subtract to get to Wednesday
-    } else { // Monday, Tuesday
-      diff = 3 - day + 7; // Days to subtract to get to Wednesday (next week)
-    }
-    const result = new Date(date);
-    result.setDate(date.getDate() + diff);
-    
-    console.log(`🎭 getStartOfWeek: input date=${date.toDateString()}, day=${day}, diff=${diff}, result=${result.toDateString()}`);
-    
-    // For debugging: let's see what the actual current date is
+  private getStartOfWeek(): Date {
     const today = new Date();
-    console.log(`🎭 getStartOfWeek: today=${today.toDateString()}, today.getDay()=${today.getDay()}`);
+    const currentDay = today.getDay();
+    
+    console.log(`🎭 getStartOfWeek: today=${today.toDateString()}, currentDay=${currentDay}`);
+    
+    // Calculate days to subtract to get to the most recent Wednesday
+    let daysToSubtract;
+    if (currentDay === 0) { // Sunday
+      daysToSubtract = 4; // Go back 4 days to Wednesday
+    } else if (currentDay >= 3) { // Wednesday, Thursday, Friday, Saturday
+      daysToSubtract = currentDay - 3; // Days since Wednesday
+    } else { // Monday, Tuesday
+      daysToSubtract = currentDay + 4; // Days to next Wednesday
+    }
+    
+    const result = new Date(today);
+    result.setDate(today.getDate() - daysToSubtract);
+    
+    console.log(`🎭 getStartOfWeek: daysToSubtract=${daysToSubtract}, result=${result.toDateString()}`);
     
     return result;
   }

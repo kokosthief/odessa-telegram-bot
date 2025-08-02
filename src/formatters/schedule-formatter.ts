@@ -118,12 +118,12 @@ export class ScheduleFormatter {
         
         if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
           const link = djInfo.link;
-          eventDescription = `<b>| <a href="${link}">${djName}</a></b>`;
+          eventDescription = `<b> <a href="${link}">${djName}</a></b>`;
         } else {
-          eventDescription = `<b>| ${djName}</b>`;
+          eventDescription = `<b> ${djName}</b>`;
         }
         
-        const line = `🗓️ ${day}: <b>${eventType}</b> W/ ${eventDescription}`;
+        const line = `🗓️ ${day}: <b>${eventType}</b> w/ ${eventDescription}`;
         lines.push(line);
       });
       
@@ -149,7 +149,7 @@ export class ScheduleFormatter {
           eventDescription = `<b>${djName}</b>`;
         }
         
-        return `🗓️ ${day}: <b>${eventType}</b> W/ ${eventDescription}`;
+        return `🗓️ ${day}: <b>${eventType}</b> w/ ${eventDescription}`;
       }
   }
 
@@ -173,20 +173,20 @@ export class ScheduleFormatter {
         let eventDescription: string;
         
         if (djInfo && djInfo.soundcloudUrl && djInfo.soundcloudUrl.trim() !== '') {
-          eventDescription = `<b>| <a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
+          eventDescription = `<b> <a href="${djInfo.soundcloudUrl}">${djInfo.name}</a></b>`;
         } else if (djInfo && djInfo.website && djInfo.website.trim() !== '') {
-          eventDescription = `<b>| <a href="${djInfo.website}">${djInfo.name}</a></b>`;
+          eventDescription = `<b> <a href="${djInfo.website}">${djInfo.name}</a></b>`;
         } else {
           // Fallback to existing DJ loader
           const fallbackInfo = this.djLoader.getDJInfo(djName);
           if (fallbackInfo && fallbackInfo.link && fallbackInfo.link.trim() !== '') {
-            eventDescription = `<b>| <a href="${fallbackInfo.link}">${djName}</a></b>`;
+            eventDescription = `<b> <a href="${fallbackInfo.link}">${djName}</a></b>`;
           } else {
-            eventDescription = `<b>| ${djName}</b>`;
+            eventDescription = `<b> ${djName}</b>`;
           }
         }
         
-        const line = `🗓️ ${day}: <b>${eventType}</b> W/ ${eventDescription}`;
+        const line = `🗓️ ${day}: <b>${eventType}</b> w/ ${eventDescription}`;
         lines.push(line);
       }
       
@@ -219,7 +219,7 @@ export class ScheduleFormatter {
         }
       }
       
-      return `🗓️ ${day}: <b>${eventType}</b> W/ ${eventDescription}`;
+      return `🗓️ ${day}: <b>${eventType}</b> w/ ${eventDescription}`;
     }
   }
 
@@ -426,9 +426,9 @@ export class ScheduleFormatter {
       
       if (djInfo && djInfo.link && djInfo.link.trim() !== '') {
         const link = djInfo.link;
-        eventDescription = `<b>${eventType} W/ <a href="${link}">${djName}</a></b>`;
+        eventDescription = `<b>${eventType} w/ <a href="${link}">${djName}</a></b>`;
       } else {
-        eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+        eventDescription = `<b>${eventType} w/ ${djName}</b>`;
       }
       
       let eventText = `🎵 ${eventDescription}`;
