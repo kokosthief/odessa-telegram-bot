@@ -140,16 +140,26 @@ export class HipsyScraper {
     
     console.log(`🎭 Classifying event type for title: "${title}" -> lowercase: "${text}"`);
     
+    // Check for Cacao ED first (more specific)
+    if (text.includes('cacao') && (text.includes('ecstatic') || text.includes('ed'))) {
+      console.log(`🎭 Found Cacao ED in: "${text}"`);
+      return 'Cacao ED';
+    }
+    
+    // Check for Queerstatic
     if (text.includes('queerstatic')) {
       console.log(`🎭 Found Queerstatic in: "${text}"`);
       return 'Queerstatic';
-    } else if (text.includes('cacao') && (text.includes('ecstatic') || text.includes('ed'))) {
-      console.log(`🎭 Found Cacao ED in: "${text}"`);
-      return 'Cacao ED';
-    } else if (text.includes('ecstatic dance') || text.includes('ed')) {
+    }
+    
+    // Check for regular Ecstatic Dance
+    if (text.includes('ecstatic dance')) {
       console.log(`🎭 Found ED in: "${text}"`);
       return 'ED';
-    } else if (text.includes('live music') || text.includes('live')) {
+    }
+    
+    // Check for Live Music
+    if (text.includes('live music') || text.includes('live')) {
       console.log(`🎭 Found Live Music in: "${text}"`);
       return 'Live Music';
     }
@@ -240,6 +250,9 @@ export class HipsyScraper {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 4); // Sunday (Wednesday + 4 days = Sunday)
 
+    console.log(`🎭 filterEventsForWeek: startDate=${startDate.toDateString()}, startOfWeek=${startOfWeek.toDateString()}, endOfWeek=${endOfWeek.toDateString()}`);
+    console.log(`🎭 filterEventsForWeek: processing ${events.length} events`);
+
     const filteredEvents = events.filter(event => {
       const eventDate = new Date(event.date);
       
@@ -248,9 +261,13 @@ export class HipsyScraper {
       const startDateOnly = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate());
       const endDateOnly = new Date(endOfWeek.getFullYear(), endOfWeek.getMonth(), endOfWeek.getDate());
       
-      return eventDateOnly >= startDateOnly && eventDateOnly <= endDateOnly;
+      const isInRange = eventDateOnly >= startDateOnly && eventDateOnly <= endDateOnly;
+      console.log(`🎭 filterEventsForWeek: event="${event.title}" on ${eventDateOnly.toDateString()} - ${isInRange ? 'INCLUDED' : 'EXCLUDED'}`);
+      
+      return isInRange;
     });
 
+    console.log(`🎭 filterEventsForWeek: filtered to ${filteredEvents.length} events`);
     return filteredEvents;
   }
 
@@ -271,13 +288,7 @@ export class HipsyScraper {
     const result = new Date(date);
     result.setDate(date.getDate() + diff);
     
-    // If we're past Wednesday this week, look back to the previous Wednesday
-    // This ensures we get the full week including past events
-    const today = new Date();
-    const currentDay = today.getDay();
-    if (currentDay > 3) { // If we're past Wednesday (Thursday, Friday, Saturday, Sunday)
-      result.setDate(result.getDate() - 7); // Go back one more week
-    }
+    console.log(`🎭 getStartOfWeek: input date=${date.toDateString()}, day=${day}, diff=${diff}, result=${result.toDateString()}`);
     
     return result;
   }
