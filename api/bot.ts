@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Store the video file_id for reuse
-// VERSION: Enhanced Wix Integration v5.6 - Add detailed date debugging for week filtering
+// VERSION: Enhanced Wix Integration v5.7 - Fix date calculation for August 2025
 let videoFileId: string | null = null;
 
 // Function to manually set the video file_id (for admin use)

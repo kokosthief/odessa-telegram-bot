@@ -34,6 +34,11 @@ export class OdessaScheduleGenerator {
       
       console.log(`📊 Total events found: ${allResult.events.length}`);
       
+      // Debug: Show current date
+      const now = new Date();
+      console.log(`🕐 System current date: ${now.toDateString()}`);
+      console.log(`🕐 System current time: ${now.toTimeString()}`);
+      
       // Log all events for debugging
       allResult.events.forEach((event, index) => {
         const eventDate = new Date(event.date);
@@ -115,7 +120,7 @@ export class OdessaScheduleGenerator {
     }
     
     result.setDate(date.getDate() - daysToSubtract);
-    console.log(`getStartOfWeek: today=${date.toDateString()}, day=${day}, daysToSubtract=${daysToSubtract}, result=${result.toDateString()}`);
+    console.log(`📅 getStartOfWeek: today=${date.toDateString()}, day=${day}, daysToSubtract=${daysToSubtract}, result=${result.toDateString()}`);
     
     return result;
   }
