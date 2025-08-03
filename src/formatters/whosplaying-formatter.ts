@@ -57,7 +57,6 @@ export class WhosPlayingFormatter {
   private generateMultiEventIntro(events: Event[]): string {
     if (events.length === 1) {
       // Single event - use event-based logic for time text
-      const amsterdamTime = this.getTodayInAmsterdam();
       const hasEveningEvents = events.some(event => {
         const eventTime = new Date(event.date);
         return eventTime.getHours() >= 18; // 6:00 PM
