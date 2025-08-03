@@ -244,7 +244,7 @@ export class WeeklyScheduleGenerator {
         ? `<a href="${event.facilitatorLink}">${event.facilitator}</a>`
         : event.facilitator;
       
-      text += `🗓️ ${event.day}: ${event.eventType} | ${facilitatorText}\n`;
+      text += `<b>🗓️ ${event.day}: ${event.eventType} | ${facilitatorText}</b>\n`;
     });
     
     return text;
