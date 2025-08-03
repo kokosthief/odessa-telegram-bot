@@ -1,55 +1,93 @@
-import { OdessaTodayGenerator } from './index';
+#!/usr/bin/env node
 
-async function testEnhancedWhosPlaying() {
-  console.log('🧪 Testing Enhanced WhosPlaying functionality...\n');
-  
-  const generator = new OdessaTodayGenerator();
-  
-  try {
-    console.log('1. Generating enhanced today\'s schedule...');
-    const enhancedSchedule = await generator.generateEnhancedTodaySchedule();
-    
-    console.log('✅ Enhanced schedule generated successfully!');
-    console.log('\n📋 Schedule Details:');
-    console.log(`   Text length: ${enhancedSchedule.text.length} characters`);
-    console.log(`   Photos: ${enhancedSchedule.photos ? enhancedSchedule.photos.length : 0} photos`);
-    console.log(`   Keyboard: ${enhancedSchedule.keyboard ? 'Available' : 'Not available'}`);
-    
-    console.log('\n📝 Schedule Text:');
-    console.log('='.repeat(50));
-    console.log(enhancedSchedule.text);
-    console.log('='.repeat(50));
-    
-    if (enhancedSchedule.photos && enhancedSchedule.photos.length > 0) {
-      console.log('\n📸 Photos:');
-      enhancedSchedule.photos.forEach((photo, index) => {
-        console.log(`   ${index + 1}. ${photo}`);
-      });
+import { WhosPlayingFormatter } from './formatters/whosplaying-formatter';
+import { Event } from './types/event';
+
+async function testEnhancedFormatting() {
+  console.log('🧪 Testing Enhanced WhosPlaying Formatter...\n');
+
+  const formatter = new WhosPlayingFormatter();
+
+  // Test single event
+  console.log('📋 Test 1: Single Event');
+  const singleEvent: Event[] = [{
+    id: '1',
+    title: 'Ecstatic Dance with RubyDub',
+    date: new Date().toISOString(),
+    originalDate: new Date().toISOString(),
+    ticketUrl: 'https://example.com/ticket1',
+    djName: 'RubyDub',
+    eventType: 'ED'
+  }];
+
+  const singleResult = await formatter.formatEnhancedTodaySchedule(singleEvent);
+  console.log('Single Event Result:');
+  console.log(singleResult.text);
+  console.log('\n' + '='.repeat(50) + '\n');
+
+  // Test multiple events with different DJs
+  console.log('📋 Test 2: Multiple Events with Different DJs');
+  const multipleEvents: Event[] = [
+    {
+      id: '1',
+      title: 'Ecstatic Dance with Leela',
+      date: new Date().toISOString(),
+      originalDate: new Date().toISOString(),
+      ticketUrl: 'https://example.com/ticket1',
+      djName: 'Leela',
+      eventType: 'ED'
+    },
+    {
+      id: '2',
+      title: 'Queerstatic with Inphiknight',
+      date: new Date().toISOString(),
+      originalDate: new Date().toISOString(),
+      ticketUrl: 'https://example.com/ticket2',
+      djName: 'Inphiknight',
+      eventType: 'Queerstatic'
     }
-    
-    if (enhancedSchedule.keyboard) {
-      console.log('\n⌨️  Keyboard Buttons:');
-      console.log(`   Buttons: ${enhancedSchedule.keyboard.inline_keyboard.length}`);
-      enhancedSchedule.keyboard.inline_keyboard.forEach((row: any[], rowIndex: number) => {
-        row.forEach((button: any, buttonIndex: number) => {
-          console.log(`   Row ${rowIndex + 1}, Button ${buttonIndex + 1}: ${button.text} -> ${button.url}`);
-        });
-      });
+  ];
+
+  const multipleResult = await formatter.formatEnhancedTodaySchedule(multipleEvents);
+  console.log('Multiple Events Result:');
+  console.log(multipleResult.text);
+  console.log('\n' + '='.repeat(50) + '\n');
+
+  // Test multiple events with same DJ
+  console.log('📋 Test 3: Multiple Events with Same DJ');
+  const sameDJEvents: Event[] = [
+    {
+      id: '1',
+      title: 'Ecstatic Dance with RubyDub',
+      date: new Date().toISOString(),
+      originalDate: new Date().toISOString(),
+      ticketUrl: 'https://example.com/ticket1',
+      djName: 'RubyDub',
+      eventType: 'ED'
+    },
+    {
+      id: '2',
+      title: 'Cacao Ecstatic Dance with RubyDub',
+      date: new Date().toISOString(),
+      originalDate: new Date().toISOString(),
+      ticketUrl: 'https://example.com/ticket2',
+      djName: 'RubyDub',
+      eventType: 'Cacao ED'
     }
-    
-  } catch (error) {
-    console.error('❌ Error generating enhanced schedule:', error);
-  }
-  
-  try {
-    console.log('\n2. Testing legacy schedule generation (fallback)...');
-    const legacySchedule = await generator.generateTodaySchedule();
-    console.log('✅ Legacy schedule generated successfully!');
-    console.log(`   Text length: ${legacySchedule.text.length} characters`);
-    console.log(`   Keyboard: ${legacySchedule.keyboard ? 'Available' : 'Not available'}`);
-  } catch (error) {
-    console.error('❌ Error generating legacy schedule:', error);
-  }
+  ];
+
+  const sameDJResult = await formatter.formatEnhancedTodaySchedule(sameDJEvents);
+  console.log('Same DJ Events Result:');
+  console.log(sameDJResult.text);
+  console.log('\n' + '='.repeat(50) + '\n');
+
+  // Test event type formatting
+  console.log('📋 Test 4: Event Type Formatting');
+  const eventTypes = ['ED', 'Cacao ED', 'Live Music', 'Queerstatic', 'Unknown'];
+  eventTypes.forEach(type => {
+    const formatted = (formatter as any).formatEventType(type);
+    console.log(`${type} → ${formatted}`);
+  });
 }
 
-testEnhancedWhosPlaying().catch(console.error); 
+testEnhancedFormatting().catch(console.error); 

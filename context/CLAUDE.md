@@ -232,11 +232,33 @@ async function scrapeHipsyEvents(dateRange: DateRange): Promise<Event[]> {
 ```
 🌟 <b>today</b> with <b>DJ Name</b> ✨
 
-🎶 <b>Event Type</b> with <b>DJ Name</b> 🎶
+🎶 <b>Ecstatic Dance</b> with <b>DJ Name</b> 🎶
 
 [DJ Description if available]
 
 [TICKETS BUTTON] [SOUNDCLOUD BUTTON]
+```
+
+**For multiple events with different DJs:**
+```
+🌟 <b>today</b> with <b>DJ1 & DJ2</b> ✨
+
+A day filled with amazing music!
+
+🎶 <b>Ecstatic Dance</b> with <b>DJ1</b> 🎶
+
+🎶 <b>Queerstatic</b> with <b>DJ2</b> 🎶
+```
+
+**For multiple events with same DJ:**
+```
+🌟 <b>today</b> with <b>DJ Name</b> ✨
+
+Multiple events with the same DJ!
+
+🎶 <b>Ecstatic Dance</b> with <b>DJ Name</b> 🎶
+
+🎶 <b>Cacao Ecstatic Dance</b> with <b>DJ Name</b> 🎶
 ```
 
 ### Enhanced DJ Information
@@ -252,9 +274,10 @@ async function scrapeHipsyEvents(dateRange: DateRange): Promise<Event[]> {
 
 **Map scraped event data to display format:**
 
-- "Ecstatic Dance" → "ED"
-- "Cacao Ecstatic Dance" → "Cacao ED"
+- "Ecstatic Dance" → "Ecstatic Dance" (was "ED")
+- "Cacao Ecstatic Dance" → "Cacao Ecstatic Dance" (was "Cacao ED")
 - "Live Music" → "Live Music"
+- "Queerstatic" → "Queerstatic"
 
 ## Telegram Integration Guidelines
 

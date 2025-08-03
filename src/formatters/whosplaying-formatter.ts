@@ -32,15 +32,46 @@ export class WhosPlayingFormatter {
   private formatEventType(eventType?: string): string {
     switch (eventType) {
       case 'ED':
-        return 'ED';
+        return 'Ecstatic Dance';
       case 'Cacao ED':
-        return 'Cacao ED';
+        return 'Cacao Ecstatic Dance';
       case 'Live Music':
         return 'Live Music';
       case 'Queerstatic':
         return 'Queerstatic';
       default:
         return 'Event';
+    }
+  }
+
+  /**
+   * Generate intro text for multiple events
+   */
+  private generateMultiEventIntro(events: Event[]): string {
+    const amsterdamTime = this.getTodayInAmsterdam();
+    const isEvening = amsterdamTime.getHours() >= 12;
+    const timeText = isEvening ? 'on the boat tonight' : 'today';
+    
+    if (events.length === 1) {
+      // Single event - use DJ name
+      const djName = events[0]?.djName || 'TBA';
+      return `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨`;
+    } else {
+      // Multiple events - create a more dynamic intro
+      const uniqueDJs = [...new Set(events.map(e => e.djName).filter(Boolean))];
+      
+      if (uniqueDJs.length === 1) {
+        // Same DJ for multiple events
+        const djName = uniqueDJs[0];
+        return `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨\n\nMultiple events with the same DJ!`;
+      } else {
+        // Different DJs - create a more exciting intro
+        const djNames = uniqueDJs.slice(0, 2).join(' & ');
+        const remainingCount = uniqueDJs.length - 2;
+        const djText = remainingCount > 0 ? `${djNames} & ${remainingCount} more` : djNames;
+        
+        return `🌟 <b>${timeText}</b> with <b>${djText}</b> ✨\n\nA day filled with amazing music!`;
+      }
     }
   }
 
@@ -66,7 +97,7 @@ export class WhosPlayingFormatter {
       console.log(`Processing event with DJ: "${djName}"`);
       
       // Use Wix DJ loader for enhanced info
-      const eventDescription = `<b>${eventType} W/ ${djName}</b>`;
+      const eventDescription = `<b>${eventType}</b> with <b>${djName}</b>`;
       
       let eventText = `🎵 ${eventDescription}`;
       
@@ -110,11 +141,7 @@ export class WhosPlayingFormatter {
     }
 
     // Generate exciting intro text for today with DJ name
-    const djName = events[0]?.djName || 'TBA';
-    const amsterdamTime = this.getTodayInAmsterdam();
-    const isEvening = amsterdamTime.getHours() >= 12; // Afternoon/evening events in Amsterdam time
-    const timeText = isEvening ? 'on the boat tonight' : 'today';
-    const introText = `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨`;
+    const introText = this.generateMultiEventIntro(events);
     
     // Format today's events with enhanced DJ info
     const eventLines: string[] = [];

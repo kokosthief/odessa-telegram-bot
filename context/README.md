@@ -19,6 +19,8 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 - **Error Handling**: Comprehensive error handling with user-friendly messages
 - **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
 - **DJ Database**: 20+ DJs with social media links in `src/data/djs.json`
+- **Improved Event Types**: Full event names (Ecstatic Dance, Cacao Ecstatic Dance) instead of abbreviations
+- **Multi-Event Logic**: Smart intro text for multiple events with different DJs
 
 ### ✅ **User Experience Features**
 - **Typing Indicators**: Shows typing status during schedule generation
@@ -197,6 +199,60 @@ const todaySchedule = await generator.generateEnhancedTodaySchedule();
 // Generate legacy today's schedule (fallback)
 const legacySchedule = await generator.generateTodaySchedule();
 ```
+
+### Today's Schedule Formatting Guidelines
+
+**Follow this exact format for today's schedule posts:**
+
+```
+🌟 <b>today</b> with <b>DJ Name</b> ✨
+
+🎶 <b>Ecstatic Dance</b> with <b>DJ Name</b> 🎶
+
+[DJ Description if available]
+
+[TICKETS BUTTON] [SOUNDCLOUD BUTTON]
+```
+
+**For multiple events with different DJs:**
+```
+🌟 <b>today</b> with <b>DJ1 & DJ2</b> ✨
+
+A day filled with amazing music!
+
+🎶 <b>Ecstatic Dance</b> with <b>DJ1</b> 🎶
+
+🎶 <b>Queerstatic</b> with <b>DJ2</b> 🎶
+```
+
+**For multiple events with same DJ:**
+```
+🌟 <b>today</b> with <b>DJ Name</b> ✨
+
+Multiple events with the same DJ!
+
+🎶 <b>Ecstatic Dance</b> with <b>DJ Name</b> 🎶
+
+🎶 <b>Cacao Ecstatic Dance</b> with <b>DJ Name</b> 🎶
+```
+
+### Enhanced DJ Information
+
+**Implement enhanced DJ data with photos and descriptions:**
+
+- Photos from Wix CMS
+- Short descriptions from Wix CMS
+- Social media links (SoundCloud, etc.)
+- Fallback to existing JSON data when Wix unavailable
+
+### Event Type Mapping
+
+**Map scraped event data to display format:**
+
+- "Ecstatic Dance" → "Ecstatic Dance" (was "ED")
+- "Cacao Ecstatic Dance" → "Cacao Ecstatic Dance" (was "Cacao ED")
+- "Live Music" → "Live Music"
+- "Queerstatic" → "Queerstatic"
 
 ## 🌐 Production Deployment
 
