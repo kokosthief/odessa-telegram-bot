@@ -2,9 +2,15 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { Event } from '../types/event';
 import { WeeklyEvent } from '../types/weekly-event';
+import { WixDJLoader } from '../utils/wix-dj-loader';
 
 export class WeeklyScheduleScraper {
   private baseUrl = 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance';
+  private wixDJLoader: WixDJLoader;
+
+  constructor() {
+    this.wixDJLoader = new WixDJLoader();
+  }
 
   /**
    * Scrape weekly schedule from Wednesday to Sunday
@@ -21,7 +27,7 @@ export class WeeklyScheduleScraper {
       const eventsByDay = this.groupEventsByDay(scrapedEvents);
       
       // Create weekly schedule with all days
-      const weeklySchedule = this.createWeeklySchedule(eventsByDay);
+      const weeklySchedule = await this.createWeeklySchedule(eventsByDay);
       
       return weeklySchedule;
     } catch (error) {
@@ -58,7 +64,15 @@ export class WeeklyScheduleScraper {
     const events: Event[] = [];
     
     try {
-      // Make request to Hipsy page
+      // Try to get events from Hipsy API first
+      const apiEvents = await this.scrapeFromHipsyAPI(startDate, endDate);
+      if (apiEvents.length > 0) {
+        console.log(`✅ Found ${apiEvents.length} events from Hipsy API`);
+        return apiEvents;
+      }
+
+      // Fallback to web scraping
+      console.log('🔄 Falling back to web scraping...');
       const response = await axios.get(this.baseUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -94,6 +108,109 @@ export class WeeklyScheduleScraper {
     } catch (error) {
       console.error('Failed to scrape events for date range:', error);
       throw new Error('Event scraping failed');
+    }
+  }
+
+  /**
+   * Try to scrape events from Hipsy API
+   */
+  private async scrapeFromHipsyAPI(startDate: Date, endDate: Date): Promise<Event[]> {
+    const events: Event[] = [];
+    
+    try {
+      // Try different API endpoints
+      const apiEndpoints = [
+        'https://hipsy.nl/api/events',
+        'https://hipsy.nl/api/v1/events',
+        'https://hipsy.nl/api/organisations/odessa-amsterdam-ecstatic-dance/events'
+      ];
+
+      for (const endpoint of apiEndpoints) {
+        try {
+          console.log(`🔍 Trying API endpoint: ${endpoint}`);
+          const response = await axios.get(endpoint, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+              'Accept': 'application/json'
+            },
+            timeout: 5000
+          });
+
+          if (response.status === 200 && response.data) {
+            console.log(`✅ API endpoint ${endpoint} returned data`);
+            const apiEvents = this.parseAPIResponse(response.data, startDate, endDate);
+            if (apiEvents.length > 0) {
+              return apiEvents;
+            }
+          }
+        } catch (error) {
+          console.log(`❌ API endpoint ${endpoint} failed:`, error instanceof Error ? error.message : String(error));
+        }
+      }
+
+      return events;
+    } catch (error) {
+      console.error('Failed to scrape from Hipsy API:', error);
+      return events;
+    }
+  }
+
+  /**
+   * Parse API response
+   */
+  private parseAPIResponse(data: any, startDate: Date, endDate: Date): Event[] {
+    const events: Event[] = [];
+    
+    try {
+      // Handle different API response formats
+      const eventsArray = data.events || data.data || data || [];
+      
+      for (const eventData of eventsArray) {
+        try {
+          const event = this.parseAPIEvent(eventData);
+          if (event && this.isEventInDateRange(event, startDate, endDate)) {
+            events.push(event);
+          }
+        } catch (error) {
+          console.warn('Failed to parse API event:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to parse API response:', error);
+    }
+
+    return events;
+  }
+
+  /**
+   * Parse individual API event
+   */
+  private parseAPIEvent(eventData: any): Event | null {
+    try {
+      const title = eventData.title || eventData.name || '';
+      const dateStr = eventData.date || eventData.start_date || eventData.startDate || '';
+      const ticketUrl = eventData.ticket_url || eventData.ticketUrl || eventData.url || this.baseUrl;
+      
+      if (!title || !dateStr) return null;
+
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return null;
+
+      const djName = this.extractDJName(title);
+      const eventType = this.determineEventType(title);
+
+      return {
+        id: this.generateEventId(title, date),
+        title,
+        date: date.toISOString(),
+        originalDate: dateStr,
+        ticketUrl,
+        djName,
+        eventType: this.mapEventType(eventType)
+      };
+    } catch (error) {
+      console.warn('Failed to parse API event:', error);
+      return null;
     }
   }
 
@@ -227,11 +344,11 @@ export class WeeklyScheduleScraper {
   /**
    * Create weekly schedule with all days
    */
-  private createWeeklySchedule(eventsByDay: Record<string, Event[]>): WeeklyEvent[] {
+  private async createWeeklySchedule(eventsByDay: Record<string, Event[]>): Promise<WeeklyEvent[]> {
     const weeklySchedule: WeeklyEvent[] = [];
     const days = ['wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const;
 
-    days.forEach(day => {
+    for (const day of days) {
       const dayEvents = eventsByDay[day];
       
       if (dayEvents && dayEvents.length > 0) {
@@ -239,12 +356,16 @@ export class WeeklyScheduleScraper {
         const primaryEvent = dayEvents[0];
         
         if (primaryEvent) {
+          // Get DJ info from Wix CMS
+          const djInfo = await this.wixDJLoader.getDJInfoWithFallback(primaryEvent.djName || '');
+          
           weeklySchedule.push({
             day,
             eventType: this.mapWeeklyEventType(primaryEvent.eventType),
             djName: primaryEvent.djName || 'TBA',
             ticketUrl: primaryEvent.ticketUrl,
-            date: primaryEvent.date
+            date: primaryEvent.date,
+            ...(djInfo?.soundcloudUrl && { djSoundcloudUrl: djInfo.soundcloudUrl })
           });
         } else {
           // Fallback if primaryEvent is undefined
@@ -266,7 +387,7 @@ export class WeeklyScheduleScraper {
           date: this.getDateForDay(day).toISOString()
         });
       }
-    });
+    }
 
     return weeklySchedule;
   }

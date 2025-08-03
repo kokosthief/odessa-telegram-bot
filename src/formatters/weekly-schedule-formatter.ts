@@ -61,8 +61,14 @@ export class WeeklyScheduleFormatter {
       const eventType = this.formatEventType(event.eventType);
       const djName = event.djName || 'TBA';
       
+      // Create clickable DJ name with SoundCloud link if available
+      let djDisplay = djName;
+      if (event.djSoundcloudUrl && djName !== 'TBA') {
+        djDisplay = `<a href="${event.djSoundcloudUrl}">${djName}</a>`;
+      }
+      
       // Create clickable event name with ticket link
-      const eventName = `<a href="${event.ticketUrl}">${eventType} | ${djName}</a>`;
+      const eventName = `<a href="${event.ticketUrl}">${eventType} | ${djDisplay}</a>`;
       
       formattedText += `🗓️ ${dayLabel}: ${eventName}\n`;
     });
