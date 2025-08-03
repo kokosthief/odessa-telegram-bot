@@ -31,14 +31,6 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 - ✅ **Efficient Processing**: Processes maximum 10 events for optimal performance
 - ✅ **Enhanced Experience**: Rich DJ profiles with photos and descriptions
 
-### Weekly Schedule Generation (NEW)
-- ✅ **Weekly Schedule Command**: New `/schedule` command with video integration
-- ✅ **Full Week Coverage**: Shows events from Wednesday to Sunday
-- ✅ **Video Integration**: Auto-playing video with provided File ID
-- ✅ **Embedded Ticket Links**: Clickable event names with ticket URLs
-- ✅ **Fallback Schedule**: Graceful handling when no events found
-- ✅ **Separate Implementation**: Independent from `/whosplaying` command
-
 ### Enhanced DJ Information (NEW)
 - ✅ **Wix CMS Integration**: DJ photos and descriptions from Wix Data API
 - ✅ **Rich DJ Profiles**: Photos, short descriptions, and social media links
@@ -74,7 +66,6 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 
 ### User Commands
 - **`/whosplaying`** - Check who is playing today with DJ photos and descriptions
-- **`/schedule`** - View this week's schedule with video integration
 - **`/start`** - Welcome message and bot introduction
 - **`/help`** - Show help information and available commands
 
@@ -82,7 +73,6 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 - **Rate Limiting**: 60-second cooldown per user
 - **Enhanced DJ Info**: Photos and descriptions from Wix CMS
 - **Photo Uploads**: DJ photos in today's schedule messages
-- **Video Integration**: Auto-playing video in weekly schedule
 - **Error Recovery**: Graceful handling of all failure scenarios
 - **Rich Formatting**: HTML with bold text, emojis, and inline keyboards
 

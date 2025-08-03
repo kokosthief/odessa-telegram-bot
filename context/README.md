@@ -13,9 +13,8 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 ### ✅ **Core Features Implemented**
 - **Web Scraping**: Hipsy.no event data extraction with robust error handling
 - **Today's Schedule**: Real-time today's schedule creation with DJ information
-- **Weekly Schedule**: New `/schedule` command with video integration
 - **Telegram Integration**: Bot API with interactive command handling
-- **Interactive Commands**: `/whosplaying`, `/schedule`, `/start`, `/help`
+- **Interactive Commands**: `/whosplaying`, `/start`, `/help`
 - **Rate Limiting**: 60-second rate limit per user to prevent spam
 - **Error Handling**: Comprehensive error handling with user-friendly messages
 - **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
@@ -147,7 +146,6 @@ The bot supports interactive commands in Telegram:
 
 **Available Commands:**
 - `/whosplaying` - Check who is playing today with DJ photos and descriptions
-- `/schedule` - View this week's schedule with video integration
 - `/start` - Welcome message and bot introduction
 - `/help` - Show help information and available commands
 
@@ -155,7 +153,6 @@ The bot supports interactive commands in Telegram:
 - Works in both group chats and direct messages
 - Rate limiting (60 seconds between requests per user)
 - Real-time today's schedule generation from Hipsy.no
-- Weekly schedule with video integration
 - Error handling with user-friendly messages
 - Typing indicators during generation
 - Rich HTML formatting with bold text
@@ -321,9 +318,6 @@ npm run test:coverage
 
 # Test enhanced whosplaying functionality
 npm run test:enhanced-whosplaying
-
-# Test weekly schedule functionality
-npm run test:weekly-schedule
 
 # Test Wix integration
 npm run test:wix-integration

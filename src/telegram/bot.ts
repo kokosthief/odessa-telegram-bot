@@ -1,14 +1,17 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { OdessaTodayGenerator } from '../index';
+import { WeeklyScheduleGenerator } from '../weekly-schedule-generator';
 
 export class OdessaBot {
   private bot: TelegramBot;
   private generator: OdessaTodayGenerator;
+  private weeklyGenerator: WeeklyScheduleGenerator;
   private userRateLimits: Map<number, number> = new Map();
 
   constructor(token: string) {
     this.bot = new TelegramBot(token, { polling: false });
     this.generator = new OdessaTodayGenerator();
+    this.weeklyGenerator = new WeeklyScheduleGenerator();
   }
 
   /**
@@ -28,6 +31,11 @@ export class OdessaBot {
     // Handle /help command
     this.bot.onText(/\/help/, async (msg) => {
       await this.handleHelpCommand(msg);
+    });
+
+    // Handle /schedule command
+    this.bot.onText(/\/schedule/, async (msg) => {
+      await this.handleScheduleCommand(msg);
     });
   }
 
@@ -172,6 +180,50 @@ Just send /whosplaying to get started! 🌴🎶`;
 Need help? Contact the bot administrator.`;
 
     await this.bot.sendMessage(msg.chat.id, helpMessage, { parse_mode: 'HTML' });
+  }
+
+  /**
+   * Handle /schedule command with rate limiting and error handling
+   */
+  public async handleScheduleCommand(msg: TelegramBot.Message): Promise<void> {
+    const userId = msg.from?.id;
+    if (!userId) return;
+
+    // Check rate limiting
+    const now = Date.now();
+    const lastRequest = this.userRateLimits.get(userId);
+    if (lastRequest && now - lastRequest < 60000) { // 60 seconds
+      await this.bot.sendMessage(msg.chat.id,
+        '⏰ Please wait a moment before requesting again. You can request again in 60 seconds.',
+        { parse_mode: 'HTML' }
+      );
+      return;
+    }
+
+    // Update rate limit
+    this.userRateLimits.set(userId, now);
+
+    try {
+      // Show typing indicator
+      await this.bot.sendChatAction(msg.chat.id, 'typing');
+
+      // Generate weekly schedule
+      const weeklySchedule = await this.weeklyGenerator.generateWeeklySchedule();
+
+      // Send video with schedule
+      await this.bot.sendVideo(msg.chat.id, weeklySchedule.video, {
+        caption: weeklySchedule.text,
+        parse_mode: 'HTML',
+        reply_markup: weeklySchedule.keyboard
+      });
+
+    } catch (error) {
+      console.error('Error handling /schedule command:', error);
+      await this.bot.sendMessage(msg.chat.id,
+        '❌ Sorry, I couldn\'t fetch the weekly schedule. Please try again later.',
+        { parse_mode: 'HTML' }
+      );
+    }
   }
 
   /**

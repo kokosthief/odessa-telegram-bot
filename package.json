@@ -17,7 +17,6 @@
     "test:coverage": "jest --coverage",
     "test:wix-integration": "ts-node src/test-wix-integration.ts",
     "test:enhanced-whosplaying": "ts-node src/test-enhanced-whosplaying.ts",
-    "test:weekly-schedule": "ts-node src/test-weekly-schedule.ts",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
     "postinstall": "npm run type-check"

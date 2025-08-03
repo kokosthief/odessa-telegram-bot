@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { OdessaTodayGenerator } from '../src/index';
+import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
 import fs from 'fs';
 import path from 'path';
 
@@ -115,9 +116,34 @@ Sorry, I couldn't fetch today's schedule. Please try again later.
 If this problem persists, contact the bot administrator.`;
           await sendTelegramMessage(chat.id, errorMessage);
         }
+      } else if (text === '/schedule') {
+        try {
+          console.log('📅 /schedule command received - generating weekly schedule...');
+          
+          // Generate weekly schedule
+          const weeklyGenerator = new WeeklyScheduleGenerator();
+          const weeklySchedule = await weeklyGenerator.generateWeeklySchedule();
+          
+          console.log(`📋 Weekly schedule generated:`);
+          console.log(`   Text length: ${weeklySchedule.text.length} characters`);
+          console.log(`   Video: ${weeklySchedule.video}`);
+          console.log(`   Keyboard: ${weeklySchedule.keyboard ? 'Available' : 'Not available'}`);
+          
+          // Send video with schedule
+          await sendTelegramMessageWithVideo(chat.id, weeklySchedule.text, weeklySchedule.video, weeklySchedule.keyboard);
+          
+        } catch (error) {
+          console.error('Error generating weekly schedule:', error);
+          const errorMessage = `❌ <b>Error fetching weekly schedule</b>
+
+Sorry, I couldn't fetch the weekly schedule. Please try again later.
+
+If this problem persists, contact the bot administrator.`;
+          await sendTelegramMessage(chat.id, errorMessage);
+        }
       } else {
         // Handle unknown commands
-        await sendTelegramMessage(chat.id, `🤖 <b>Bot is working!</b>\n\nYou sent: "${text}"\n\nTry /whosplaying or /help`);
+        await sendTelegramMessage(chat.id, `🤖 <b>Bot is working!</b>\n\nYou sent: "${text}"\n\nTry /whosplaying, /schedule, or /help`);
       }
     }
 
@@ -237,6 +263,37 @@ async function sendTelegramMessageWithPhotos(chatId: number, caption: string, ph
     
   } catch (error) {
     console.error('Error sending Telegram photo:', error);
+    // Fallback to text message
+    await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+  }
+}
+
+async function sendTelegramMessageWithVideo(chatId: number, caption: string, video: string, replyMarkup?: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        video: video,
+        caption: caption,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Failed to send Telegram video:', await response.text());
+      // Fallback to text message
+      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+    }
+    
+  } catch (error) {
+    console.error('Error sending Telegram video:', error);
     // Fallback to text message
     await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
   }

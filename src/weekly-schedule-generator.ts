@@ -1,138 +1,268 @@
-import { WeeklyScheduleScraper } from './scrapers/weekly-schedule-scraper';
-import { WeeklyScheduleFormatter } from './formatters/weekly-schedule-formatter';
-import { WeeklyEvent, WeeklySchedule } from './types/weekly-event';
+import { HipsyScraper } from './scrapers/hipsy-scraper';
+import { WixDJLoader } from './utils/wix-dj-loader';
+import { Event, DateRange } from './types/event';
+
+export interface WeeklySchedule {
+  video: string;
+  text: string;
+  keyboard?: any;
+}
+
+export interface WeeklyEvent {
+  day: string;
+  eventType: string;
+  facilitator: string;
+  facilitatorLink?: string;
+  ticketUrl?: string | undefined;
+}
 
 export class WeeklyScheduleGenerator {
-  private scraper: WeeklyScheduleScraper;
-  private formatter: WeeklyScheduleFormatter;
+  private hipsyScraper: HipsyScraper;
+  private wixDJLoader: WixDJLoader;
+  private readonly VIDEO_ID = 'BAACAgQAAxkBAANIaIyYDXy2RFmnv6EZy2nsU2WqAsgAAmsYAAIvy2hQIXfzFx9DIcY2BA';
+  private readonly TICKETS_URL = 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance';
 
   constructor() {
-    this.scraper = new WeeklyScheduleScraper();
-    this.formatter = new WeeklyScheduleFormatter();
+    this.hipsyScraper = new HipsyScraper();
+    this.wixDJLoader = new WixDJLoader();
   }
 
   /**
-   * Generate weekly schedule with video integration
+   * Generate weekly schedule (Wednesday to Sunday)
    */
   async generateWeeklySchedule(): Promise<WeeklySchedule> {
     try {
-      console.log('🪩 Generating weekly schedule...');
+      console.log('🎭 Generating weekly schedule...');
       
-      // Scrape weekly events
-      const events = await this.scraper.scrapeWeeklySchedule();
+      // Get Wednesday to Sunday date range
+      const weekRange = this.getWeekRange();
+      console.log(`📅 Week range: ${weekRange.startDate.toISOString()} to ${weekRange.endDate.toISOString()}`);
       
-      if (!events || events.length === 0) {
-        console.warn('No events found, using fallback schedule');
-        return this.generateFallbackSchedule();
-      }
+      // Fetch events from Hipsy API
+      const events = await this.fetchWeeklyEvents(weekRange);
+      console.log(`📊 Found ${events.length} events for the week`);
       
-      // Format weekly schedule with video
-      const weeklySchedule = await this.formatter.formatWeeklySchedule(events);
+      // Format weekly schedule
+      const weeklyEvents = this.formatWeeklyEvents(events);
+      console.log(`📋 Formatted ${weeklyEvents.length} weekly events`);
       
-      console.log('✅ Weekly schedule generated successfully');
-      return weeklySchedule;
+      // Add facilitator links
+      const eventsWithLinks = await this.addFacilitatorLinks(weeklyEvents);
+      console.log(`🔗 Added facilitator links to ${eventsWithLinks.length} events`);
+      
+      // Generate formatted text
+      const formattedText = this.generateFormattedText(eventsWithLinks);
+      console.log(`📝 Generated formatted text (${formattedText.length} characters)`);
+      
+      // Create keyboard for tickets
+      const keyboard = this.createTicketsKeyboard();
+      
+      return {
+        video: this.VIDEO_ID,
+        text: formattedText,
+        keyboard
+      };
+      
     } catch (error) {
-      console.error('❌ Failed to generate weekly schedule:', error);
-      
-      // Return fallback schedule on error
-      return this.generateFallbackSchedule();
+      console.error('Error generating weekly schedule:', error);
+      throw new Error('Failed to generate weekly schedule');
     }
   }
 
   /**
-   * Generate fallback schedule when scraping fails
+   * Get Wednesday to Sunday date range for current week
    */
-  private async generateFallbackSchedule(): Promise<WeeklySchedule> {
-    console.log('🔄 Generating fallback weekly schedule...');
+  private getWeekRange(): DateRange {
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     
-    const fallbackEvents: WeeklyEvent[] = [
-      {
-        day: 'wednesday',
-        eventType: 'Ecstatic Dance',
-        djName: 'TBA',
-        ticketUrl: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance',
-        date: this.getDateForDay('wednesday').toISOString()
-      },
-      {
-        day: 'thursday',
-        eventType: 'Ecstatic Dance',
-        djName: 'TBA',
-        ticketUrl: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance',
-        date: this.getDateForDay('thursday').toISOString()
-      },
-      {
-        day: 'friday',
-        eventType: 'Ecstatic Dance',
-        djName: 'TBA',
-        ticketUrl: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance',
-        date: this.getDateForDay('friday').toISOString()
-      },
-      {
-        day: 'saturday',
-        eventType: 'Ecstatic Dance',
-        djName: 'TBA',
-        ticketUrl: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance',
-        date: this.getDateForDay('saturday').toISOString()
-      },
-      {
-        day: 'sunday',
-        eventType: 'Ecstatic Dance',
-        djName: 'TBA',
-        ticketUrl: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance',
-        date: this.getDateForDay('sunday').toISOString()
-      }
-    ];
-
-    return await this.formatter.formatWeeklySchedule(fallbackEvents);
-  }
-
-  /**
-   * Get date for a specific day of the week
-   */
-  private getDateForDay(day: string): Date {
-    const today = new Date();
-    const currentDay = today.getDay();
+    // Calculate days to Wednesday (3)
+    let daysToWednesday = 3 - currentDay;
+    if (daysToWednesday <= 0) {
+      daysToWednesday += 7; // Next Wednesday
+    }
     
-    const dayMap: Record<string, number> = {
-      wednesday: 3,
-      thursday: 4,
-      friday: 5,
-      saturday: 6,
-      sunday: 0
+    // Calculate days to Sunday (0)
+    let daysToSunday = 0 - currentDay;
+    if (daysToSunday <= 0) {
+      daysToSunday += 7; // Next Sunday
+    }
+    
+    const wednesday = new Date(now);
+    wednesday.setDate(now.getDate() + daysToWednesday);
+    wednesday.setHours(0, 0, 0, 0);
+    
+    const sunday = new Date(now);
+    sunday.setDate(now.getDate() + daysToSunday);
+    sunday.setHours(23, 59, 59, 999);
+    
+    return {
+      startDate: wednesday,
+      endDate: sunday
     };
-    
-    const targetDay = dayMap[day];
-    if (targetDay === undefined) {
-      // Fallback to current day if day not found
-      return today;
-    }
-    
-    const daysToAdd = (targetDay - currentDay + 7) % 7;
-    
-    const targetDate = new Date(today);
-    targetDate.setDate(today.getDate() + daysToAdd);
-    targetDate.setHours(12, 0, 0, 0);
-    
-    return targetDate;
   }
 
   /**
-   * Test weekly schedule generation (for CLI)
+   * Fetch events for the week from Hipsy API
    */
-  async testWeeklySchedule(): Promise<void> {
-    try {
-      console.log('🧪 Testing weekly schedule generation...');
-      
-      const schedule = await this.generateWeeklySchedule();
-      
-      console.log('📋 Generated Schedule:');
-      console.log('Video File ID:', schedule.videoFileId);
-      console.log('Text:', schedule.text);
-      console.log('Keyboard:', JSON.stringify(schedule.keyboard, null, 2));
-      
-      console.log('✅ Weekly schedule test completed successfully');
-    } catch (error) {
-      console.error('❌ Weekly schedule test failed:', error);
+  private async fetchWeeklyEvents(weekRange: DateRange): Promise<Event[]> {
+    const allEvents: Event[] = [];
+    let page = 1;
+    const limit = 100; // Get more events per page
+    
+    while (true) {
+      try {
+        const result = await this.hipsyScraper.getEvents(page, 'upcoming', limit);
+        
+        if (!result.success || result.events.length === 0) {
+          break;
+        }
+        
+        // Filter events within our week range
+        const weekEvents = result.events.filter(event => {
+          const eventDate = new Date(event.date);
+          return eventDate >= weekRange.startDate && eventDate <= weekRange.endDate;
+        });
+        
+        allEvents.push(...weekEvents);
+        
+        // If we got fewer events than the limit, we've reached the end
+        if (result.events.length < limit) {
+          break;
+        }
+        
+        page++;
+      } catch (error) {
+        console.error('Error fetching events for page', page, error);
+        break;
+      }
     }
+    
+    // Sort events by date
+    return allEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  /**
+   * Format events into weekly schedule structure
+   */
+  private formatWeeklyEvents(events: Event[]): WeeklyEvent[] {
+    const weeklyEvents: WeeklyEvent[] = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
+    // Group events by day
+    const eventsByDay = new Map<string, Event[]>();
+    
+    events.forEach(event => {
+      const eventDate = new Date(event.date);
+      const dayKey = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      
+      if (dayKey && !eventsByDay.has(dayKey)) {
+        eventsByDay.set(dayKey, []);
+      }
+      if (dayKey) {
+        eventsByDay.get(dayKey)!.push(event);
+      }
+    });
+    
+    // Process each day
+    for (const [dayKey, dayEvents] of eventsByDay) {
+      const eventDate = new Date(dayKey);
+      const dayIndex = eventDate.getDay();
+      const dayName = dayNames[dayIndex] || 'Unknown';
+      
+      // Sort events by time within the day
+      dayEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      // Create weekly event for each event on this day
+      for (const event of dayEvents) {
+        const weeklyEvent: WeeklyEvent = {
+          day: dayName,
+          eventType: this.mapEventType(event.eventType),
+          facilitator: event.djName || 'TBA',
+          ticketUrl: event.ticketUrl || undefined
+        };
+        
+        weeklyEvents.push(weeklyEvent);
+      }
+    }
+    
+    return weeklyEvents;
+  }
+
+  /**
+   * Map event types to display format
+   */
+  private mapEventType(eventType?: string): string {
+    switch (eventType) {
+      case 'ED':
+        return 'ED';
+      case 'Cacao ED':
+        return 'Cacao ED';
+      case 'Live Music':
+        return 'Live Music';
+      case 'Queerstatic':
+        return 'Queerstatic';
+      default:
+        return 'Event';
+    }
+  }
+
+  /**
+   * Add facilitator links using Wix API
+   */
+  private async addFacilitatorLinks(weeklyEvents: WeeklyEvent[]): Promise<WeeklyEvent[]> {
+    const eventsWithLinks = [...weeklyEvents];
+    
+    for (let i = 0; i < eventsWithLinks.length; i++) {
+      const event = eventsWithLinks[i];
+      
+      if (event && event.facilitator && event.facilitator !== 'TBA') {
+        try {
+          // Try to get facilitator data from Wix API
+          const facilitatorData = await this.wixDJLoader.getDJInfoWithFallback(event.facilitator);
+          
+          if (facilitatorData && facilitatorData.soundcloudUrl) {
+            event.facilitatorLink = facilitatorData.soundcloudUrl;
+          }
+        } catch (error) {
+          console.warn(`Failed to get facilitator link for ${event.facilitator}:`, error);
+        }
+      }
+    }
+    
+    return eventsWithLinks;
+  }
+
+  /**
+   * Generate formatted text for the weekly schedule
+   */
+  private generateFormattedText(weeklyEvents: WeeklyEvent[]): string {
+    let text = '🪩 <b><u>This Week</u></b> 🌴🎶\n\n';
+    
+    weeklyEvents.forEach(event => {
+      const facilitatorText = event.facilitatorLink 
+        ? `<a href="${event.facilitatorLink}">${event.facilitator}</a>`
+        : event.facilitator;
+      
+      text += `🗓️ ${event.day}: ${event.eventType} | ${facilitatorText}\n`;
+    });
+    
+    return text;
+  }
+
+  /**
+   * Create inline keyboard for tickets button
+   */
+  private createTicketsKeyboard(): any {
+    return {
+      inline_keyboard: [
+        [
+          {
+            text: '🎫 Tickets',
+            url: this.TICKETS_URL
+          }
+        ]
+      ]
+    };
   }
 } 
