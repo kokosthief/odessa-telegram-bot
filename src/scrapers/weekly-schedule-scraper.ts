@@ -61,6 +61,12 @@ export class WeeklyScheduleScraper {
     sunday.setDate(wednesday.getDate() + 6);
     sunday.setHours(23, 59, 59, 999);
     
+    console.log(`📅 Week range calculation:`);
+    console.log(`   Today: ${today.toDateString()} (day ${currentDay})`);
+    console.log(`   Wednesday: ${wednesday.toDateString()}`);
+    console.log(`   Sunday: ${sunday.toDateString()}`);
+    console.log(`   Days since Wednesday: ${daysSinceWednesday}`);
+    
     return { start: wednesday, end: sunday };
   }
 
@@ -149,11 +155,13 @@ export class WeeklyScheduleScraper {
 
       if (response.status === 200 && response.data && response.data.data) {
         console.log(`✅ Hipsy API returned ${response.data.data.length} events`);
+        console.log(`📊 API Response structure:`, JSON.stringify(response.data, null, 2).substring(0, 500) + '...');
         const apiEvents = this.parseHipsyAPIResponse(response.data.data, startDate, endDate);
         console.log(`📅 Filtered to ${apiEvents.length} events in date range`);
         return apiEvents;
       } else {
         console.warn('⚠️ Hipsy API returned unexpected response format');
+        console.log('Response data:', response.data);
         return events;
       }
     } catch (error) {
@@ -174,9 +182,13 @@ export class WeeklyScheduleScraper {
       for (const eventData of eventsData) {
         try {
           const event = this.parseHipsyEvent(eventData);
-          if (event && this.isEventInDateRange(event, startDate, endDate)) {
-            events.push(event);
-            console.log(`✅ Added event: ${event.title} on ${new Date(event.date).toDateString()}`);
+          if (event) {
+            const inRange = this.isEventInDateRange(event, startDate, endDate);
+            console.log(`📅 Event: "${event.title}" on ${new Date(event.date).toDateString()} - In range: ${inRange}`);
+            if (inRange) {
+              events.push(event);
+              console.log(`✅ Added event: ${event.title} on ${new Date(event.date).toDateString()}`);
+            }
           }
         } catch (error) {
           console.warn('Failed to parse Hipsy event:', error);
@@ -318,7 +330,13 @@ export class WeeklyScheduleScraper {
    */
   private isEventInDateRange(event: Event, startDate: Date, endDate: Date): boolean {
     const eventDate = new Date(event.date);
-    return eventDate >= startDate && eventDate <= endDate;
+    const inRange = eventDate >= startDate && eventDate <= endDate;
+    
+    if (!inRange) {
+      console.log(`   ❌ Event date ${eventDate.toDateString()} not in range ${startDate.toDateString()} - ${endDate.toDateString()}`);
+    }
+    
+    return inRange;
   }
 
   /**
