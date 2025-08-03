@@ -43,19 +43,8 @@ Just send /whosplaying to get started! 🌴🎶`;
 
 <b>Commands:</b>
 • /whosplaying - Check who is facilitating today
-• /schedule - View this week's schedule
-• /help - Show this help message
-
-<b>Features:</b>
-• Real-time schedule checking from Hipsy.no
-• DJ information with photos and descriptions
-• Direct ticket booking links
-• Works in groups and direct messages
-
-<b>Rate Limiting:</b>
-• You can request today's schedule once every 60 seconds to prevent spam
-
-Need help? Contact the bot administrator.`;
+• /schedule - View the week's schedule
+• /help - Show this help message`;
         
         await sendTelegramMessage(chat.id, helpMessage);
       } else if (text === '/whosplaying') {
