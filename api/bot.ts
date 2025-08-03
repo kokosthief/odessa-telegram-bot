@@ -66,18 +66,42 @@ Need help? Contact the bot administrator.`;
           console.log(`📋 Enhanced schedule generated:`);
           console.log(`   Text length: ${todaySchedule.text.length} characters`);
           console.log(`   Photos: ${todaySchedule.photos ? todaySchedule.photos.length : 0} photos`);
+          console.log(`   Messages: ${todaySchedule.messages ? todaySchedule.messages.length : 0} messages`);
           console.log(`   Keyboard: ${todaySchedule.keyboard ? 'Available' : 'Not available'}`);
           
-          // Send the schedule with photos if available
-          if (todaySchedule.photos && todaySchedule.photos.length > 0) {
-            console.log('📸 Sending schedule with photos...');
-            await sendTelegramMessageWithPhotos(chat.id, todaySchedule.text, todaySchedule.photos, todaySchedule.keyboard);
-          } else if (todaySchedule.keyboard) {
-            console.log('⌨️ Sending schedule with keyboard...');
-            await sendTelegramMessageWithKeyboard(chat.id, todaySchedule.text, todaySchedule.keyboard);
-          } else {
-            console.log('📝 Sending plain text schedule...');
+          // Handle multiple messages for multiple DJs
+          if (todaySchedule.messages && todaySchedule.messages.length > 0) {
+            console.log('📤 Sending multiple messages for multiple DJs');
+            
+            // Send intro message first
             await sendTelegramMessage(chat.id, todaySchedule.text);
+            
+            // Send separate message for each DJ with their photo
+            for (const message of todaySchedule.messages) {
+              console.log(`📤 Sending message: ${message.text.substring(0, 50)}...`);
+              
+              if (message.photo) {
+                console.log(`📸 Sending with photo: ${message.photo}`);
+                await sendTelegramMessageWithPhoto(chat.id, message.text, message.photo, message.keyboard);
+              } else {
+                console.log(`📝 Sending without photo`);
+                await sendTelegramMessageWithKeyboard(chat.id, message.text, message.keyboard);
+              }
+            }
+          } else {
+            console.log('📤 Using single message logic');
+            
+            // Send the schedule with photos if available (original logic)
+            if (todaySchedule.photos && todaySchedule.photos.length > 0) {
+              console.log('📸 Sending schedule with photos...');
+              await sendTelegramMessageWithPhotos(chat.id, todaySchedule.text, todaySchedule.photos, todaySchedule.keyboard);
+            } else if (todaySchedule.keyboard) {
+              console.log('⌨️ Sending schedule with keyboard...');
+              await sendTelegramMessageWithKeyboard(chat.id, todaySchedule.text, todaySchedule.keyboard);
+            } else {
+              console.log('📝 Sending plain text schedule...');
+              await sendTelegramMessage(chat.id, todaySchedule.text);
+            }
           }
           
         } catch (error) {
@@ -150,6 +174,37 @@ async function sendTelegramMessageWithKeyboard(chatId: number, text: string, rep
     }
   } catch (error) {
     console.error('Error sending Telegram message with keyboard:', error);
+  }
+}
+
+async function sendTelegramMessageWithPhoto(chatId: number, caption: string, photo: string, replyMarkup?: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        photo: photo,
+        caption: caption,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Failed to send Telegram photo:', await response.text());
+      // Fallback to text message
+      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+    }
+    
+  } catch (error) {
+    console.error('Error sending Telegram photo:', error);
+    // Fallback to text message
+    await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
   }
 }
 

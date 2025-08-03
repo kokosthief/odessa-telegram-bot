@@ -59,8 +59,20 @@ export class OdessaBot {
       // Generate enhanced today's schedule
       const todaySchedule = await this.generator.generateEnhancedTodaySchedule();
 
+      // Debug logging
+      console.log('🔍 Today Schedule Debug:');
+      console.log(`   Text: ${todaySchedule.text}`);
+      console.log(`   Photos: ${todaySchedule.photos ? todaySchedule.photos.length : 0}`);
+      console.log(`   Messages: ${todaySchedule.messages ? todaySchedule.messages.length : 0}`);
+      console.log(`   Keyboard: ${todaySchedule.keyboard ? 'YES' : 'NO'}`);
+      
+      if (todaySchedule.messages) {
+        console.log(`   Messages array:`, todaySchedule.messages);
+      }
+
       // Handle multiple messages for multiple DJs
       if (todaySchedule.messages && todaySchedule.messages.length > 0) {
+        console.log('📤 Sending multiple messages for multiple DJs');
         // Send intro message first
         await this.bot.sendMessage(msg.chat.id, todaySchedule.text, {
           parse_mode: 'HTML'
@@ -68,7 +80,9 @@ export class OdessaBot {
         
         // Send separate message for each DJ with their photo
         for (const message of todaySchedule.messages) {
+          console.log(`📤 Sending message: ${message.text.substring(0, 50)}...`);
           if (message.photo) {
+            console.log(`📸 Sending with photo: ${message.photo}`);
             // Send with photo
             await this.bot.sendPhoto(msg.chat.id, message.photo, {
               caption: message.text,
@@ -76,6 +90,7 @@ export class OdessaBot {
               reply_markup: message.keyboard
             });
           } else {
+            console.log(`📝 Sending without photo`);
             // Send without photo
             await this.bot.sendMessage(msg.chat.id, message.text, {
               parse_mode: 'HTML',
@@ -84,6 +99,7 @@ export class OdessaBot {
           }
         }
       } else {
+        console.log('📤 Using single message logic');
         // Handle single event (original logic)
         if (todaySchedule.photos && todaySchedule.photos.length > 0 && todaySchedule.photos[0]) {
           // Send with photos
