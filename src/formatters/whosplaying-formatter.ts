@@ -55,15 +55,22 @@ export class WhosPlayingFormatter {
    * Generate intro text for multiple events
    */
   private generateMultiEventIntro(events: Event[]): string {
-    const amsterdamTime = this.getTodayInAmsterdam();
-    const isEvening = amsterdamTime.getHours() >= 12;
-    const timeText = isEvening ? 'on the boat tonight' : 'Today';
-    
     if (events.length === 1) {
+      // Single event - use event-based logic for time text
+      const amsterdamTime = this.getTodayInAmsterdam();
+      const hasEveningEvents = events.some(event => {
+        const eventTime = new Date(event.date);
+        return eventTime.getHours() >= 18; // 6:00 PM
+      });
+      const timeText = hasEveningEvents ? 'on the boat tonight' : 'Today';
+      
       // Single event - use DJ name
       const djName = events[0]?.djName || 'TBA';
       return `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨`;
     } else {
+      // Multiple events - always use "Today on the boat" for simplicity
+      const timeText = 'Today on the boat';
+      
       // Multiple events - create a more dynamic intro
       const uniqueDJs = [...new Set(events.map(e => e.djName).filter(Boolean))];
       
