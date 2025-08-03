@@ -1,6 +1,6 @@
 import { HipsyScraper } from './scrapers/hipsy-scraper';
 import { WhosPlayingFormatter } from './formatters/whosplaying-formatter';
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import { utcToZonedTime } from 'date-fns-tz';
 
 export class OdessaTodayGenerator {
   private scraper: HipsyScraper;
