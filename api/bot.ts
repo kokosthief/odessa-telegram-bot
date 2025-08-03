@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { OdessaTodayGenerator } from '../src/index';
+import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
 import fs from 'fs';
 import path from 'path';
 
@@ -27,13 +28,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (text === '/start') {
         const welcomeMessage = `🤖 <b>Welcome to the Odessa Schedule Bot!</b>
 
-I can help you check who's playing today at Odessa boat events in Amsterdam.
+I can help you check schedules at Odessa boat events in Amsterdam.
 
 <b>Available commands:</b>
 • /whosplaying - Check who is playing today
+• /schedule - View this week's schedule with video
 • /help - Show this help message
 
-Just send /whosplaying to get started! 🌴🎶`;
+Just send /whosplaying or /schedule to get started! 🌴🎶`;
         
         await sendTelegramMessage(chat.id, welcomeMessage);
       } else if (text === '/help') {
@@ -41,16 +43,18 @@ Just send /whosplaying to get started! 🌴🎶`;
 
 <b>Commands:</b>
 • /whosplaying - Check who is playing today with DJ information and photos
+• /schedule - View this week's schedule with video
 • /help - Show this help message
 
 <b>Features:</b>
 • Real-time schedule checking from Hipsy.no
 • DJ information with photos and descriptions
+• Weekly schedule with video integration
 • Direct ticket booking links
 • Works in groups and direct messages
 
 <b>Rate Limiting:</b>
-• You can request today's schedule once every 60 seconds to prevent spam
+• You can request schedules once every 60 seconds to prevent spam
 
 Need help? Contact the bot administrator.`;
         
@@ -109,6 +113,31 @@ Need help? Contact the bot administrator.`;
           const errorMessage = `❌ <b>Error fetching today's schedule</b>
 
 Sorry, I couldn't fetch today's schedule. Please try again later.
+
+If this problem persists, contact the bot administrator.`;
+          await sendTelegramMessage(chat.id, errorMessage);
+        }
+      } else if (text === '/schedule') {
+        try {
+          console.log('🪩 /schedule command received - generating weekly schedule...');
+          
+          // Generate weekly schedule with video
+          const weeklyGenerator = new WeeklyScheduleGenerator();
+          const weeklySchedule = await weeklyGenerator.generateWeeklySchedule();
+          
+          console.log(`📋 Weekly schedule generated:`);
+          console.log(`   Video File ID: ${weeklySchedule.videoFileId}`);
+          console.log(`   Text length: ${weeklySchedule.text.length} characters`);
+          console.log(`   Keyboard: ${weeklySchedule.keyboard ? 'Available' : 'Not available'}`);
+          
+          // Send video with caption
+          await sendTelegramMessageWithVideo(chat.id, weeklySchedule.text, weeklySchedule.videoFileId, weeklySchedule.keyboard);
+          
+        } catch (error) {
+          console.error('Error generating weekly schedule:', error);
+          const errorMessage = `❌ <b>Error fetching weekly schedule</b>
+
+Sorry, I couldn't fetch the weekly schedule. Please try again later.
 
 If this problem persists, contact the bot administrator.`;
           await sendTelegramMessage(chat.id, errorMessage);
@@ -203,6 +232,37 @@ async function sendTelegramMessageWithPhoto(chatId: number, caption: string, pho
     
   } catch (error) {
     console.error('Error sending Telegram photo:', error);
+    // Fallback to text message
+    await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+  }
+}
+
+async function sendTelegramMessageWithVideo(chatId: number, caption: string, videoFileId: string, replyMarkup?: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendVideo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        video: videoFileId,
+        caption: caption,
+        parse_mode: 'HTML',
+        reply_markup: replyMarkup
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Failed to send Telegram video:', await response.text());
+      // Fallback to text message
+      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+    }
+    
+  } catch (error) {
+    console.error('Error sending Telegram video:', error);
     // Fallback to text message
     await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
   }
