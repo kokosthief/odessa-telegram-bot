@@ -1,7 +1,7 @@
 {
   "name": "odessa-telegram-bot",
   "version": "1.0.0",
-  "description": "Automated schedule generation tool for Odessa boat events in Amsterdam",
+  "description": "Who's Playing Today - Telegram bot for Odessa boat events in Amsterdam",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -15,18 +15,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:integration": "jest --config jest.integration.config.js",
-    "test:scraping": "jest --testNamePattern='scraping'",
-    "test:formatting": "jest --testNamePattern='formatting'",
-    "test:telegram": "jest --testNamePattern='telegram'",
-    "test:e2e": "jest --testNamePattern='e2e'",
     "test:wix-integration": "ts-node src/test-wix-integration.ts",
     "test:enhanced-whosplaying": "ts-node src/test-enhanced-whosplaying.ts",
-    "quick-start": "bash scripts/quick-start.sh",
-    "deploy": "bash scripts/deploy.sh",
-    "db:migrate": "node scripts/migrate.js",
-    "db:seed": "node scripts/seed.js",
-    "db:reset": "node scripts/reset.js",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
     "postinstall": "npm run type-check"
@@ -45,21 +35,15 @@
   "dependencies": {
     "@vercel/node": "^5.3.7",
     "axios": "^1.6.0",
-    "cheerio": "^1.0.0-rc.12",
     "date-fns": "^2.30.0",
     "dotenv": "^16.3.1",
-    "joi": "^17.11.0",
     "node-telegram-bot-api": "^0.64.0",
-    "pg": "^8.11.3",
-    "puppeteer": "^21.5.2",
-    "winston": "^3.11.0",
-    "zod": "^3.22.4"
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",
     "@types/node": "^20.8.10",
     "@types/node-telegram-bot-api": "^0.64.9",
-    "@types/pg": "^8.10.7",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
     "eslint": "^8.53.0",
@@ -72,15 +56,7 @@
     "typescript": "^5.2.2"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": "18.x",
     "npm": ">=8.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-username/odessa-telegram-bot.git"
-  },
-  "bugs": {
-    "url": "https://github.com/your-username/odessa-telegram-bot/issues"
-  },
-  "homepage": "https://github.com/your-username/odessa-telegram-bot#readme"
+  }
 }
