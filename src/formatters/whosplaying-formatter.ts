@@ -1,11 +1,21 @@
 import { Event } from '../types/event';
 import { WixDJLoader } from '../utils/wix-dj-loader';
+import { utcToZonedTime } from 'date-fns-tz';
 
 export class WhosPlayingFormatter {
   private wixDJLoader: WixDJLoader;
+  private amsterdamTimezone = 'Europe/Amsterdam';
 
   constructor() {
     this.wixDJLoader = new WixDJLoader();
+  }
+
+  /**
+   * Get today's date in Amsterdam timezone
+   */
+  private getTodayInAmsterdam(): Date {
+    const utcNow = new Date();
+    return utcToZonedTime(utcNow, this.amsterdamTimezone);
   }
 
   /**
@@ -42,7 +52,7 @@ export class WhosPlayingFormatter {
       return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
     }
 
-    const today = new Date();
+    const today = this.getTodayInAmsterdam();
     const dayName = this.getDayName(today);
     
     // Generate intro text for today
@@ -101,7 +111,8 @@ export class WhosPlayingFormatter {
 
     // Generate exciting intro text for today with DJ name
     const djName = events[0]?.djName || 'TBA';
-    const isEvening = new Date().getHours() >= 12; // Afternoon/evening events
+    const amsterdamTime = this.getTodayInAmsterdam();
+    const isEvening = amsterdamTime.getHours() >= 12; // Afternoon/evening events in Amsterdam time
     const timeText = isEvening ? 'on the boat tonight' : 'today';
     const introText = `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨`;
     

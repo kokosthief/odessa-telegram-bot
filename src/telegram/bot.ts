@@ -60,7 +60,7 @@ export class OdessaBot {
       const todaySchedule = await this.generator.generateEnhancedTodaySchedule();
 
       // Send the schedule
-      if (todaySchedule.photos && todaySchedule.photos.length > 0) {
+      if (todaySchedule.photos && todaySchedule.photos.length > 0 && todaySchedule.photos[0]) {
         // Send with photos
         await this.bot.sendPhoto(msg.chat.id, todaySchedule.photos[0], {
           caption: todaySchedule.text,

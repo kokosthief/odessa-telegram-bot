@@ -1,13 +1,23 @@
 import { HipsyScraper } from './scrapers/hipsy-scraper';
 import { WhosPlayingFormatter } from './formatters/whosplaying-formatter';
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 
 export class OdessaTodayGenerator {
   private scraper: HipsyScraper;
   private formatter: WhosPlayingFormatter;
+  private amsterdamTimezone = 'Europe/Amsterdam';
 
   constructor() {
     this.scraper = new HipsyScraper();
     this.formatter = new WhosPlayingFormatter();
+  }
+
+  /**
+   * Get today's date in Amsterdam timezone
+   */
+  private getTodayInAmsterdam(): Date {
+    const utcNow = new Date();
+    return utcToZonedTime(utcNow, this.amsterdamTimezone);
   }
 
   /**
@@ -17,9 +27,9 @@ export class OdessaTodayGenerator {
     try {
       console.log('🎭 ENHANCED METHOD CALLED - Generating enhanced today\'s schedule...');
       
-      // Get today's date
-      const today = new Date();
-      console.log(`📅 Looking for events on: ${today.toDateString()}`);
+      // Get today's date in Amsterdam timezone
+      const today = this.getTodayInAmsterdam();
+      console.log(`📅 Looking for events on: ${today.toDateString()} (Amsterdam time)`);
       
       // Get events for today using the existing method
       const result = await this.scraper.getEvents(1, 'upcoming', 10);
@@ -28,12 +38,15 @@ export class OdessaTodayGenerator {
         throw new Error('Failed to fetch events from Hipsy');
       }
       
-      // Filter events for today only
+      // Filter events for today only (using Amsterdam timezone)
       const todayEvents = result.events.filter(event => {
         const eventDate = new Date(event.date);
         
+        // Convert event date to Amsterdam timezone for comparison
+        const eventDateInAmsterdam = utcToZonedTime(eventDate, this.amsterdamTimezone);
+        
         // Normalize dates to compare only the date part (ignore time)
-        const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+        const eventDateOnly = new Date(eventDateInAmsterdam.getFullYear(), eventDateInAmsterdam.getMonth(), eventDateInAmsterdam.getDate());
         const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         
         return eventDateOnly.getTime() === todayOnly.getTime();
@@ -65,9 +78,9 @@ export class OdessaTodayGenerator {
     try {
       console.log('Generating today\'s schedule...');
       
-      // Get today's date
-      const today = new Date();
-      console.log(`📅 Looking for events on: ${today.toDateString()}`);
+      // Get today's date in Amsterdam timezone
+      const today = this.getTodayInAmsterdam();
+      console.log(`📅 Looking for events on: ${today.toDateString()} (Amsterdam time)`);
       
       // Get events for today using the existing method
       const result = await this.scraper.getEvents(1, 'upcoming', 10);
@@ -76,12 +89,15 @@ export class OdessaTodayGenerator {
         throw new Error('Failed to fetch events from Hipsy');
       }
       
-      // Filter events for today only
+      // Filter events for today only (using Amsterdam timezone)
       const todayEvents = result.events.filter(event => {
         const eventDate = new Date(event.date);
         
+        // Convert event date to Amsterdam timezone for comparison
+        const eventDateInAmsterdam = utcToZonedTime(eventDate, this.amsterdamTimezone);
+        
         // Normalize dates to compare only the date part (ignore time)
-        const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+        const eventDateOnly = new Date(eventDateInAmsterdam.getFullYear(), eventDateInAmsterdam.getMonth(), eventDateInAmsterdam.getDate());
         const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         
         return eventDateOnly.getTime() === todayOnly.getTime();
