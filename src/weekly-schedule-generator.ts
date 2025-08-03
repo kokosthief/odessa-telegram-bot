@@ -177,7 +177,7 @@ export class WeeklyScheduleGenerator {
       for (const event of dayEvents) {
         const weeklyEvent: WeeklyEvent = {
           day: dayName,
-          eventType: this.mapEventType(event.eventType),
+          eventType: this.mapEventType(event.eventType, dayName),
           facilitator: event.djName || 'TBA',
           ticketUrl: event.ticketUrl || undefined
         };
@@ -192,7 +192,12 @@ export class WeeklyScheduleGenerator {
   /**
    * Map event types to display format
    */
-  private mapEventType(eventType?: string): string {
+  private mapEventType(eventType?: string, day?: string): string {
+    // Special case: Sunday ED events should always show as "Morning ED"
+    if (day === 'Sun' && eventType === 'ED') {
+      return 'Morning ED';
+    }
+    
     switch (eventType) {
       case 'ED':
         return 'ED';
