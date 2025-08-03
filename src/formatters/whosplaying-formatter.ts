@@ -29,9 +29,16 @@ export class WhosPlayingFormatter {
   /**
    * Format event type for display
    */
-  private formatEventType(eventType?: string): string {
+  private formatEventType(eventType?: string, eventDate?: string): string {
     switch (eventType) {
       case 'ED':
+        // Check if it's Sunday for Morning Ecstatic Dance
+        if (eventDate) {
+          const date = new Date(eventDate);
+          if (date.getDay() === 0) { // Sunday
+            return 'Morning Ecstatic Dance';
+          }
+        }
         return 'Ecstatic Dance';
       case 'Cacao ED':
         return 'Cacao Ecstatic Dance';
@@ -50,7 +57,7 @@ export class WhosPlayingFormatter {
   private generateMultiEventIntro(events: Event[]): string {
     const amsterdamTime = this.getTodayInAmsterdam();
     const isEvening = amsterdamTime.getHours() >= 12;
-    const timeText = isEvening ? 'on the boat tonight' : 'today';
+    const timeText = isEvening ? 'on the boat tonight' : 'Today';
     
     if (events.length === 1) {
       // Single event - use DJ name
@@ -91,7 +98,7 @@ export class WhosPlayingFormatter {
     
     // Format today's events with enhanced DJ info
     const eventLines = events.map(event => {
-      const eventType = this.formatEventType(event.eventType);
+      const eventType = this.formatEventType(event.eventType, event.date);
       const djName = event.djName || 'TBA';
       
       console.log(`Processing event with DJ: "${djName}"`);
@@ -109,8 +116,7 @@ export class WhosPlayingFormatter {
     
     // Create ticket buttons for each event
     const ticketButtons = events.map((event) => {
-      const eventType = this.formatEventType(event.eventType);
-      const buttonText = events.length === 1 ? 'TICKETS 🎟️' : `${eventType} TICKETS 🎟️`;
+      const buttonText = 'TICKETS 🎟️';
       
       return [{
         text: buttonText,
@@ -169,7 +175,7 @@ export class WhosPlayingFormatter {
     photos?: string[]; 
     keyboard?: any;
   }> {
-    const eventType = this.formatEventType(event.eventType);
+    const eventType = this.formatEventType(event.eventType, event.date);
     const djName = event.djName || 'TBA';
     
     // Get enhanced DJ info from Wix with fallback
@@ -236,7 +242,7 @@ export class WhosPlayingFormatter {
     
     // Create separate message for each event/DJ
     for (const event of events) {
-      const eventType = this.formatEventType(event.eventType);
+      const eventType = this.formatEventType(event.eventType, event.date);
       const djName = event.djName || 'TBA';
       
       // Get enhanced DJ info from Wix with fallback
@@ -251,7 +257,7 @@ export class WhosPlayingFormatter {
       }
       
       // Create ticket and SoundCloud buttons for this event
-      const ticketButtonText = `${eventType} TICKETS 🎟️`;
+      const ticketButtonText = 'TICKETS 🎟️';
       const buttons = [{
         text: ticketButtonText,
         url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'

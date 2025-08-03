@@ -163,7 +163,11 @@ export class HipsyScraper {
     }
     
     // Convert API URL to public URL
-    return apiUrl.replace('/api/', '/');
+    // From: https://api.hipsy.nl/shop/128407-queerstatic-dance-inphiknight
+    // To: https://hipsy.nl/event/128407-queerstatic-dance-inphiknight
+    return apiUrl
+      .replace('https://api.hipsy.nl/shop/', 'https://hipsy.nl/event/')
+      .replace('https://api.hipsy.nl/', 'https://hipsy.nl/');
   }
 
   /**
