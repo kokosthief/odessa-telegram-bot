@@ -1,7 +1,7 @@
 {
   "name": "odessa-telegram-bot",
   "version": "1.0.0",
-  "description": "Who's Playing Today - Telegram bot for Odessa boat events in Amsterdam",
+  "description": "Telegram bot for schedule updates at Odessa Amsterdam Ecstatic Dance",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
