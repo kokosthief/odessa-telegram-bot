@@ -23,7 +23,16 @@ export class OdessaTodayGenerator {
   /**
    * Generate enhanced today's schedule with Wix DJ data
    */
-  async generateEnhancedTodaySchedule(): Promise<{ text: string; photos?: string[]; keyboard?: any }> {
+  async generateEnhancedTodaySchedule(): Promise<{ 
+    text: string; 
+    photos?: string[]; 
+    keyboard?: any;
+    messages?: Array<{
+      text: string;
+      photo?: string;
+      keyboard?: any;
+    }>;
+  }> {
     try {
       console.log('🎭 ENHANCED METHOD CALLED - Generating enhanced today\'s schedule...');
       

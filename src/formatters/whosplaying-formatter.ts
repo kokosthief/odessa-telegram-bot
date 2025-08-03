@@ -131,7 +131,16 @@ export class WhosPlayingFormatter {
   /**
    * Format enhanced today's schedule with Wix DJ data
    */
-  async formatEnhancedTodaySchedule(events: Event[]): Promise<{ text: string; photos?: string[]; keyboard?: any }> {
+  async formatEnhancedTodaySchedule(events: Event[]): Promise<{ 
+    text: string; 
+    photos?: string[]; 
+    keyboard?: any;
+    messages?: Array<{
+      text: string;
+      photo?: string;
+      keyboard?: any;
+    }>;
+  }> {
     console.log('🎭 Formatting enhanced today schedule...');
     console.log(`📊 Processing ${events.length} events`);
     console.log('🔍 WixDJLoader available:', !!this.wixDJLoader);
@@ -143,73 +152,106 @@ export class WhosPlayingFormatter {
     // Generate exciting intro text for today with DJ name
     const introText = this.generateMultiEventIntro(events);
     
-    // Format today's events with enhanced DJ info
-    const eventLines: string[] = [];
-    const photos: string[] = [];
+    // If single event, use the original format
+    if (events.length === 1) {
+      return this.formatSingleEvent(events[0]!, introText);
+    }
     
-    for (const event of events) {
-      console.log(`🎭 Raw event data:`, {
-        eventType: event.eventType,
-        djName: event.djName,
-        title: event.title
+    // For multiple events, create separate messages for each DJ with photo
+    return this.formatMultipleEvents(events, introText);
+  }
+
+  /**
+   * Format a single event (original logic)
+   */
+  private async formatSingleEvent(event: Event, introText: string): Promise<{ 
+    text: string; 
+    photos?: string[]; 
+    keyboard?: any;
+  }> {
+    const eventType = this.formatEventType(event.eventType);
+    const djName = event.djName || 'TBA';
+    
+    // Get enhanced DJ info from Wix with fallback
+    const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+    
+    // Build the enhanced event text
+    let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+    
+    // Add description if available
+    if (djInfo && djInfo.shortDescription) {
+      eventText += `\n\n${djInfo.shortDescription}`;
+    }
+    
+    // Create ticket and SoundCloud buttons
+    const ticketButtonText = 'TICKETS 🎟️';
+    const buttons = [{
+      text: ticketButtonText,
+      url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+    }];
+    
+    // Add SoundCloud button if available
+    if (djInfo && djInfo.soundcloudUrl) {
+      buttons.push({
+        text: '🎵 SOUNDCLOUD',
+        url: djInfo.soundcloudUrl
       });
-      
-      console.log(`🎭 Hipsy event title: "${event.title}"`);
-      console.log(`🎭 Hipsy event type: "${event.eventType}"`);
-      
+    }
+    
+    const keyboard = {
+      inline_keyboard: [buttons]
+    };
+    
+    const result: { text: string; photos?: string[]; keyboard?: any } = {
+      text: `${introText}\n\n${eventText}`,
+      keyboard: keyboard
+    };
+    
+    // Add photo if available
+    if (djInfo && djInfo.photo) {
+      result.photos = [djInfo.photo];
+    }
+    
+    return result;
+  }
+
+  /**
+   * Format multiple events with separate messages for each DJ
+   */
+  private async formatMultipleEvents(events: Event[], introText: string): Promise<{ 
+    text: string; 
+    photos?: string[]; 
+    keyboard?: any;
+    messages?: Array<{
+      text: string;
+      photo?: string;
+      keyboard?: any;
+    }>;
+  }> {
+    const messages: Array<{
+      text: string;
+      photo?: string;
+      keyboard?: any;
+    }> = [];
+    
+    // Create separate message for each event/DJ
+    for (const event of events) {
       const eventType = this.formatEventType(event.eventType);
       const djName = event.djName || 'TBA';
-      
-      console.log(`🎭 Formatted event type: "${eventType}" from raw: "${event.eventType}"`);
-      console.log(`🎭 Event title: "${event.title}"`);
-      console.log(`🎭 Event type detection: "${event.eventType}" -> "${eventType}"`);
-      console.log(`Processing event with DJ: "${djName}"`);
       
       // Get enhanced DJ info from Wix with fallback
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
       
-      console.log(`Enhanced DJ info found: ${djInfo ? 'YES' : 'NO'}`);
-      if (djInfo) {
-        console.log(`✅ Found Wix data for: ${djInfo.name}`);
-        console.log(`   Photo: ${djInfo.photo ? 'YES' : 'NO'}`);
-        console.log(`   Photo URL: ${djInfo.photo || 'NONE'}`);
-        console.log(`   Description: ${djInfo.shortDescription ? 'YES' : 'NO'}`);
-        console.log(`   Description text: ${djInfo.shortDescription || 'NONE'}`);
-      } else {
-        console.log(`❌ No Wix data found for: "${djName}"`);
-      }
-      
-      // Build the enhanced event text
+      // Build the event text
       let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
-      
-      // Add photo if available
-      if (djInfo && djInfo.photo) {
-        console.log(`📸 Adding photo to array: ${djInfo.photo}`);
-        photos.push(djInfo.photo);
-      }
       
       // Add description if available
       if (djInfo && djInfo.shortDescription) {
-        console.log(`📝 Adding description to text: ${djInfo.shortDescription}`);
         eventText += `\n\n${djInfo.shortDescription}`;
       }
       
-      console.log(`🎭 Final event text: ${eventText}`);
-      eventLines.push(eventText);
-    }
-    
-    // Join events with line breaks
-    const eventsText = eventLines.join('\n\n');
-    
-    // Create ticket and SoundCloud buttons for each event
-    const keyboardButtons = await Promise.all(events.map(async (event) => {
-      const eventType = this.formatEventType(event.eventType);
-      const ticketButtonText = events.length === 1 ? 'TICKETS 🎟️' : `${eventType} TICKETS 🎟️`;
-      
-      // Get DJ info for SoundCloud link
-      const djName = event.djName || 'TBA';
-      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
-      
+      // Create ticket and SoundCloud buttons for this event
+      const ticketButtonText = `${eventType} TICKETS 🎟️`;
       const buttons = [{
         text: ticketButtonText,
         url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
@@ -223,22 +265,31 @@ export class WhosPlayingFormatter {
         });
       }
       
-      return buttons;
-    }));
-    
-    const keyboard = {
-      inline_keyboard: keyboardButtons
-    };
-    
-    const result: { text: string; photos?: string[]; keyboard?: any } = {
-      text: `${introText}\n\n${eventsText}`,
-      keyboard: keyboard
-    };
-    
-    if (photos.length > 0) {
-      result.photos = photos;
+      const keyboard = {
+        inline_keyboard: [buttons]
+      };
+      
+      const message: {
+        text: string;
+        photo?: string;
+        keyboard?: any;
+      } = {
+        text: eventText,
+        keyboard: keyboard
+      };
+      
+      // Add photo if available
+      if (djInfo && djInfo.photo) {
+        message.photo = djInfo.photo;
+      }
+      
+      messages.push(message);
     }
     
-    return result;
+    // Return the intro text and separate messages
+    return {
+      text: introText,
+      messages: messages
+    };
   }
 } 

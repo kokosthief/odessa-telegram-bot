@@ -29,6 +29,7 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 - **Rich Formatting**: HTML formatting with bold text and emojis
 - **Enhanced DJ Info**: Photos and descriptions from Wix CMS
 - **Photo Uploads**: DJ photos in today's schedule messages
+- **Multiple DJ Photos**: Separate messages for each DJ with their individual photos
 
 ## 📋 Project Structure
 
@@ -224,6 +225,14 @@ A day filled with amazing music!
 
 🎶 <b>Queerstatic</b> with <b>DJ2</b> 🎶
 ```
+
+**Multiple DJ Photos Feature:**
+When there are multiple DJs in one day, the bot now sends separate messages for each DJ with their individual photos:
+
+1. **Intro Message**: Overview with all DJ names
+2. **Individual DJ Messages**: Each DJ gets their own message with their photo and description
+
+This ensures every DJ's photo is displayed, not just the first one.
 
 **For multiple events with same DJ:**
 ```

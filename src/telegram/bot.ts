@@ -59,25 +59,51 @@ export class OdessaBot {
       // Generate enhanced today's schedule
       const todaySchedule = await this.generator.generateEnhancedTodaySchedule();
 
-      // Send the schedule
-      if (todaySchedule.photos && todaySchedule.photos.length > 0 && todaySchedule.photos[0]) {
-        // Send with photos
-        await this.bot.sendPhoto(msg.chat.id, todaySchedule.photos[0], {
-          caption: todaySchedule.text,
-          parse_mode: 'HTML',
-          reply_markup: todaySchedule.keyboard
-        });
-      } else if (todaySchedule.keyboard) {
-        // Send with keyboard
-        await this.bot.sendMessage(msg.chat.id, todaySchedule.text, {
-          parse_mode: 'HTML',
-          reply_markup: todaySchedule.keyboard
-        });
-      } else {
-        // Send plain text
+      // Handle multiple messages for multiple DJs
+      if (todaySchedule.messages && todaySchedule.messages.length > 0) {
+        // Send intro message first
         await this.bot.sendMessage(msg.chat.id, todaySchedule.text, {
           parse_mode: 'HTML'
         });
+        
+        // Send separate message for each DJ with their photo
+        for (const message of todaySchedule.messages) {
+          if (message.photo) {
+            // Send with photo
+            await this.bot.sendPhoto(msg.chat.id, message.photo, {
+              caption: message.text,
+              parse_mode: 'HTML',
+              reply_markup: message.keyboard
+            });
+          } else {
+            // Send without photo
+            await this.bot.sendMessage(msg.chat.id, message.text, {
+              parse_mode: 'HTML',
+              reply_markup: message.keyboard
+            });
+          }
+        }
+      } else {
+        // Handle single event (original logic)
+        if (todaySchedule.photos && todaySchedule.photos.length > 0 && todaySchedule.photos[0]) {
+          // Send with photos
+          await this.bot.sendPhoto(msg.chat.id, todaySchedule.photos[0], {
+            caption: todaySchedule.text,
+            parse_mode: 'HTML',
+            reply_markup: todaySchedule.keyboard
+          });
+        } else if (todaySchedule.keyboard) {
+          // Send with keyboard
+          await this.bot.sendMessage(msg.chat.id, todaySchedule.text, {
+            parse_mode: 'HTML',
+            reply_markup: todaySchedule.keyboard
+          });
+        } else {
+          // Send plain text
+          await this.bot.sendMessage(msg.chat.id, todaySchedule.text, {
+            parse_mode: 'HTML'
+          });
+        }
       }
 
     } catch (error) {
