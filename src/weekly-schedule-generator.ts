@@ -112,7 +112,7 @@ export class WeeklyScheduleGenerator {
     
     while (true) {
       try {
-        const result = await this.hipsyScraper.getEvents(page, 'upcoming', limit);
+        const result = await this.hipsyScraper.getEvents(page, 'all', limit);
         
         if (!result.success || result.events.length === 0) {
           break;
