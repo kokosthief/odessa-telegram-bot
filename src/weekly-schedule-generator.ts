@@ -70,34 +70,34 @@ export class WeeklyScheduleGenerator {
   }
 
   /**
-   * Get Wednesday to Sunday date range for current week
+   * Get Monday to Sunday date range for current week
    */
   private getWeekRange(): DateRange {
     const now = new Date();
     const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     
-    // Calculate days to Wednesday (3)
-    let daysToWednesday = 3 - currentDay;
-    if (daysToWednesday <= 0) {
-      daysToWednesday += 7; // Next Wednesday
+    // Calculate days to Monday (1) - if it's Sunday, go back to last Monday
+    let daysToMonday = 1 - currentDay;
+    if (daysToMonday > 0) {
+      daysToMonday -= 7; // Previous Monday
     }
     
-    // Calculate days to Sunday (0)
+    // Calculate days to Sunday (0) - if it's Sunday, use today
     let daysToSunday = 0 - currentDay;
-    if (daysToSunday <= 0) {
-      daysToSunday += 7; // Next Sunday
+    if (daysToSunday > 0) {
+      daysToSunday -= 7; // Previous Sunday
     }
     
-    const wednesday = new Date(now);
-    wednesday.setDate(now.getDate() + daysToWednesday);
-    wednesday.setHours(0, 0, 0, 0);
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + daysToMonday);
+    monday.setHours(0, 0, 0, 0);
     
     const sunday = new Date(now);
     sunday.setDate(now.getDate() + daysToSunday);
     sunday.setHours(23, 59, 59, 999);
     
     return {
-      startDate: wednesday,
+      startDate: monday,
       endDate: sunday
     };
   }
