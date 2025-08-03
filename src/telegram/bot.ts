@@ -214,21 +214,9 @@ Just send /whosplaying or /schedule to get started! 🌴🎶`;
     const helpMessage = `🤖 <b>Odessa Schedule Bot Help</b>
 
 <b>Commands:</b>
-• /whosplaying - Check who is playing today with DJ information and photos
-• /schedule - View this week's schedule with video
-• /help - Show this help message
-
-<b>Features:</b>
-• Real-time schedule checking from Hipsy.no
-• DJ information with photos and descriptions
-• Weekly schedule with video integration
-• Direct ticket booking links
-• Works in groups and direct messages
-
-<b>Rate Limiting:</b>
-• You can request schedules once every 60 seconds to prevent spam
-
-Need help? Contact the bot administrator.`;
+• /whosplaying - Check who is facilitating today
+• /schedule - View this week's schedule
+• /help - Show this help message`;
 
     await this.bot.sendMessage(msg.chat.id, helpMessage, { parse_mode: 'HTML' });
   }
