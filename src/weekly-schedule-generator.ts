@@ -32,27 +32,20 @@ export class WeeklyScheduleGenerator {
    */
   async generateWeeklySchedule(): Promise<WeeklySchedule> {
     try {
-      console.log('🎭 Generating weekly schedule...');
-      
-      // Get Wednesday to Sunday date range
+      // Get Monday to Sunday date range
       const weekRange = this.getWeekRange();
-      console.log(`📅 Week range: ${weekRange.startDate.toISOString()} to ${weekRange.endDate.toISOString()}`);
       
       // Fetch events from Hipsy API
       const events = await this.fetchWeeklyEvents(weekRange);
-      console.log(`📊 Found ${events.length} events for the week`);
       
       // Format weekly schedule
       const weeklyEvents = this.formatWeeklyEvents(events);
-      console.log(`📋 Formatted ${weeklyEvents.length} weekly events`);
       
       // Add facilitator links
       const eventsWithLinks = await this.addFacilitatorLinks(weeklyEvents);
-      console.log(`🔗 Added facilitator links to ${eventsWithLinks.length} events`);
       
       // Generate formatted text
       const formattedText = this.generateFormattedText(eventsWithLinks);
-      console.log(`📝 Generated formatted text (${formattedText.length} characters)`);
       
       // Create keyboard for tickets
       const keyboard = this.createTicketsKeyboard();
@@ -230,7 +223,7 @@ export class WeeklyScheduleGenerator {
             event.facilitatorLink = facilitatorData.soundcloudUrl;
           }
         } catch (error) {
-          console.warn(`Failed to get facilitator link for ${event.facilitator}:`, error);
+          // Silently handle facilitator link errors
         }
       }
     }
