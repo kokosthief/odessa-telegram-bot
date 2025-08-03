@@ -2,6 +2,7 @@
 
 import { OdessaTodayGenerator } from './index';
 import { OdessaBot } from './telegram/bot';
+import { WeeklyScheduleGenerator } from './weekly-schedule-generator';
 
 async function main() {
   const command = process.argv[2];
@@ -11,6 +12,9 @@ async function main() {
   switch (command) {
     case 'whosplaying':
       await generateWhosPlaying();
+      break;
+    case 'schedule':
+      await generateWeeklySchedule();
       break;
     case 'test':
       await testBot();
@@ -45,6 +49,30 @@ async function generateWhosPlaying() {
     
   } catch (error) {
     console.error('❌ Failed to generate today\'s schedule:', error);
+  }
+}
+
+async function generateWeeklySchedule() {
+  console.log('🪩 Generating weekly schedule...');
+  
+  try {
+    const generator = new WeeklyScheduleGenerator();
+    const weeklySchedule = await generator.generateWeeklySchedule();
+    
+    console.log('\n🪩 Generated Weekly Schedule:');
+    console.log('='.repeat(50));
+    console.log(`Video File ID: ${weeklySchedule.videoFileId}`);
+    console.log('='.repeat(50));
+    console.log(weeklySchedule.text);
+    console.log('='.repeat(50));
+    
+    if (weeklySchedule.keyboard) {
+      console.log('⌨️  Keyboard: Available');
+      console.log('🎫 Tickets button included');
+    }
+    
+  } catch (error) {
+    console.error('❌ Failed to generate weekly schedule:', error);
   }
 }
 
@@ -85,7 +113,7 @@ async function runBot() {
     bot.initialize();
     
     console.log('✅ Bot is now running and listening for commands!');
-    console.log('📱 Commands available: /whosplaying, /start, /help');
+    console.log('📱 Commands available: /whosplaying, /schedule, /start, /help');
     console.log('⏹️  Press Ctrl+C to stop the bot');
     
     // Keep the process running
@@ -105,11 +133,13 @@ Usage: npm run cli <command>
 
 Commands:
   whosplaying  - Generate today's schedule (without posting)
+  schedule     - Generate weekly schedule (without posting)
   test         - Test bot connection
   run          - Start interactive bot with command handling
 
 Examples:
   npm run cli whosplaying
+  npm run cli schedule
   npm run cli test
   npm run cli run
   `);

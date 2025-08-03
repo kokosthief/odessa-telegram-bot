@@ -17,6 +17,7 @@
     "test:coverage": "jest --coverage",
     "test:wix-integration": "ts-node src/test-wix-integration.ts",
     "test:enhanced-whosplaying": "ts-node src/test-enhanced-whosplaying.ts",
+    "test:weekly-schedule": "ts-node src/test-weekly-schedule.ts",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
     "postinstall": "npm run type-check"
@@ -35,6 +36,7 @@
   "dependencies": {
     "@vercel/node": "^5.3.7",
     "axios": "^1.6.0",
+    "cheerio": "^1.1.2",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
     "dotenv": "^16.3.1",
@@ -42,6 +44,7 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "@types/cheerio": "^0.22.35",
     "@types/jest": "^29.5.8",
     "@types/node": "^20.8.10",
     "@types/node-telegram-bot-api": "^0.64.9",
