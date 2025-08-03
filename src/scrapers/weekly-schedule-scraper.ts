@@ -6,10 +6,17 @@ import { WixDJLoader } from '../utils/wix-dj-loader';
 
 export class WeeklyScheduleScraper {
   private baseUrl = 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance';
+  private hipsyApiKey: string;
+  private hipsyApiUrl = 'https://api.hipsy.nl/v1/organisation/odessa-amsterdam-ecstatic-dance/events';
   private wixDJLoader: WixDJLoader;
 
   constructor() {
+    this.hipsyApiKey = process.env['HIPSY_API_KEY'] || '';
     this.wixDJLoader = new WixDJLoader();
+    
+    console.log(`🔧 WeeklyScheduleScraper initialized with:`);
+    console.log(`   Hipsy API Key: ${this.hipsyApiKey ? '✅ Set' : '❌ Not set'}`);
+    console.log(`   Hipsy API URL: ${this.hipsyApiUrl}`);
   }
 
   /**
@@ -112,95 +119,106 @@ export class WeeklyScheduleScraper {
   }
 
   /**
-   * Try to scrape events from Hipsy API
+   * Get events from Hipsy API
    */
   private async scrapeFromHipsyAPI(startDate: Date, endDate: Date): Promise<Event[]> {
     const events: Event[] = [];
     
-    try {
-      // Try different API endpoints
-      const apiEndpoints = [
-        'https://hipsy.nl/api/events',
-        'https://hipsy.nl/api/v1/events',
-        'https://hipsy.nl/api/organisations/odessa-amsterdam-ecstatic-dance/events'
-      ];
-
-      for (const endpoint of apiEndpoints) {
-        try {
-          console.log(`🔍 Trying API endpoint: ${endpoint}`);
-          const response = await axios.get(endpoint, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-              'Accept': 'application/json'
-            },
-            timeout: 5000
-          });
-
-          if (response.status === 200 && response.data) {
-            console.log(`✅ API endpoint ${endpoint} returned data`);
-            const apiEvents = this.parseAPIResponse(response.data, startDate, endDate);
-            if (apiEvents.length > 0) {
-              return apiEvents;
-            }
-          }
-        } catch (error) {
-          console.log(`❌ API endpoint ${endpoint} failed:`, error instanceof Error ? error.message : String(error));
-        }
-      }
-
+    if (!this.hipsyApiKey) {
+      console.warn('⚠️ Hipsy API key not set, falling back to web scraping');
       return events;
+    }
+
+    try {
+      console.log(`🔍 Fetching events from Hipsy API...`);
+      console.log(`   Start date: ${startDate.toISOString()}`);
+      console.log(`   End date: ${endDate.toISOString()}`);
+      
+      // Get upcoming events from Hipsy API
+      const response = await axios.get(this.hipsyApiUrl, {
+        headers: {
+          'Authorization': `Bearer ${this.hipsyApiKey}`,
+          'Accept': 'application/json'
+        },
+        params: {
+          period: 'upcoming',
+          limit: 100 // Get maximum events to ensure we have full week coverage
+        },
+        timeout: 10000
+      });
+
+      if (response.status === 200 && response.data && response.data.data) {
+        console.log(`✅ Hipsy API returned ${response.data.data.length} events`);
+        const apiEvents = this.parseHipsyAPIResponse(response.data.data, startDate, endDate);
+        console.log(`📅 Filtered to ${apiEvents.length} events in date range`);
+        return apiEvents;
+      } else {
+        console.warn('⚠️ Hipsy API returned unexpected response format');
+        return events;
+      }
     } catch (error) {
-      console.error('Failed to scrape from Hipsy API:', error);
+      console.error('❌ Failed to fetch from Hipsy API:', error instanceof Error ? error.message : String(error));
       return events;
     }
   }
 
   /**
-   * Parse API response
+   * Parse Hipsy API response
    */
-  private parseAPIResponse(data: any, startDate: Date, endDate: Date): Event[] {
+  private parseHipsyAPIResponse(eventsData: any[], startDate: Date, endDate: Date): Event[] {
     const events: Event[] = [];
     
     try {
-      // Handle different API response formats
-      const eventsArray = data.events || data.data || data || [];
+      console.log(`📊 Parsing ${eventsData.length} events from Hipsy API`);
       
-      for (const eventData of eventsArray) {
+      for (const eventData of eventsData) {
         try {
-          const event = this.parseAPIEvent(eventData);
+          const event = this.parseHipsyEvent(eventData);
           if (event && this.isEventInDateRange(event, startDate, endDate)) {
             events.push(event);
+            console.log(`✅ Added event: ${event.title} on ${new Date(event.date).toDateString()}`);
           }
         } catch (error) {
-          console.warn('Failed to parse API event:', error);
+          console.warn('Failed to parse Hipsy event:', error);
         }
       }
     } catch (error) {
-      console.error('Failed to parse API response:', error);
+      console.error('Failed to parse Hipsy API response:', error);
     }
 
     return events;
   }
 
   /**
-   * Parse individual API event
+   * Parse individual Hipsy event
    */
-  private parseAPIEvent(eventData: any): Event | null {
+  private parseHipsyEvent(eventData: any): Event | null {
     try {
-      const title = eventData.title || eventData.name || '';
-      const dateStr = eventData.date || eventData.start_date || eventData.startDate || '';
-      const ticketUrl = eventData.ticket_url || eventData.ticketUrl || eventData.url || this.baseUrl;
+      const title = eventData.title || '';
+      const dateStr = eventData.date || '';
+      const ticketUrl = eventData.url_ticketshop || eventData.url_hipsy || this.baseUrl;
       
-      if (!title || !dateStr) return null;
+      if (!title || !dateStr) {
+        console.warn('Missing title or date in event data:', eventData);
+        return null;
+      }
 
       const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return null;
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date in event data:', dateStr);
+        return null;
+      }
 
       const djName = this.extractDJName(title);
       const eventType = this.determineEventType(title);
 
+      console.log(`📅 Parsed event: "${title}"`);
+      console.log(`   Date: ${date.toISOString()}`);
+      console.log(`   DJ: ${djName}`);
+      console.log(`   Type: ${eventType}`);
+
       return {
-        id: this.generateEventId(title, date),
+        id: eventData.id?.toString() || this.generateEventId(title, date),
         title,
         date: date.toISOString(),
         originalDate: dateStr,
@@ -209,7 +227,7 @@ export class WeeklyScheduleScraper {
         eventType: this.mapEventType(eventType)
       };
     } catch (error) {
-      console.warn('Failed to parse API event:', error);
+      console.warn('Failed to parse Hipsy event:', error);
       return null;
     }
   }
