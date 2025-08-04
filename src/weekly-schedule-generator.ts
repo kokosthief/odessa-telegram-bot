@@ -272,7 +272,7 @@ export class WeeklyScheduleGenerator {
       inline_keyboard: [
         [
           {
-            text: '🎫 Tickets',
+            text: '🎫 TICKETS',
             url: this.TICKETS_URL
           }
         ]

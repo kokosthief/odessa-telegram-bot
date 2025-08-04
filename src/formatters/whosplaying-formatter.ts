@@ -205,7 +205,7 @@ export class WhosPlayingFormatter {
     // Add SoundCloud button if available
     if (djInfo && djInfo.soundcloudUrl) {
       buttons.push({
-        text: '🎵 SOUNDCLOUD',
+        text: '🎧 LISTEN',
         url: djInfo.soundcloudUrl
       });
     }
@@ -272,7 +272,7 @@ export class WhosPlayingFormatter {
       // Add SoundCloud button if available
       if (djInfo && djInfo.soundcloudUrl) {
         buttons.push({
-          text: '🎵 SOUNDCLOUD',
+          text: '🎧 LISTEN',
           url: djInfo.soundcloudUrl
         });
       }
