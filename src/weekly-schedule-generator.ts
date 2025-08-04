@@ -84,16 +84,16 @@ export class WeeklyScheduleGenerator {
     const now = new Date();
     const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     
-    // Calculate days to Monday (1) - if it's Sunday, go back to last Monday
+    // Calculate days to Monday (1)
     let daysToMonday = 1 - currentDay;
     if (daysToMonday > 0) {
       daysToMonday -= 7; // Previous Monday
     }
     
-    // Calculate days to Sunday (0) - if it's Sunday, use today
+    // Calculate days to Sunday (0) - this should be the end of the current week
     let daysToSunday = 0 - currentDay;
-    if (daysToSunday > 0) {
-      daysToSunday -= 7; // Previous Sunday
+    if (daysToSunday < 0) {
+      daysToSunday += 7; // Next Sunday
     }
     
     const monday = new Date(now);
