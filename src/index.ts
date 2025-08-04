@@ -74,23 +74,32 @@ export class OdessaTodayGenerator {
           const nextEventDateInAmsterdam = utcToZonedTime(nextEventDate, this.amsterdamTimezone);
           const daysUntilNext = Math.ceil((nextEventDateInAmsterdam.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
           
+          // Get DJ info for the next event
+          const djInfo = await this.getDJInfo(nextEvent.djName);
+          
+          // Format the event title and DJ name with links
+          const eventTitleWithLink = `<a href="${nextEvent.ticketUrl}">${nextEvent.title}</a>`;
+          const djNameWithLink = djInfo && djInfo.soundcloudUrl 
+            ? `<a href="${djInfo.soundcloudUrl}">${nextEvent.djName}</a>`
+            : nextEvent.djName;
+          
           let nextEventText = '';
           if (daysUntilNext === 1) {
-            nextEventText = `\n\n🎯 <b>Next Event:</b> Tomorrow - ${nextEvent.title}`;
+            nextEventText = `🎯 <b>Next Event:</b> Tomorrow - ${eventTitleWithLink} | ${djNameWithLink}`;
           } else if (daysUntilNext === 0) {
-            nextEventText = `\n\n🎯 <b>Next Event:</b> Today - ${nextEvent.title}`;
+            nextEventText = `🎯 <b>Next Event:</b> Today - ${eventTitleWithLink} | ${djNameWithLink}`;
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
-            nextEventText = `\n\n🎯 <b>Next Event:</b> ${dayName} - ${nextEvent.title}`;
+            nextEventText = `🎯 <b>Next Event:</b> ${dayName} - ${eventTitleWithLink} | ${djNameWithLink}`;
           }
           
           return { 
-            text: `🎭 <b>Today's Schedule</b>\n\nNo events scheduled for today.${nextEventText}`,
+            text: nextEventText,
             keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl)
           };
         } else {
-          return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
+          return { text: '🎯 <b>Next Event:</b> No upcoming events found.' };
         }
       }
       
@@ -134,6 +143,24 @@ export class OdessaTodayGenerator {
       return null;
     } catch (error) {
       console.error('Error finding next upcoming event:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get DJ information with SoundCloud link
+   */
+  private async getDJInfo(djName?: string): Promise<any> {
+    if (!djName) return null;
+    
+    try {
+      // Import WixDJLoader dynamically to avoid circular dependencies
+      const { WixDJLoader } = await import('./utils/wix-dj-loader');
+      const wixDJLoader = new WixDJLoader();
+      
+      return await wixDJLoader.getDJInfoWithFallback(djName);
+    } catch (error) {
+      console.error('Error getting DJ info:', error);
       return null;
     }
   }
@@ -203,23 +230,32 @@ export class OdessaTodayGenerator {
           const nextEventDateInAmsterdam = utcToZonedTime(nextEventDate, this.amsterdamTimezone);
           const daysUntilNext = Math.ceil((nextEventDateInAmsterdam.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
           
+          // Get DJ info for the next event
+          const djInfo = await this.getDJInfo(nextEvent.djName);
+          
+          // Format the event title and DJ name with links
+          const eventTitleWithLink = `<a href="${nextEvent.ticketUrl}">${nextEvent.title}</a>`;
+          const djNameWithLink = djInfo && djInfo.soundcloudUrl 
+            ? `<a href="${djInfo.soundcloudUrl}">${nextEvent.djName}</a>`
+            : nextEvent.djName;
+          
           let nextEventText = '';
           if (daysUntilNext === 1) {
-            nextEventText = `\n\n🎯 <b>Next Event:</b> Tomorrow - ${nextEvent.title}`;
+            nextEventText = `🎯 <b>Next Event:</b> Tomorrow - ${eventTitleWithLink} | ${djNameWithLink}`;
           } else if (daysUntilNext === 0) {
-            nextEventText = `\n\n🎯 <b>Next Event:</b> Today - ${nextEvent.title}`;
+            nextEventText = `🎯 <b>Next Event:</b> Today - ${eventTitleWithLink} | ${djNameWithLink}`;
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
-            nextEventText = `\n\n🎯 <b>Next Event:</b> ${dayName} - ${nextEvent.title}`;
+            nextEventText = `🎯 <b>Next Event:</b> ${dayName} - ${eventTitleWithLink} | ${djNameWithLink}`;
           }
           
           return { 
-            text: `🎭 <b>Today's Schedule</b>\n\nNo events scheduled for today.${nextEventText}`,
+            text: nextEventText,
             keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl)
           };
         } else {
-          return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
+          return { text: '🎯 <b>Next Event:</b> No upcoming events found.' };
         }
       }
       
