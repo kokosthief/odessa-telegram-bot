@@ -130,10 +130,8 @@ Sorry, I couldn't fetch the weekly schedule. Please try again later.
 If this problem persists, contact the bot administrator.`;
           await sendTelegramMessage(chat.id, errorMessage);
         }
-      } else {
-        // Handle unknown commands
-        await sendTelegramMessage(chat.id, `🤖 <b>Bot is working!</b>\n\nYou sent: "${text}"\n\nTry /whosplaying, /schedule, or /help`);
       }
+      // Only respond to specific commands - ignore all other messages
     }
 
     return res.status(200).json({ ok: true });
