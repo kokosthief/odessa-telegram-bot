@@ -83,12 +83,21 @@ export class OdessaTodayGenerator {
           let nextEventText = '';
           if (daysUntilNext === 1) {
             nextEventText = `<b>🎯 Next Event: Tomorrow - ${eventTitleWithLink}</b>`;
+            if (djInfo && djInfo.shortDescription) {
+              nextEventText += `\n\n${djInfo.shortDescription}`;
+            }
           } else if (daysUntilNext === 0) {
             nextEventText = `<b>🎯 Next Event: Today - ${eventTitleWithLink}</b>`;
+            if (djInfo && djInfo.shortDescription) {
+              nextEventText += `\n\n${djInfo.shortDescription}`;
+            }
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
             nextEventText = `<b>🎯 Next Event: This ${dayName}\n\n${eventTitleWithLink}</b>`;
+            if (djInfo && djInfo.shortDescription) {
+              nextEventText += `\n\n${djInfo.shortDescription}`;
+            }
           }
           
           return { 
@@ -246,12 +255,21 @@ export class OdessaTodayGenerator {
           let nextEventText = '';
           if (daysUntilNext === 1) {
             nextEventText = `<b>🎯 Next Event: Tomorrow - ${eventTitleWithLink}</b>`;
+            if (djInfo && djInfo.shortDescription) {
+              nextEventText += `\n\n${djInfo.shortDescription}`;
+            }
           } else if (daysUntilNext === 0) {
             nextEventText = `<b>🎯 Next Event: Today - ${eventTitleWithLink}</b>`;
+            if (djInfo && djInfo.shortDescription) {
+              nextEventText += `\n\n${djInfo.shortDescription}`;
+            }
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
             nextEventText = `<b>🎯 Next Event: This ${dayName}\n\n${eventTitleWithLink}</b>`;
+            if (djInfo && djInfo.shortDescription) {
+              nextEventText += `\n\n${djInfo.shortDescription}`;
+            }
           }
           
           return { 
