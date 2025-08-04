@@ -98,7 +98,7 @@ export class OdessaTodayGenerator {
             text: nextEventText,
             photos: djInfo?.photo ? [djInfo.photo] : undefined,
             keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl, djInfo?.soundcloudUrl)
-          };
+          } as { text: string; photos?: string[]; keyboard?: any };
         } else {
           return { text: '<b>🎯 Next Event: No upcoming events found.</b>' };
         }
@@ -198,7 +198,7 @@ export class OdessaTodayGenerator {
   /**
    * Generate schedule for today only (legacy method for backward compatibility)
    */
-  async generateTodaySchedule(): Promise<{ text: string; keyboard?: any }> {
+  async generateTodaySchedule(): Promise<{ text: string; photos?: string[]; keyboard?: any }> {
     try {
       console.log('Generating today\'s schedule...');
       
@@ -264,7 +264,7 @@ export class OdessaTodayGenerator {
             text: nextEventText,
             photos: djInfo?.photo ? [djInfo.photo] : undefined,
             keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl, djInfo?.soundcloudUrl)
-          };
+          } as { text: string; photos?: string[]; keyboard?: any };
         } else {
           return { text: '<b>🎯 Next Event: No upcoming events found.</b>' };
         }

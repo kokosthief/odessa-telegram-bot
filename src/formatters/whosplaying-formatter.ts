@@ -91,7 +91,7 @@ export class WhosPlayingFormatter {
   /**
    * Format today's schedule specifically (legacy method for backward compatibility)
    */
-  formatTodaySchedule(events: Event[]): { text: string; keyboard?: any } {
+  formatTodaySchedule(events: Event[]): { text: string; photos?: string[]; keyboard?: any } {
     if (events.length === 0) {
       return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
     }
