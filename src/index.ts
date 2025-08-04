@@ -85,13 +85,13 @@ export class OdessaTodayGenerator {
           
           let nextEventText = '';
           if (daysUntilNext === 1) {
-            nextEventText = `<b>🎯 Next Event: Tomorrow - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
+            nextEventText = `<b>🎯 Next Event: Tomorrow</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
           } else if (daysUntilNext === 0) {
-            nextEventText = `<b>🎯 Next Event: Today - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
+            nextEventText = `<b>🎯 Next Event: Today</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
-            nextEventText = `<b>🎯 Next Event: ${dayName} - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
+            nextEventText = `<b>🎯 Next Event: This ${dayName}</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
           }
           
           return { 
@@ -251,13 +251,13 @@ export class OdessaTodayGenerator {
           
           let nextEventText = '';
           if (daysUntilNext === 1) {
-            nextEventText = `<b>🎯 Next Event: Tomorrow - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
+            nextEventText = `<b>🎯 Next Event: Tomorrow</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
           } else if (daysUntilNext === 0) {
-            nextEventText = `<b>🎯 Next Event: Today - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
+            nextEventText = `<b>🎯 Next Event: Today</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
-            nextEventText = `<b>🎯 Next Event: ${dayName} - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
+            nextEventText = `<b>🎯 Next Event: This ${dayName}</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
           }
           
           return { 
