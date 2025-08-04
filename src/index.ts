@@ -77,21 +77,18 @@ export class OdessaTodayGenerator {
           // Get DJ info for the next event
           const djInfo = await this.getDJInfo(nextEvent.djName);
           
-          // Format the event title and DJ name with links
+          // Format the event title with link (removing duplicate artist name)
           const eventTitleWithLink = `<a href="${nextEvent.ticketUrl}">${nextEvent.title}</a>`;
-          const djNameWithLink = djInfo && djInfo.soundcloudUrl 
-            ? `<a href="${djInfo.soundcloudUrl}">${nextEvent.djName}</a>`
-            : nextEvent.djName;
           
           let nextEventText = '';
           if (daysUntilNext === 1) {
-            nextEventText = `<b>🎯 Next Event: Tomorrow</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: Tomorrow - ${eventTitleWithLink}</b>`;
           } else if (daysUntilNext === 0) {
-            nextEventText = `<b>🎯 Next Event: Today</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: Today - ${eventTitleWithLink}</b>`;
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
-            nextEventText = `<b>🎯 Next Event: This ${dayName}</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: This ${dayName}\n\n${eventTitleWithLink}</b>`;
           }
           
           return { 
@@ -243,21 +240,18 @@ export class OdessaTodayGenerator {
           // Get DJ info for the next event
           const djInfo = await this.getDJInfo(nextEvent.djName);
           
-          // Format the event title and DJ name with links
+          // Format the event title with link (removing duplicate artist name)
           const eventTitleWithLink = `<a href="${nextEvent.ticketUrl}">${nextEvent.title}</a>`;
-          const djNameWithLink = djInfo && djInfo.soundcloudUrl 
-            ? `<a href="${djInfo.soundcloudUrl}">${nextEvent.djName}</a>`
-            : nextEvent.djName;
           
           let nextEventText = '';
           if (daysUntilNext === 1) {
-            nextEventText = `<b>🎯 Next Event: Tomorrow</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: Tomorrow - ${eventTitleWithLink}</b>`;
           } else if (daysUntilNext === 0) {
-            nextEventText = `<b>🎯 Next Event: Today</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: Today - ${eventTitleWithLink}</b>`;
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
-            nextEventText = `<b>🎯 Next Event: This ${dayName}</b>\n\n${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: This ${dayName}\n\n${eventTitleWithLink}</b>`;
           }
           
           return { 
