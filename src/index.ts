@@ -96,6 +96,7 @@ export class OdessaTodayGenerator {
           
           return { 
             text: nextEventText,
+            photos: djInfo?.photo ? [djInfo.photo] : undefined,
             keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl, djInfo?.soundcloudUrl)
           };
         } else {
@@ -261,6 +262,7 @@ export class OdessaTodayGenerator {
           
           return { 
             text: nextEventText,
+            photos: djInfo?.photo ? [djInfo.photo] : undefined,
             keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl, djInfo?.soundcloudUrl)
           };
         } else {
