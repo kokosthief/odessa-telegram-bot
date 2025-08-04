@@ -85,21 +85,21 @@ export class OdessaTodayGenerator {
           
           let nextEventText = '';
           if (daysUntilNext === 1) {
-            nextEventText = `🎯 <b>Next Event:</b> Tomorrow - ${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: Tomorrow - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
           } else if (daysUntilNext === 0) {
-            nextEventText = `🎯 <b>Next Event:</b> Today - ${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: Today - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
-            nextEventText = `🎯 <b>Next Event:</b> ${dayName} - ${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: ${dayName} - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
           }
           
           return { 
             text: nextEventText,
-            keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl)
+            keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl, djInfo?.soundcloudUrl)
           };
         } else {
-          return { text: '🎯 <b>Next Event:</b> No upcoming events found.' };
+          return { text: '<b>🎯 Next Event: No upcoming events found.</b>' };
         }
       }
       
@@ -168,20 +168,29 @@ export class OdessaTodayGenerator {
   /**
    * Create tickets keyboard
    */
-  private createTicketsKeyboard(ticketUrl?: string): any {
-    if (!ticketUrl) {
+  private createTicketsKeyboard(ticketUrl?: string, soundcloudUrl?: string): any {
+    const buttons = [];
+    
+    if (ticketUrl) {
+      buttons.push({
+        text: '🎫 TICKETS',
+        url: ticketUrl
+      });
+    }
+    
+    if (soundcloudUrl) {
+      buttons.push({
+        text: '🎧 LISTEN',
+        url: soundcloudUrl
+      });
+    }
+    
+    if (buttons.length === 0) {
       return undefined;
     }
     
     return {
-      inline_keyboard: [
-        [
-          {
-            text: '🎫 Get Tickets',
-            url: ticketUrl
-          }
-        ]
-      ]
+      inline_keyboard: [buttons]
     };
   }
 
@@ -241,21 +250,21 @@ export class OdessaTodayGenerator {
           
           let nextEventText = '';
           if (daysUntilNext === 1) {
-            nextEventText = `🎯 <b>Next Event:</b> Tomorrow - ${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: Tomorrow - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
           } else if (daysUntilNext === 0) {
-            nextEventText = `🎯 <b>Next Event:</b> Today - ${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: Today - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
           } else {
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const dayName = dayNames[nextEventDateInAmsterdam.getDay()];
-            nextEventText = `🎯 <b>Next Event:</b> ${dayName} - ${eventTitleWithLink} | ${djNameWithLink}`;
+            nextEventText = `<b>🎯 Next Event: ${dayName} - ${eventTitleWithLink} | ${djNameWithLink}</b>`;
           }
           
           return { 
             text: nextEventText,
-            keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl)
+            keyboard: this.createTicketsKeyboard(nextEvent.ticketUrl, djInfo?.soundcloudUrl)
           };
         } else {
-          return { text: '🎯 <b>Next Event:</b> No upcoming events found.' };
+          return { text: '<b>🎯 Next Event: No upcoming events found.</b>' };
         }
       }
       
