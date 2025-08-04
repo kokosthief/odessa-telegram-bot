@@ -209,7 +209,7 @@ Just send /whosplaying to get started! 🌴🎶`;
     } catch (error) {
       console.error('Error handling /schedule command:', error);
       await this.bot.sendMessage(msg.chat.id,
-        '❌ Sorry, I couldn\'t fetch the weekly schedule. Please try again later.',
+        '❌ Sorry, I couldn\'t fetch the weekly schedule right now. Please try again later.',
         { parse_mode: 'HTML' }
       );
     }

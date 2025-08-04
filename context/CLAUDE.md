@@ -144,8 +144,14 @@ cp env.example .env
 # Required environment variables:
 TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_CHAT_ID=your_chat_id
-HIPSY_BASE_URL=https://hipsy.nl
+HIPSY_API_KEY=your_hipsy_api_key_here
+HIPSY_ORGANISATION_SLUG=odessa-amsterdam-ecstatic-dance
 TIMEZONE=Europe/Amsterdam
+
+**IMPORTANT: Production Environment Variables**
+- All environment variables are configured in Vercel dashboard for production
+- `HIPSY_API_KEY` is set in Vercel environment variables
+- Local development uses `.env` file, production uses Vercel environment variables
 ```
 
 ## Data Models

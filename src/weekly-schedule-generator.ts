@@ -28,7 +28,7 @@ export class WeeklyScheduleGenerator {
   }
 
   /**
-   * Generate weekly schedule (Wednesday to Sunday)
+   * Generate weekly schedule (Monday to Sunday)
    */
   async generateWeeklySchedule(): Promise<WeeklySchedule> {
     try {
@@ -37,6 +37,15 @@ export class WeeklyScheduleGenerator {
       
       // Fetch events from Hipsy API
       const events = await this.fetchWeeklyEvents(weekRange);
+      
+      // If no events found, return a friendly message
+      if (events.length === 0) {
+        return {
+          video: this.VIDEO_ID,
+          text: '🪩 <b><u>This Week</u></b> 🌴🎶\n\nNo events scheduled for this week.',
+          keyboard: this.createTicketsKeyboard()
+        };
+      }
       
       // Format weekly schedule
       const weeklyEvents = this.formatWeeklyEvents(events);
@@ -58,7 +67,13 @@ export class WeeklyScheduleGenerator {
       
     } catch (error) {
       console.error('Error generating weekly schedule:', error);
-      throw new Error('Failed to generate weekly schedule');
+      
+      // Return a user-friendly error message instead of throwing
+      return {
+        video: this.VIDEO_ID,
+        text: '🪩 <b><u>This Week</u></b> 🌴🎶\n\n❌ Sorry, I couldn\'t fetch the weekly schedule right now. Please try again later.',
+        keyboard: this.createTicketsKeyboard()
+      };
     }
   }
 
@@ -101,11 +116,12 @@ export class WeeklyScheduleGenerator {
   private async fetchWeeklyEvents(weekRange: DateRange): Promise<Event[]> {
     const allEvents: Event[] = [];
     let page = 1;
-    const limit = 100; // Get more events per page
+    const limit = 10; // Limit to 10 events like /whosplaying command
     
     while (true) {
       try {
-        const result = await this.hipsyScraper.getEvents(page, 'all', limit);
+        // Use 'upcoming' instead of 'all' to match working /whosplaying approach
+        const result = await this.hipsyScraper.getEvents(page, 'upcoming', limit);
         
         if (!result.success || result.events.length === 0) {
           break;
