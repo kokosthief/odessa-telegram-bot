@@ -30,6 +30,7 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 - **Enhanced DJ Info**: Photos and descriptions from Wix CMS
 - **Photo Uploads**: DJ photos in today's schedule messages
 - **Multiple DJ Photos**: Separate messages for each DJ with their individual photos
+- **Custom Event Support**: Special events display full titles instead of generic "Event | TBA"
 
 ## 📋 Project Structure
 
@@ -233,6 +234,9 @@ When there are multiple DJs in one day, the bot now sends separate messages for 
 2. **Individual DJ Messages**: Each DJ gets their own message with their photo and description
 
 This ensures every DJ's photo is displayed, not just the first one.
+
+**Custom Event Support:**
+For special events that don't match standard event types (ED, Cacao ED, Live Music, Queerstatic), the system now displays just the original event title from Hipsy without any prefix. This ensures events like "Omar Alkilani & Friends" are properly represented in the weekly schedule as "🗓️ Sun: Omar Alkilani & Friends".
 
 **For multiple events with same DJ:**
 ```

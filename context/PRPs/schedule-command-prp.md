@@ -101,10 +101,12 @@ User sends /schedule → Generate weekly schedule → Fetch facilitator data →
 🗓️ Fri: Cacao ED | Leela
 🗓️ Sat: ED | Inphiknight
 🗓️ Sun: Morning ED | Leela
-🗓️ Sun: Queerstatic | Inphiknight
+🗓️ Sun: Event | Omar Alkilani & Friends
 
 [TICKETS BUTTON]
 ```
+
+**Custom Event Handling**: For events that don't match standard event types (ED, Cacao ED, Live Music, Queerstatic), the system now displays just the original event title from Hipsy without any prefix. This ensures special events like "Omar Alkilani & Friends" are properly represented in the weekly schedule as "🗓️ Sun: Omar Alkilani & Friends".
 
 ### Non-Functional Requirements
 - [ ] Response time under 30 seconds
@@ -119,6 +121,7 @@ User sends /schedule → Generate weekly schedule → Fetch facilitator data →
 - **Data Source**: Hipsy API with `HIPSY_API_KEY` environment variable
 - **Event Types**: ED, Cacao ED, Morning ED, Queerstatic
 - **Special Logic**: First Sunday of month includes Queerstatic event
+- **Custom Events**: Events not matching standard types display full original title from Hipsy (e.g., "Event | Omar Alkilani & Friends")
 
 ### Video Integration
 - **Video ID**: `BAACAgQAAxkBAANIaIyYDXy2RFmnv6EZy2nsU2WqAsgAAmsYAAIvy2hQIXfzFx9DIcY2BA`

@@ -14,6 +14,7 @@ export interface WeeklyEvent {
   facilitator: string;
   facilitatorLink?: string;
   ticketUrl?: string | undefined;
+  originalTitle?: string; // Add original event title for custom events
 }
 
 export class WeeklyScheduleGenerator {
@@ -188,7 +189,8 @@ export class WeeklyScheduleGenerator {
           day: dayName,
           eventType: this.mapEventType(event.eventType, dayName),
           facilitator: event.djName || 'TBA',
-          ticketUrl: event.ticketUrl || undefined
+          ticketUrl: event.ticketUrl || undefined,
+          originalTitle: event.title // Preserve the original event title
         };
         
         weeklyEvents.push(weeklyEvent);
@@ -254,11 +256,20 @@ export class WeeklyScheduleGenerator {
     let text = '🪩 <b><u>This Week</u></b> 🌴🎶\n\n';
     
     weeklyEvents.forEach(event => {
-      const facilitatorText = event.facilitatorLink 
-        ? `<a href="${event.facilitatorLink}">${event.facilitator}</a>`
-        : event.facilitator;
+      let displayText: string;
       
-      text += `<b>🗓️ ${event.day}: ${event.eventType} | ${facilitatorText}</b>\n`;
+      // For custom events (Event type), use just the original title without "Event | " prefix
+      if (event.eventType === 'Event' && event.originalTitle) {
+        displayText = event.originalTitle;
+      } else {
+        // For known event types, use the facilitator name with link if available
+        const facilitatorText = event.facilitatorLink 
+          ? `<a href="${event.facilitatorLink}">${event.facilitator}</a>`
+          : event.facilitator;
+        displayText = `${event.eventType} | ${facilitatorText}`;
+      }
+      
+      text += `<b>🗓️ ${event.day}: ${displayText}</b>\n`;
     });
     
     return text;

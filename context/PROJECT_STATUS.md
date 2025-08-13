@@ -25,13 +25,14 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 
 ### Schedule Generation
 - ✅ **Today's Schedule**: Real-time today's schedule creation from live data
-- ✅ **Weekly Schedule**: `/schedule` command for current week (Monday-Sunday) with 10-event limit
+- ✅ **Weekly Schedule**: `/schedule` command for current week (Monday-Sunday) with 10-event limit and custom event support
 - ✅ **DJ Integration**: Automatic DJ name detection and social media linking
 - ✅ **Enhanced DJ Info**: Photos and descriptions from Wix CMS
 - ✅ **Template System**: Custom formatted schedules with emojis and styling
 - ✅ **Video Integration**: Auto-playing video with weekly schedules
 - ✅ **Efficient Processing**: Processes events for optimal performance
 - ✅ **Enhanced Experience**: Rich DJ profiles with photos and descriptions
+- ✅ **Custom Event Support**: Special events display just the title without "Event | " prefix
 - ✅ **Error Handling**: User-friendly messages when API is unavailable
 
 ### Enhanced DJ Information (NEW)

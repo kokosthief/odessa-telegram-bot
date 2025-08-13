@@ -84,6 +84,7 @@ This guide provides implementation patterns and standards for building an automa
 - **User-friendly Messages**: Clear error messages and help information
 - **Today's Schedule**: `/whosplaying` command for current day events
 - **Photo Uploads**: DJ photos from Wix CMS in enhanced messages
+- **Custom Event Support**: Special events display full titles instead of "Event | TBA"
 
 ### ✅ Development Features
 - **CLI Interface**: Command-line tools for testing and management
@@ -284,6 +285,9 @@ Multiple events with the same DJ!
 - "Cacao Ecstatic Dance" → "Cacao Ecstatic Dance" (was "Cacao ED")
 - "Live Music" → "Live Music"
 - "Queerstatic" → "Queerstatic"
+
+**Custom Event Handling:**
+For events that don't match standard event types, the system now displays just the original event title from Hipsy without any prefix. This ensures special events like "Omar Alkilani & Friends" are properly represented in the weekly schedule as "🗓️ Sun: Omar Alkilani & Friends".
 
 ## Telegram Integration Guidelines
 
