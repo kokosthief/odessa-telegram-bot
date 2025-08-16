@@ -222,8 +222,12 @@ export class WhosPlayingFormatter {
       }> = [];
       
       // Create intro message mentioning the B2B
+      // Use the same time logic as single events
+      const hasEveningEvents = new Date(event.date).getHours() >= 18; // 6:00 PM
+      const timeText = hasEveningEvents ? 'tonight' : 'today';
+      
       const introMessage = {
-        text: `🌟 today with <b>${event.djNames.join(' & ')}</b> ✨\n\n🎶 ${eventType} B2B 🎶`
+        text: `🌟 ${timeText} with <b>${event.djNames.join(' & ')}</b> ✨\n\n🎶 ${eventType} B2B 🎶`
       };
       messages.push(introMessage);
       
@@ -289,7 +293,11 @@ export class WhosPlayingFormatter {
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
       
       // Build the enhanced event text - combine intro and event into one line
-      let eventText = `🎶 today ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+      // Use the same time logic as B2B events
+      const hasEveningEvents = new Date(event.date).getHours() >= 18; // 6:00 PM
+      const timeText = hasEveningEvents ? 'tonight' : 'today';
+      
+      let eventText = `🎶 ${timeText} ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
       
       // Add description if available
       if (djInfo && djInfo.shortDescription) {
@@ -351,7 +359,11 @@ export class WhosPlayingFormatter {
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
       
       // Build the event text - use simplified one-line format
-      let eventText = `🎶 today ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+      // Use the same time logic as other formats
+      const hasEveningEvents = new Date(event.date).getHours() >= 18; // 6:00 PM
+      const timeText = hasEveningEvents ? 'tonight' : 'today';
+      
+      let eventText = `🎶 ${timeText} ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
       
       // Add description if available
       if (djInfo && djInfo.shortDescription) {
