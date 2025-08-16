@@ -190,7 +190,7 @@ export class WhosPlayingFormatter {
     
     // If single event, use the original format
     if (events.length === 1) {
-      return this.formatSingleEvent(events[0]!, introText);
+      return this.formatSingleEvent(events[0]!);
     }
     
     // For multiple events, create separate messages for each DJ with photo
@@ -200,7 +200,7 @@ export class WhosPlayingFormatter {
   /**
    * Format a single event (original logic)
    */
-  private async formatSingleEvent(event: Event, introText: string): Promise<{ 
+  private async formatSingleEvent(event: Event): Promise<{ 
     text: string; 
     photos?: string[]; 
     keyboard?: any;
@@ -226,8 +226,8 @@ export class WhosPlayingFormatter {
         // Get enhanced DJ info from Wix with fallback
         const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
         
-        // Build the event text for this DJ
-        let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+        // Build the event text for this DJ - combine intro and event into one line
+        let eventText = `🎶 today ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
         
         // Add description if available
         if (djInfo && djInfo.shortDescription) {
@@ -270,20 +270,20 @@ export class WhosPlayingFormatter {
         messages.push(message);
       }
       
-      // Return the intro text and separate messages for each DJ
+      // Return the separate messages for each DJ (no intro text needed)
       return {
-        text: introText,
+        text: '', // No intro text since it's combined into each message
         messages: messages
       };
     } else {
-      // Single DJ event
+      // Single DJ event - also simplify to one line
       const djName = event.djName || 'TBA';
       
       // Get enhanced DJ info from Wix with fallback
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
       
-      // Build the enhanced event text
-      let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+      // Build the enhanced event text - combine intro and event into one line
+      let eventText = `🎶 today ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
       
       // Add description if available
       if (djInfo && djInfo.shortDescription) {
@@ -310,7 +310,7 @@ export class WhosPlayingFormatter {
       };
       
       return {
-        text: `${introText}\n\n${eventText}`,
+        text: eventText,
         photos: djInfo?.photo ? [djInfo.photo] : undefined,
         keyboard
       } as { text: string; photos?: string[]; keyboard?: any };
@@ -344,8 +344,8 @@ export class WhosPlayingFormatter {
       // Get enhanced DJ info from Wix with fallback
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
       
-      // Build the event text
-      let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+      // Build the event text - use simplified one-line format
+      let eventText = `🎶 today ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
       
       // Add description if available
       if (djInfo && djInfo.shortDescription) {
