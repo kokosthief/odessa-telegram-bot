@@ -204,48 +204,77 @@ export class WhosPlayingFormatter {
     text: string; 
     photos?: string[]; 
     keyboard?: any;
+    messages?: Array<{
+      text: string;
+      photo?: string;
+      keyboard?: any;
+    }>;
   }> {
     const eventType = this.formatEventType(event.eventType, event.date);
     
     // Check if this is a B2B event
     if (event.djNames && event.djNames.length > 1) {
-      // B2B event with multiple DJs
-      const djNames = event.djNames.join(' & ');
-      let eventText = `🎶 <b>${eventType}</b> with <b>${djNames}</b> 🎶`;
+      // B2B event with multiple DJs - create separate messages for each DJ
+      const messages: Array<{
+        text: string;
+        photo?: string;
+        keyboard?: any;
+      }> = [];
       
-      // For B2B events, we'll use the first DJ's photo and description as primary
-      const primaryDJName = event.djNames[0]!;
-      const primaryDJInfo = await this.wixDJLoader.getDJInfoWithFallback(primaryDJName);
-      
-      // Add description if available
-      if (primaryDJInfo && primaryDJInfo.shortDescription) {
-        eventText += `\n\n${primaryDJInfo.shortDescription}`;
+      // Create separate message for each DJ in the B2B event
+      for (const djName of event.djNames) {
+        // Get enhanced DJ info from Wix with fallback
+        const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+        
+        // Build the event text for this DJ
+        let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+        
+        // Add description if available
+        if (djInfo && djInfo.shortDescription) {
+          eventText += `\n\n${djInfo.shortDescription}`;
+        }
+        
+        // Create ticket and SoundCloud buttons for this DJ
+        const ticketButtonText = 'TICKETS 🎟️';
+        const buttons = [{
+          text: ticketButtonText,
+          url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+        }];
+        
+        // Add SoundCloud button for this DJ if available
+        if (djInfo && djInfo.soundcloudUrl) {
+          buttons.push({
+            text: `🎧 ${djName} on SoundCloud`,
+            url: djInfo.soundcloudUrl
+          });
+        }
+        
+        const keyboard = {
+          inline_keyboard: [buttons]
+        };
+        
+        const message: {
+          text: string;
+          photo?: string;
+          keyboard?: any;
+        } = {
+          text: eventText,
+          keyboard: keyboard
+        };
+        
+        // Add photo if available for this DJ
+        if (djInfo && djInfo.photo) {
+          message.photo = djInfo.photo;
+        }
+        
+        messages.push(message);
       }
       
-      // Create ticket and SoundCloud buttons
-      const ticketButtonText = 'TICKETS 🎟️';
-      const buttons = [{
-        text: ticketButtonText,
-        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
-      }];
-      
-      // Add SoundCloud button for primary DJ if available
-      if (primaryDJInfo && primaryDJInfo.soundcloudUrl) {
-        buttons.push({
-          text: '🎧 LISTEN',
-          url: primaryDJInfo.soundcloudUrl
-        });
-      }
-      
-      const keyboard = {
-        inline_keyboard: [buttons]
-      };
-      
+      // Return the intro text and separate messages for each DJ
       return {
-        text: `${introText}\n\n${eventText}`,
-        photos: primaryDJInfo?.photo ? [primaryDJInfo.photo] : undefined,
-        keyboard
-      } as { text: string; photos?: string[]; keyboard?: any };
+        text: introText,
+        messages: messages
+      };
     } else {
       // Single DJ event
       const djName = event.djName || 'TBA';
