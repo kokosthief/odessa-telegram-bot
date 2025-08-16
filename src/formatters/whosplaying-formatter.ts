@@ -214,19 +214,25 @@ export class WhosPlayingFormatter {
     
     // Check if this is a B2B event
     if (event.djNames && event.djNames.length > 1) {
-      // B2B event with multiple DJs - create separate messages for each DJ
+      // B2B event with multiple DJs - create intro message + separate messages for each DJ
       const messages: Array<{
         text: string;
         photo?: string;
         keyboard?: any;
       }> = [];
       
+      // Create intro message mentioning the B2B
+      const introMessage = {
+        text: `🌟 today with ${event.djNames.join(' & ')} ✨`
+      };
+      messages.push(introMessage);
+      
       // Create separate message for each DJ in the B2B event
       for (const djName of event.djNames) {
         // Get enhanced DJ info from Wix with fallback
         const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
         
-        // Build the event text for this DJ - combine intro and event into one line
+        // Build the event text for this DJ - simplified format
         let eventText = `🎶 today ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
         
         // Add description if available
@@ -270,13 +276,13 @@ export class WhosPlayingFormatter {
         messages.push(message);
       }
       
-      // Return the separate messages for each DJ (no intro text needed)
+      // Return the intro text and separate messages for each DJ
       return {
-        text: '', // No intro text since it's combined into each message
+        text: '', // No intro text since it's included in messages
         messages: messages
       };
     } else {
-      // Single DJ event - also simplify to one line
+      // Single DJ event - simplified one-line format
       const djName = event.djName || 'TBA';
       
       // Get enhanced DJ info from Wix with fallback
