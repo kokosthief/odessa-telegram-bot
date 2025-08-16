@@ -59,7 +59,7 @@ export class WhosPlayingFormatter {
       // Single event - use event-based logic for time text
       const hasEveningEvents = events.some(event => {
         const eventTime = new Date(event.date);
-        return eventTime.getHours() >= 18; // 6:00 PM
+        return eventTime.getHours() >= 16; // 4:00 PM for timezone safety
       });
       const timeText = hasEveningEvents ? 'on the boat tonight' : 'Today';
       
@@ -223,7 +223,7 @@ export class WhosPlayingFormatter {
       
       // Create intro message mentioning the B2B
       // Use the same time logic as single events
-      const hasEveningEvents = new Date(event.date).getHours() >= 18; // 6:00 PM
+      const hasEveningEvents = new Date(event.date).getHours() >= 16; // 4:00 PM for timezone safety
       const timeText = hasEveningEvents ? 'tonight' : 'today';
       
       const introMessage = {
@@ -294,7 +294,7 @@ export class WhosPlayingFormatter {
       
       // Build the enhanced event text - combine intro and event into one line
       // Use the same time logic as B2B events
-      const hasEveningEvents = new Date(event.date).getHours() >= 18; // 6:00 PM
+      const hasEveningEvents = new Date(event.date).getHours() >= 16; // 4:00 PM for timezone safety
       const timeText = hasEveningEvents ? 'tonight' : 'today';
       
       let eventText = `🎶 ${timeText} ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
@@ -360,7 +360,7 @@ export class WhosPlayingFormatter {
       
       // Build the event text - use simplified one-line format
       // Use the same time logic as other formats
-      const hasEveningEvents = new Date(event.date).getHours() >= 18; // 6:00 PM
+      const hasEveningEvents = new Date(event.date).getHours() >= 16; // 4:00 PM for timezone safety
       const timeText = hasEveningEvents ? 'tonight' : 'today';
       
       let eventText = `🎶 ${timeText} ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
