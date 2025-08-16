@@ -63,24 +63,48 @@ export class WhosPlayingFormatter {
       });
       const timeText = hasEveningEvents ? 'on the boat tonight' : 'Today';
       
-      // Single event - use DJ name
-      const djName = events[0]?.djName || 'TBA';
-      return `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨`;
+      // Single event - check if it's a B2B event
+      const event = events[0]!;
+      if (event.djNames && event.djNames.length > 1) {
+        // B2B event with multiple DJs
+        const djNames = event.djNames.join(' & ');
+        return `🌟 <b>${timeText}</b> with <b>${djNames}</b> ✨`;
+      } else {
+        // Single DJ event
+        const djName = event.djName || 'TBA';
+        return `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨`;
+      }
     } else {
       // Multiple events - always use "Today on the boat" for simplicity
       const timeText = 'Today on the boat';
       
       // Multiple events - create a more dynamic intro
-      const uniqueDJs = [...new Set(events.map(e => e.djName).filter(Boolean))];
+      const uniqueDJs = new Set<string>();
       
-      if (uniqueDJs.length === 1) {
+      events.forEach(event => {
+        if (event.djNames && event.djNames.length > 1) {
+          // B2B event - add all DJ names
+          event.djNames.forEach(dj => uniqueDJs.add(dj));
+        } else if (event.djName) {
+          // Single DJ event
+          uniqueDJs.add(event.djName);
+        }
+      });
+      
+      const uniqueDJsArray = Array.from(uniqueDJs).filter(Boolean);
+      
+      if (uniqueDJsArray.length === 1) {
         // Same DJ for multiple events
-        const djName = uniqueDJs[0];
+        const djName = uniqueDJsArray[0];
         return `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨\n\nMultiple events with the same DJ!`;
+      } else if (uniqueDJsArray.length === 2) {
+        // Two different DJs
+        const djNames = uniqueDJsArray.join(' & ');
+        return `🌟 <b>${timeText}</b> with <b>${djNames}</b> ✨\n\nA day filled with amazing music!`;
       } else {
-        // Different DJs - create a more exciting intro
-        const djNames = uniqueDJs.slice(0, 2).join(' & ');
-        const remainingCount = uniqueDJs.length - 2;
+        // Multiple different DJs
+        const djNames = uniqueDJsArray.slice(0, 2).join(' & ');
+        const remainingCount = uniqueDJsArray.length - 2;
         const djText = remainingCount > 0 ? `${djNames} & ${remainingCount} more` : djNames;
         
         return `🌟 <b>${timeText}</b> with <b>${djText}</b> ✨\n\nA day filled with amazing music!`;
@@ -182,49 +206,86 @@ export class WhosPlayingFormatter {
     keyboard?: any;
   }> {
     const eventType = this.formatEventType(event.eventType, event.date);
-    const djName = event.djName || 'TBA';
     
-    // Get enhanced DJ info from Wix with fallback
-    const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
-    
-    // Build the enhanced event text
-    let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
-    
-    // Add description if available
-    if (djInfo && djInfo.shortDescription) {
-      eventText += `\n\n${djInfo.shortDescription}`;
+    // Check if this is a B2B event
+    if (event.djNames && event.djNames.length > 1) {
+      // B2B event with multiple DJs
+      const djNames = event.djNames.join(' & ');
+      let eventText = `🎶 <b>${eventType}</b> with <b>${djNames}</b> 🎶`;
+      
+      // For B2B events, we'll use the first DJ's photo and description as primary
+      const primaryDJName = event.djNames[0]!;
+      const primaryDJInfo = await this.wixDJLoader.getDJInfoWithFallback(primaryDJName);
+      
+      // Add description if available
+      if (primaryDJInfo && primaryDJInfo.shortDescription) {
+        eventText += `\n\n${primaryDJInfo.shortDescription}`;
+      }
+      
+      // Create ticket and SoundCloud buttons
+      const ticketButtonText = 'TICKETS 🎟️';
+      const buttons = [{
+        text: ticketButtonText,
+        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+      }];
+      
+      // Add SoundCloud button for primary DJ if available
+      if (primaryDJInfo && primaryDJInfo.soundcloudUrl) {
+        buttons.push({
+          text: '🎧 LISTEN',
+          url: primaryDJInfo.soundcloudUrl
+        });
+      }
+      
+      const keyboard = {
+        inline_keyboard: [buttons]
+      };
+      
+      return {
+        text: `${introText}\n\n${eventText}`,
+        photos: primaryDJInfo?.photo ? [primaryDJInfo.photo] : undefined,
+        keyboard
+      } as { text: string; photos?: string[]; keyboard?: any };
+    } else {
+      // Single DJ event
+      const djName = event.djName || 'TBA';
+      
+      // Get enhanced DJ info from Wix with fallback
+      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+      
+      // Build the enhanced event text
+      let eventText = `🎶 <b>${eventType}</b> with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+      
+      // Add description if available
+      if (djInfo && djInfo.shortDescription) {
+        eventText += `\n\n${djInfo.shortDescription}`;
+      }
+      
+      // Create ticket and SoundCloud buttons
+      const ticketButtonText = 'TICKETS 🎟️';
+      const buttons = [{
+        text: ticketButtonText,
+        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+      }];
+      
+      // Add SoundCloud button if available
+      if (djInfo && djInfo.soundcloudUrl) {
+        buttons.push({
+          text: '🎧 LISTEN',
+          url: djInfo.soundcloudUrl
+        });
+      }
+      
+      const keyboard = {
+        inline_keyboard: [buttons]
+      };
+      
+      return {
+        text: `${introText}\n\n${eventText}`,
+        photos: djInfo?.photo ? [djInfo.photo] : undefined,
+        keyboard
+      } as { text: string; photos?: string[]; keyboard?: any };
     }
-    
-    // Create ticket and SoundCloud buttons
-    const ticketButtonText = 'TICKETS 🎟️';
-    const buttons = [{
-      text: ticketButtonText,
-      url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
-    }];
-    
-    // Add SoundCloud button if available
-    if (djInfo && djInfo.soundcloudUrl) {
-      buttons.push({
-        text: '🎧 LISTEN',
-        url: djInfo.soundcloudUrl
-      });
-    }
-    
-    const keyboard = {
-      inline_keyboard: [buttons]
-    };
-    
-    const result: { text: string; photos?: string[]; keyboard?: any } = {
-      text: `${introText}\n\n${eventText}`,
-      keyboard: keyboard
-    };
-    
-    // Add photo if available
-    if (djInfo && djInfo.photo) {
-      result.photos = [djInfo.photo];
-    }
-    
-    return result;
   }
 
   /**

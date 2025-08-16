@@ -5,7 +5,8 @@ export interface Event {
   picture?: string;
   ticketUrl: string;
   originalDate: string;
-  djName?: string | undefined;
+  djName?: string | undefined; // Single DJ name for backward compatibility
+  djNames?: string[]; // Array of DJ names for B2B events
   eventType?: 'ED' | 'Cacao ED' | 'Live Music' | 'Queerstatic' | undefined;
   description?: string;
 }

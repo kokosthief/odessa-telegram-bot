@@ -15,6 +15,8 @@ export interface WeeklyEvent {
   facilitatorLink?: string;
   ticketUrl?: string | undefined;
   originalTitle?: string; // Add original event title for custom events
+  facilitators?: string[] | undefined; // Array of facilitators for B2B events
+  facilitatorLinks?: string[] | undefined; // Array of facilitator links for B2B events
 }
 
 export class WeeklyScheduleGenerator {
@@ -190,7 +192,8 @@ export class WeeklyScheduleGenerator {
           eventType: this.mapEventType(event.eventType, dayName),
           facilitator: event.djName || 'TBA',
           ticketUrl: event.ticketUrl || undefined,
-          originalTitle: event.title // Preserve the original event title
+          originalTitle: event.title, // Preserve the original event title
+          facilitators: event.djNames || undefined, // Store multiple facilitators for B2B events
         };
         
         weeklyEvents.push(weeklyEvent);
@@ -244,6 +247,25 @@ export class WeeklyScheduleGenerator {
           // Silently handle facilitator link errors
         }
       }
+
+      // Handle multiple facilitators for B2B events
+      if (event && event.facilitators && event.facilitators.length > 0) {
+        event.facilitatorLinks = [];
+        
+        for (const facilitator of event.facilitators) {
+          try {
+            const facilitatorData = await this.wixDJLoader.getDJInfoWithFallback(facilitator);
+            
+            if (facilitatorData && facilitatorData.soundcloudUrl) {
+              event.facilitatorLinks!.push(facilitatorData.soundcloudUrl);
+            } else {
+              event.facilitatorLinks!.push(''); // Empty string for facilitators without links
+            }
+          } catch (error) {
+            event.facilitatorLinks!.push(''); // Empty string on error
+          }
+        }
+      }
     }
     
     return eventsWithLinks;
@@ -261,6 +283,15 @@ export class WeeklyScheduleGenerator {
       // For custom events (Event type), use just the original title without "Event | " prefix
       if (event.eventType === 'Event' && event.originalTitle) {
         displayText = event.originalTitle;
+      } else if (event.facilitators && event.facilitators.length > 1) {
+        // B2B event with multiple facilitators
+        const facilitatorTexts = event.facilitators.map((facilitator, index) => {
+          if (event.facilitatorLinks && event.facilitatorLinks[index]) {
+            return `<a href="${event.facilitatorLinks[index]}">${facilitator}</a>`;
+          }
+          return facilitator;
+        });
+        displayText = `${event.eventType} | ${facilitatorTexts.join(' B2B ')}`;
       } else {
         // For known event types, use the facilitator name with link if available
         const facilitatorText = event.facilitatorLink 

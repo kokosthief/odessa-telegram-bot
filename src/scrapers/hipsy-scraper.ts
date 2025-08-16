@@ -41,17 +41,21 @@ export class HipsyScraper {
           };
         }
 
-        const events: Event[] = response.data.data.map((event: any) => ({
-          id: event.id.toString(),
-          title: event.title,
-          date: event.date,
-          picture: event.picture || event.picture_small || 'https://via.placeholder.com/150',
-          ticketUrl: this.convertToPublicUrl(event.url_ticketshop || event.url_hipsy),
-          originalDate: event.date,
-          djName: this.extractDJName(event.title),
-          eventType: this.classifyEventType(event.title),
-          description: event.description || ''
-        }));
+        const events: Event[] = response.data.data.map((event: any) => {
+          const djInfo = this.extractDJName(event.title);
+          return {
+            id: event.id.toString(),
+            title: event.title,
+            date: event.date,
+            picture: event.picture || event.picture_small || 'https://via.placeholder.com/150',
+            ticketUrl: this.convertToPublicUrl(event.url_ticketshop || event.url_hipsy),
+            originalDate: event.date,
+            djName: djInfo.djName,
+            djNames: djInfo.djNames,
+            eventType: this.classifyEventType(event.title),
+            description: event.description || ''
+          };
+        });
 
         console.log(`Successfully fetched ${events.length} events from Hipsy.nl API`);
         
@@ -102,9 +106,10 @@ export class HipsyScraper {
   }
 
   /**
-   * Extract DJ name from event title
+   * Extract DJ name(s) from event title
+   * Handles both single DJ and B2B (back-to-back) events
    */
-  private extractDJName(title: string): string | undefined {
+  private extractDJName(title: string): { djName?: string; djNames?: string[] } {
     // Common patterns for DJ names in event titles
     const patterns = [
       /\|\s*([^|]+)$/, // "Event Name | DJ Name"
@@ -117,14 +122,86 @@ export class HipsyScraper {
     for (const pattern of patterns) {
       const match = title.match(pattern);
       if (match && match[1]) {
-        const djName = match[1].trim();
-        if (djName && djName !== 'TBA' && djName !== 'TBD') {
-          return djName;
+        const djText = match[1].trim();
+        if (djText && djText !== 'TBA' && djText !== 'TBD') {
+          // Check if this is a B2B event
+          if (djText.toLowerCase().includes('b2b') || djText.toLowerCase().includes('back to back')) {
+            // Extract multiple DJ names from B2B format
+            const djNames = this.extractB2BDJNames(djText);
+            if (djNames.length > 0) {
+              const firstDJ = djNames[0];
+              if (firstDJ) {
+                return { djNames, djName: firstDJ }; // First DJ for backward compatibility
+              }
+            }
+          } else {
+            // Single DJ event
+            return { djName: djText };
+          }
         }
       }
     }
 
-    return undefined;
+    return {};
+  }
+
+  /**
+   * Extract DJ names from B2B (back-to-back) format
+   * Handles formats like: "Ruby B2B Indi Raeva", "DJ1 Back to Back DJ2", etc.
+   */
+  private extractB2BDJNames(b2bText: string): string[] {
+    const djNames: string[] = [];
+    
+    // Common B2B separators
+    const separators = [
+      /\s+b2b\s+/i,           // "Ruby B2B Indi Raeva"
+      /\s+back\s+to\s+back\s+/i, // "Ruby Back to Back Indi Raeva"
+      /\s+vs\s+/i,            // "Ruby vs Indi Raeva"
+      /\s+&\s+/i,             // "Ruby & Indi Raeva"
+      /\s+and\s+/i,           // "Ruby and Indi Raeva"
+      /\s*\+\s*/i,            // "Ruby + Indi Raeva"
+    ];
+
+    for (const separator of separators) {
+      if (separator.test(b2bText)) {
+        const parts = b2bText.split(separator);
+        if (parts.length === 2) {
+          const dj1 = parts[0]?.trim();
+          const dj2 = parts[1]?.trim();
+          
+          if (dj1 && dj2) {
+            djNames.push(dj1, dj2);
+            break;
+          }
+        }
+      }
+    }
+
+    // If no separators found, try to split by common conjunctions
+    if (djNames.length === 0) {
+      const conjunctionPatterns = [
+        /\s+and\s+/i,
+        /\s+&\s+/,
+        /\s*\+\s*/,
+      ];
+
+      for (const pattern of conjunctionPatterns) {
+        if (pattern.test(b2bText)) {
+          const parts = b2bText.split(pattern);
+          if (parts.length === 2) {
+            const dj1 = parts[0]?.trim();
+            const dj2 = parts[1]?.trim();
+            
+            if (dj1 && dj2) {
+              djNames.push(dj1, dj2);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    return djNames;
   }
 
   /**
