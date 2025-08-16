@@ -223,7 +223,7 @@ export class WhosPlayingFormatter {
       
       // Create intro message mentioning the B2B
       const introMessage = {
-        text: `🌟 today with ${event.djNames.join(' & ')} ✨`
+        text: `🌟 today with ${event.djNames.join(' & ')} ✨\n🎶 ${eventType} B2B 🎶`
       };
       messages.push(introMessage);
       
