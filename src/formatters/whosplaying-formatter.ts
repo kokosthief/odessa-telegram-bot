@@ -232,12 +232,12 @@ export class WhosPlayingFormatter {
         // Get enhanced DJ info from Wix with fallback
         const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
         
-        // Build the event text for this DJ - simplified format
-        let eventText = `🎶 today ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
+        // For B2B events, just show the description without repetitive event text
+        let eventText = '';
         
         // Add description if available
         if (djInfo && djInfo.shortDescription) {
-          eventText += `\n\n${djInfo.shortDescription}`;
+          eventText = djInfo.shortDescription;
         }
         
         // Create ticket and SoundCloud buttons for this DJ
