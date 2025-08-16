@@ -33,6 +33,8 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 - ✅ **Efficient Processing**: Processes events for optimal performance
 - ✅ **Enhanced Experience**: Rich DJ profiles with photos and descriptions
 - ✅ **Custom Event Support**: Special events display just the title without "Event | " prefix
+- ✅ **B2B Event Support**: Enhanced handling of back-to-back events with multiple DJs
+- ✅ **Intelligent Time Display**: Shows "tonight" for evening events (4 PM+) and "today" for daytime events
 - ✅ **Error Handling**: User-friendly messages when API is unavailable
 
 ### Enhanced DJ Information (NEW)
@@ -49,6 +51,8 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 - ✅ **Inline Keyboards**: Ticket booking and SoundCloud buttons in messages
 - ✅ **Photo Uploads**: Enhanced messages with DJ photos from Wix CMS
 - ✅ **Video Messages**: Auto-playing video with weekly schedules
+- ✅ **B2B Event Format**: Professional display of back-to-back events with intro and individual DJ messages
+- ✅ **Smart Time Display**: Contextual "tonight" vs "today" based on event timing
 - ✅ **Error Handling**: User-friendly error messages
 - ✅ **Multi-platform**: Works in groups and direct messages
 
@@ -227,17 +231,21 @@ npm run cli test             # Test bot connection
 - ✅ **Testing**: Comprehensive test coverage
 - ✅ **Monitoring**: Structured logging and performance tracking
 - ✅ **Enhanced DJ Info**: Photos and descriptions from Wix CMS
+- ✅ **B2B Event Support**: Professional handling of back-to-back events
+- ✅ **Smart Time Display**: Contextual "tonight" vs "today" based on event timing
 
 ### User Impact
 - **Automated Today's Schedule**: No manual schedule checking needed
 - **Real-time Data**: Always up-to-date event information
 - **DJ Information**: Easy access to DJ social media links and photos
 - **Enhanced Experience**: Rich DJ profiles with photos and descriptions
+- **B2B Event Display**: Professional format for back-to-back events
+- **Smart Time Context**: Clear indication of when events are happening
 - **Ticket Booking**: Direct links to event tickets
 - **User-friendly Interface**: Simple commands and clear responses
 
 ---
 
 **Last Updated**: December 2024  
-**Status**: Production Ready & Live with Enhanced Today's Schedule Features  
-**Next Review**: Monthly performance and feature assessment 
+**Status**: Production Ready & Live with Enhanced B2B Event Support & Smart Time Display  
+**Next Review**: Monthly performance and feature assessment

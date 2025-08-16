@@ -21,6 +21,9 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 - **DJ Database**: 20+ DJs with social media links in `src/data/djs.json`
 - **Improved Event Types**: Full event names (Ecstatic Dance, Cacao Ecstatic Dance) instead of abbreviations
 - **Multi-Event Logic**: Smart intro text for multiple events with different DJs
+- **B2B Event Support**: Enhanced handling of back-to-back events with multiple DJs
+- **Custom Event Support**: Special events display full titles instead of generic "Event | TBA"
+- **Intelligent Time Display**: Shows "tonight" for evening events (4 PM+) and "today" for daytime events
 
 ### ✅ **User Experience Features**
 - **Typing Indicators**: Shows typing status during schedule generation
@@ -31,6 +34,9 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 - **Photo Uploads**: DJ photos in today's schedule messages
 - **Multiple DJ Photos**: Separate messages for each DJ with their individual photos
 - **Custom Event Support**: Special events display full titles instead of generic "Event | TBA"
+- **B2B Event Format**: Professional display of back-to-back events with intro and individual DJ messages
+- **Smart Time Display**: Contextual "tonight" vs "today" based on event timing (4 PM cutoff)
+- **Clean B2B Layout**: Intro message + event type + individual DJ descriptions with photos and links
 
 ## 📋 Project Structure
 
