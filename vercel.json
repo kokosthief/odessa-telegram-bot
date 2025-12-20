@@ -8,6 +8,16 @@
     {
       "src": "/api/test",
       "dest": "/api/test.ts"
+    },
+    {
+      "src": "/api/scheduled-schedule",
+      "dest": "/api/scheduled-schedule.ts"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/scheduled-schedule",
+      "schedule": "0 11 * * 3"
     }
   ],
   "env": {
