@@ -221,6 +221,8 @@ export class WeeklyScheduleGenerator {
         return 'Live Music';
       case 'Queerstatic':
         return 'Queerstatic';
+      case 'Ecstatic Journey':
+        return 'Ecstatic Journey';
       default:
         return 'Event';
     }

@@ -207,10 +207,15 @@ export class HipsyScraper {
   /**
    * Classify event type based on title
    */
-  private classifyEventType(title: string): 'ED' | 'Cacao ED' | 'Live Music' | 'Queerstatic' | undefined {
+  private classifyEventType(title: string): 'ED' | 'Cacao ED' | 'Live Music' | 'Queerstatic' | 'Ecstatic Journey' | undefined {
     const lowerTitle = title.toLowerCase();
     
     console.log(`🎭 Classifying event type for title: "${title}" -> lowercase: "${lowerTitle}"`);
+    
+    // Check for Ecstatic Journey first (before ED to avoid false matches)
+    if (lowerTitle.includes('ecstatic journey')) {
+      return 'Ecstatic Journey';
+    }
     
     if (lowerTitle.includes('ecstatic dance') || lowerTitle.includes('ed')) {
       if (lowerTitle.includes('cacao') || lowerTitle.includes('cacao ed')) {
