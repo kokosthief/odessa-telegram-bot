@@ -68,7 +68,7 @@ export class OdessaBot {
       const todaySchedule = await this.generator.generateEnhancedTodaySchedule();
 
       // Debug logging (only in development)
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env['NODE_ENV'] === 'development') {
         console.log('🔍 Today Schedule Debug:');
         console.log(`   Text: ${todaySchedule.text}`);
         console.log(`   Photos: ${todaySchedule.photos ? todaySchedule.photos.length : 0}`);

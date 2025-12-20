@@ -121,7 +121,7 @@ export class WixDJLoader {
       };
 
       // Debug logging (only in development)
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env['NODE_ENV'] === 'development') {
         console.log(`📤 Request body:`, JSON.stringify(requestBody, null, 2));
         console.log(`🌐 Making request to: ${this.baseUrl}/items/query`);
         console.log(`🔍 Querying for DJ: "${djName}"`);

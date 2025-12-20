@@ -80,7 +80,8 @@ export class DJLoader {
     // Try fuzzy matching
     const matchedKey = this.findDJByName(djName, djData);
     if (matchedKey) {
-      return djData[matchedKey];
+      const result = djData[matchedKey];
+      return result || null;
     }
     
     return null;
