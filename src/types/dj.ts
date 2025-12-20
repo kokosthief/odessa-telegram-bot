@@ -6,6 +6,7 @@ export interface DJ {
 export interface DJDatabase {
   [key: string]: {
     link?: string;
+    photo?: string;
   };
 }
 

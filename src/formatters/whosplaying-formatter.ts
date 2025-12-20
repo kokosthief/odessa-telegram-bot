@@ -1,6 +1,7 @@
 import { Event } from '../types/event';
 import { WixDJLoader } from '../utils/wix-dj-loader';
 import { utcToZonedTime } from 'date-fns-tz';
+import { sanitizeUrl } from '../utils/url-validator';
 
 export class WhosPlayingFormatter {
   private wixDJLoader: WixDJLoader;
@@ -150,7 +151,7 @@ export class WhosPlayingFormatter {
       
       return [{
         text: buttonText,
-        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+        url: sanitizeUrl(event.ticketUrl)
       }];
     });
     
@@ -248,15 +249,18 @@ export class WhosPlayingFormatter {
         const ticketButtonText = 'TICKETS 🎟️';
         const buttons = [{
           text: ticketButtonText,
-          url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+          url: sanitizeUrl(event.ticketUrl)
         }];
         
         // Add SoundCloud button for this DJ if available
         if (djInfo && djInfo.soundcloudUrl) {
-          buttons.push({
-            text: `🎧 ${djName} on SoundCloud`,
-            url: djInfo.soundcloudUrl
-          });
+          const soundcloudUrl = sanitizeUrl(djInfo.soundcloudUrl);
+          if (soundcloudUrl) {
+            buttons.push({
+              text: `🎧 ${djName} on SoundCloud`,
+              url: soundcloudUrl
+            });
+          }
         }
         
         const keyboard = {
@@ -308,15 +312,18 @@ export class WhosPlayingFormatter {
       const ticketButtonText = 'TICKETS 🎟️';
       const buttons = [{
         text: ticketButtonText,
-        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+        url: sanitizeUrl(event.ticketUrl)
       }];
       
       // Add SoundCloud button if available
       if (djInfo && djInfo.soundcloudUrl) {
-        buttons.push({
-          text: '🎧 LISTEN',
-          url: djInfo.soundcloudUrl
-        });
+        const soundcloudUrl = sanitizeUrl(djInfo.soundcloudUrl);
+        if (soundcloudUrl) {
+          buttons.push({
+            text: '🎧 LISTEN',
+            url: soundcloudUrl
+          });
+        }
       }
       
       const keyboard = {
@@ -374,15 +381,18 @@ export class WhosPlayingFormatter {
       const ticketButtonText = 'TICKETS 🎟️';
       const buttons = [{
         text: ticketButtonText,
-        url: event.ticketUrl || 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance'
+        url: sanitizeUrl(event.ticketUrl)
       }];
       
       // Add SoundCloud button if available
       if (djInfo && djInfo.soundcloudUrl) {
-        buttons.push({
-          text: '🎧 LISTEN',
-          url: djInfo.soundcloudUrl
-        });
+        const soundcloudUrl = sanitizeUrl(djInfo.soundcloudUrl);
+        if (soundcloudUrl) {
+          buttons.push({
+            text: '🎧 LISTEN',
+            url: soundcloudUrl
+          });
+        }
       }
       
       const keyboard = {

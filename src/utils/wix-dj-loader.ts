@@ -120,11 +120,12 @@ export class WixDJLoader {
         }
       };
 
-      console.log(`📤 Request body:`, JSON.stringify(requestBody, null, 2));
-      console.log(`🌐 Making request to: ${this.baseUrl}/items/query`);
-      console.log(`🔍 Querying for DJ: "${djName}"`);
-      console.log(`🔍 Available Wix DJs: ["RubyDub", "Faralduín", "Rachi", "Leela", "Lizzy"]`);
-      console.log(`🔍 Exact match: ${["RubyDub", "Faralduín", "Rachi", "Leela", "Lizzy"].includes(djName) ? 'YES' : 'NO'}`);
+      // Debug logging (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📤 Request body:`, JSON.stringify(requestBody, null, 2));
+        console.log(`🌐 Making request to: ${this.baseUrl}/items/query`);
+        console.log(`🔍 Querying for DJ: "${djName}"`);
+      }
 
       const response = await fetch(`${this.baseUrl}/items/query`, {
         method: 'POST',
@@ -245,8 +246,21 @@ export class WixDJLoader {
       };
     }
 
-    // Fallback to existing JSON data
-    // Since djs.json is removed, we'll just return null for fallback
+    // Fallback to existing JSON data with fuzzy matching
+    const { DJLoader } = await import('./dj-loader');
+    const djLoader = new DJLoader();
+    const jsonData = djLoader.getDJInfo(djName);
+    
+    if (jsonData) {
+      console.log(`✅ JSON data found for ${djName} (fallback from Wix)`);
+      return {
+        name: djName,
+        photo: jsonData.photo || undefined,
+        soundcloudUrl: jsonData.link || undefined
+      };
+    }
+    
+    console.log(`⚠️ No DJ data found for "${djName}" in Wix or JSON`);
     return null;
   }
 
