@@ -28,6 +28,24 @@ export class WhosPlayingFormatter {
   }
 
   /**
+   * Get time text for event (Today for Sunday morning, Tonight for others)
+   * Returns lowercase version - capitalize when using as first word
+   */
+  private getTimeText(eventDate: string): string {
+    const date = new Date(eventDate);
+    const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const hour = date.getHours();
+    
+    // Sunday morning events (before 4 PM) use "Today"
+    if (dayOfWeek === 0 && hour < 16) {
+      return 'today';
+    }
+    
+    // All other events use "tonight"
+    return 'tonight';
+  }
+
+  /**
    * Format event type for display
    */
   private formatEventType(eventType?: string, eventDate?: string): string {
@@ -60,14 +78,11 @@ export class WhosPlayingFormatter {
   private generateMultiEventIntro(events: Event[]): string {
     if (events.length === 1) {
       // Single event - use event-based logic for time text
-      const hasEveningEvents = events.some(event => {
-        const eventTime = new Date(event.date);
-        return eventTime.getHours() >= 16; // 4:00 PM for timezone safety
-      });
-      const timeText = hasEveningEvents ? 'on the boat tonight' : 'Today';
+      const event = events[0]!;
+      const timeTextLower = this.getTimeText(event.date);
+      const timeText = timeTextLower.charAt(0).toUpperCase() + timeTextLower.slice(1);
       
       // Single event - check if it's a B2B event
-      const event = events[0]!;
       if (event.djNames && event.djNames.length > 1) {
         // B2B event with multiple DJs
         const djNames = event.djNames.join(' & ');
@@ -78,8 +93,12 @@ export class WhosPlayingFormatter {
         return `🌟 <b>${timeText}</b> with <b>${djName}</b> ✨`;
       }
     } else {
-      // Multiple events - always use "Today on the boat" for simplicity
-      const timeText = 'Today on the boat';
+      // Multiple events - check if any are Sunday morning, otherwise use "Tonight"
+      const hasSundayMorning = events.some(event => {
+        const date = new Date(event.date);
+        return date.getDay() === 0 && date.getHours() < 16;
+      });
+      const timeText = hasSundayMorning ? 'Today' : 'Tonight';
       
       // Multiple events - create a more dynamic intro
       const uniqueDJs = new Set<string>();
@@ -225,9 +244,9 @@ export class WhosPlayingFormatter {
       }> = [];
       
       // Create intro message mentioning the B2B
-      // Use the same time logic as single events
-      const hasEveningEvents = new Date(event.date).getHours() >= 16; // 4:00 PM for timezone safety
-      const timeText = hasEveningEvents ? 'tonight' : 'today';
+      // Use the same time logic as single events - capitalize when first word
+      const timeTextLower = this.getTimeText(event.date);
+      const timeText = timeTextLower.charAt(0).toUpperCase() + timeTextLower.slice(1);
       
       const introMessage = {
         text: `🌟 ${timeText} with <b>${event.djNames.join(' & ')}</b> ✨\n\n🎶 ${eventType} B2B 🎶`
@@ -299,9 +318,9 @@ export class WhosPlayingFormatter {
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
       
       // Build the enhanced event text - combine intro and event into one line
-      // Use the same time logic as B2B events
-      const hasEveningEvents = new Date(event.date).getHours() >= 16; // 4:00 PM for timezone safety
-      const timeText = hasEveningEvents ? 'tonight' : 'today';
+      // Use the same time logic as B2B events - capitalize when first word
+      const timeTextLower = this.getTimeText(event.date);
+      const timeText = timeTextLower.charAt(0).toUpperCase() + timeTextLower.slice(1);
       
       let eventText = `🎶 ${timeText} ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
       
@@ -368,9 +387,9 @@ export class WhosPlayingFormatter {
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
       
       // Build the event text - use simplified one-line format
-      // Use the same time logic as other formats
-      const hasEveningEvents = new Date(event.date).getHours() >= 16; // 4:00 PM for timezone safety
-      const timeText = hasEveningEvents ? 'tonight' : 'today';
+      // Use the same time logic as other formats - capitalize when first word
+      const timeTextLower = this.getTimeText(event.date);
+      const timeText = timeTextLower.charAt(0).toUpperCase() + timeTextLower.slice(1);
       
       let eventText = `🎶 ${timeText} ${eventType} with <b>${djInfo ? djInfo.name : djName}</b> 🎶`;
       
