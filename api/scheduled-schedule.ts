@@ -7,6 +7,9 @@ import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
  * 
  * Cron schedule: "0 11 * * 3" = Every Wednesday at 11:00 UTC
  * This is approximately 12:00 Amsterdam time (12:00 in winter UTC+1, 13:00 in summer UTC+2)
+ * 
+ * Posts to the group chat specified in TELEGRAM_GROUP_CHAT_ID environment variable
+ * Group chat IDs are negative numbers (e.g., -1001234567890)
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Verify this is a cron request (Vercel adds this header)
@@ -20,11 +23,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
+    const { TELEGRAM_BOT_TOKEN, TELEGRAM_GROUP_CHAT_ID } = process.env;
 
-    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_GROUP_CHAT_ID) {
       console.error('Missing environment variables');
-      return res.status(500).json({ error: 'Bot not configured' });
+      return res.status(500).json({ error: 'Bot not configured - TELEGRAM_GROUP_CHAT_ID required' });
     }
 
     console.log('📅 Scheduled weekly schedule post triggered');
@@ -38,8 +41,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`   Video: ${weeklySchedule.video}`);
     console.log(`   Keyboard: ${weeklySchedule.keyboard ? 'Available' : 'Not available'}`);
 
-    // Send video with schedule to the configured chat
-    const chatId = parseInt(TELEGRAM_CHAT_ID, 10);
+    // Send video with schedule to the group chat
+    // Group chat IDs are negative numbers in Telegram
+    const chatId = parseInt(TELEGRAM_GROUP_CHAT_ID, 10);
+    console.log(`📤 Posting to group chat ID: ${chatId}`);
     await sendTelegramMessageWithVideo(chatId, weeklySchedule.text, weeklySchedule.video, weeklySchedule.keyboard);
 
     console.log('✅ Weekly schedule posted successfully');
