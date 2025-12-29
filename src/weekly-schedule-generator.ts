@@ -390,12 +390,8 @@ export class WeeklyScheduleGenerator {
           }
         });
         
-        // Use "&" separator for "and"/"&" events, "B2B" for actual B2B events
-        const hasAndOrAmpersand = event.facilitator && (
-          event.facilitator.toLowerCase().includes('and') || 
-          event.facilitator.includes('&')
-        );
-        const separator = hasAndOrAmpersand ? ' & ' : ' B2B ';
+        // Always use "&" separator (not "B2B" since they play after each other, not simultaneously)
+        const separator = ' & ';
         
         // Extract event title from originalTitle (everything before the separator)
         // For "New Year Party | Samaya & Henners", extract "New Year Party"
