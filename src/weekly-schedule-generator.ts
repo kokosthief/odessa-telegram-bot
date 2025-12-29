@@ -396,7 +396,36 @@ export class WeeklyScheduleGenerator {
           event.facilitator.includes('&')
         );
         const separator = hasAndOrAmpersand ? ' & ' : ' B2B ';
-        displayText = `${event.eventType} | ${facilitatorTexts.join(separator)}`;
+        
+        // Extract event title from originalTitle (everything before the separator)
+        // For "New Year Party | Samaya & Henners", extract "New Year Party"
+        let eventTitle = event.eventType || 'Event';
+        if (event.originalTitle) {
+          // Try to extract title part before common separators
+          const titlePatterns = [
+            /\s*\|\s*/,           // "Event | DJ"
+            /\s+with\s+/i,        // "Event with DJ"
+            /\s+feat\.?\s+/i,     // "Event feat. DJ"
+            /\s+by\s+/i,          // "Event by DJ"
+            /\s+-\s+/,            // "Event - DJ"
+          ];
+          
+          for (const pattern of titlePatterns) {
+            const match = event.originalTitle.split(pattern);
+            if (match.length > 1 && match[0]) {
+              eventTitle = match[0].trim();
+              console.log(`   📌 Extracted event title: "${eventTitle}" from "${event.originalTitle}"`);
+              break;
+            }
+          }
+          
+          // If no separator found, use the full original title
+          if (eventTitle === (event.eventType || 'Event')) {
+            eventTitle = event.originalTitle;
+          }
+        }
+        
+        displayText = `${eventTitle} | ${facilitatorTexts.join(separator)}`;
         console.log(`   📤 Final display text: ${displayText}`);
       } else if (event.eventType === 'Event' && event.originalTitle) {
         // For custom events (Event type) without B2B, use just the original title without "Event | " prefix
