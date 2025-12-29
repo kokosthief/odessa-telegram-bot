@@ -370,10 +370,9 @@ export class WeeklyScheduleGenerator {
     weeklyEvents.forEach(event => {
       let displayText: string;
       
-      // For custom events (Event type), use just the original title without "Event | " prefix
-      if (event.eventType === 'Event' && event.originalTitle) {
-        displayText = event.originalTitle;
-      } else if (event.facilitators && event.facilitators.length > 1) {
+      // Check for B2B events FIRST (before custom event check)
+      // B2B events should always show both DJs with links, even if eventType is "Event"
+      if (event.facilitators && event.facilitators.length > 1) {
         // B2B event with multiple facilitators
         console.log(`📝 Formatting B2B event with ${event.facilitators.length} facilitators`);
         console.log(`   Facilitators: ${event.facilitators.join(', ')}`);
@@ -399,6 +398,9 @@ export class WeeklyScheduleGenerator {
         const separator = hasAndOrAmpersand ? ' & ' : ' B2B ';
         displayText = `${event.eventType} | ${facilitatorTexts.join(separator)}`;
         console.log(`   📤 Final display text: ${displayText}`);
+      } else if (event.eventType === 'Event' && event.originalTitle) {
+        // For custom events (Event type) without B2B, use just the original title without "Event | " prefix
+        displayText = event.originalTitle;
       } else {
         // For known event types, use the facilitator name with link if available
         const facilitatorText = event.facilitatorLink 
