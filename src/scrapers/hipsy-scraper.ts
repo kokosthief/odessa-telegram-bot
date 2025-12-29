@@ -43,6 +43,9 @@ export class HipsyScraper {
 
         const events: Event[] = response.data.data.map((event: any) => {
           const djInfo = this.extractDJName(event.title);
+          console.log(`📋 Event: "${event.title}"`);
+          console.log(`   → djName: ${djInfo.djName || 'undefined'}`);
+          console.log(`   → djNames: ${djInfo.djNames ? JSON.stringify(djInfo.djNames) : 'undefined'}`);
           return {
             id: event.id.toString(),
             title: event.title,
@@ -110,6 +113,8 @@ export class HipsyScraper {
    * Handles both single DJ and B2B (back-to-back) events
    */
   private extractDJName(title: string): { djName?: string; djNames?: string[] } {
+    console.log(`🔍 extractDJName called with title: "${title}"`);
+    
     // Common patterns for DJ names in event titles
     const patterns = [
       /\|\s*([^|]+)$/, // "Event Name | DJ Name"
@@ -123,6 +128,7 @@ export class HipsyScraper {
       const match = title.match(pattern);
       if (match && match[1]) {
         const djText = match[1].trim();
+        console.log(`   → Matched pattern, extracted DJ text: "${djText}"`);
         if (djText && djText !== 'TBA' && djText !== 'TBD') {
           // Check if this is a B2B event or has multiple DJs with "and"
           // First check for explicit B2B indicators
@@ -146,17 +152,27 @@ export class HipsyScraper {
             ];
             
             for (const { pattern, name } of andSeparators) {
+              console.log(`   → Testing pattern "${name}": ${pattern}`);
               if (pattern.test(djText)) {
+                console.log(`   → Pattern "${name}" matched! Splitting...`);
                 const parts = djText.split(pattern);
+                console.log(`   → Split result: ${JSON.stringify(parts)}`);
                 if (parts.length >= 2) {
                   const dj1 = parts[0]?.trim();
                   const dj2 = parts.slice(1).join(' ').trim(); // Handle multiple separators by joining remaining parts
+                  console.log(`   → dj1: "${dj1}", dj2: "${dj2}"`);
                   
                   if (dj1 && dj2 && dj1.length > 0 && dj2.length > 0) {
                     console.log(`✅ Detected B2B event via "${name}": "${dj1}" & "${dj2}" from "${djText}"`);
                     return { djNames: [dj1, dj2], djName: dj1 }; // Return as B2B event
+                  } else {
+                    console.log(`   ⚠️ Split failed validation: dj1="${dj1}", dj2="${dj2}"`);
                   }
+                } else {
+                  console.log(`   ⚠️ Split produced < 2 parts: ${parts.length}`);
                 }
+              } else {
+                console.log(`   → Pattern "${name}" did not match`);
               }
             }
             

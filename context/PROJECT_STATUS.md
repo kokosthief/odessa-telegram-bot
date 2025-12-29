@@ -26,6 +26,8 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 ### Schedule Generation
 - ✅ **Today's Schedule**: Real-time today's schedule creation from live data
 - ✅ **Weekly Schedule**: `/schedule` command for current week (Monday-Sunday) with 10-event limit and custom event support
+- ✅ **Automated Weekly Posting**: Bot automatically posts weekly schedule every Wednesday at 11:00 UTC (midday Amsterdam time) via Vercel cron job
+- ✅ **Multiple Group Posting**: Weekly schedule posts to all configured group chats (comma-separated `TELEGRAM_GROUP_CHAT_ID`)
 - ✅ **DJ Integration**: Automatic DJ name detection and social media linking
 - ✅ **Enhanced DJ Info**: Photos and descriptions from Wix CMS
 - ✅ **Template System**: Custom formatted schedules with emojis and styling
@@ -33,8 +35,9 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 - ✅ **Efficient Processing**: Processes events for optimal performance
 - ✅ **Enhanced Experience**: Rich DJ profiles with photos and descriptions
 - ✅ **Custom Event Support**: Special events display just the title without "Event | " prefix
-- ✅ **B2B Event Support**: Enhanced handling of back-to-back events with multiple DJs
-- ✅ **Intelligent Time Display**: Shows "tonight" for evening events (4 PM+) and "today" for daytime events
+- ✅ **B2B Event Support**: Enhanced handling of back-to-back events with multiple DJs (currently debugging link display)
+- ✅ **Event Type Support**: Full support for ED, Cacao ED, Live Music, Queerstatic, and Ecstatic Journey (displayed as "Journey")
+- ✅ **Intelligent Time Display**: Shows "tonight" for evening events (4 PM+) and "today" only for Sunday morning events (before 4 PM)
 - ✅ **Error Handling**: User-friendly messages when API is unavailable
 
 ### Enhanced DJ Information (NEW)
@@ -46,13 +49,15 @@ The Odessa Telegram Bot is a fully functional, production-ready automated today'
 
 ### Telegram Integration
 - ✅ **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help`
+- ✅ **Automated Scheduling**: Weekly schedule auto-posts every Wednesday via Vercel cron
+- ✅ **Multi-Group Support**: Posts to multiple group chats simultaneously via `TELEGRAM_GROUP_CHAT_ID`
 - ✅ **Rate Limiting**: 60-second limit per user to prevent spam
 - ✅ **Rich Formatting**: HTML formatting with bold text and emojis
 - ✅ **Inline Keyboards**: Ticket booking and SoundCloud buttons in messages
 - ✅ **Photo Uploads**: Enhanced messages with DJ photos from Wix CMS
 - ✅ **Video Messages**: Auto-playing video with weekly schedules
 - ✅ **B2B Event Format**: Professional display of back-to-back events with intro and individual DJ messages
-- ✅ **Smart Time Display**: Contextual "tonight" vs "today" based on event timing
+- ✅ **Smart Time Display**: Contextual "tonight" vs "today" based on event timing (Sunday morning = "today", all others = "tonight")
 - ✅ **Error Handling**: User-friendly error messages
 - ✅ **Multi-platform**: Works in groups and direct messages
 
@@ -171,10 +176,11 @@ npm run cli test             # Test bot connection
 ## 🎯 **NEXT STEPS & ENHANCEMENTS**
 
 ### Immediate Priorities
-1. **Performance Optimization**: Cache generated schedules for faster responses
-2. **Enhanced DJ Integration**: More comprehensive DJ information and social links
-3. **Analytics Dashboard**: Usage statistics and monitoring interface
-4. **Advanced Templates**: Multiple today's schedule format options
+1. **Fix B2B Event Links**: Resolve issue where B2B events (multiple DJs) don't show both DJ names with links in weekly schedule
+2. **Performance Optimization**: Cache generated schedules for faster responses
+3. **Enhanced DJ Integration**: More comprehensive DJ information and social links
+4. **Analytics Dashboard**: Usage statistics and monitoring interface
+5. **Advanced Templates**: Multiple today's schedule format options
 
 ### Future Enhancements
 1. **Database Migration**: Move from JSON to PostgreSQL for scalability
@@ -191,12 +197,15 @@ npm run cli test             # Test bot connection
 
 ## 🚨 **KNOWN ISSUES & LIMITATIONS**
 
+### Current Issues (In Progress)
+- **B2B Event Link Display**: Events with multiple DJs (e.g., "Samaya & Henners") are not consistently showing both DJ names with their individual SoundCloud links in the weekly schedule. Detection logic is working but link population/display needs refinement. Enhanced debugging added to trace the issue.
+
 ### Current Limitations
 - **Scraping Reliability**: Dependent on Hipsy.no website structure
 - **DJ Data**: Limited to manually maintained JSON database + Wix CMS
 - **Rate Limits**: Telegram API rate limiting constraints
 - **Wix API**: Dependent on Wix Data API availability and structure
-- **Today's Focus**: Only shows today's events, not weekly schedules
+- **Serverless State**: Cannot dynamically track group IDs (must use environment variables)
 
 ### Mitigation Strategies
 - **Error Recovery**: Comprehensive fallback mechanisms
@@ -204,6 +213,7 @@ npm run cli test             # Test bot connection
 - **User Feedback**: Clear error messages and retry instructions
 - **Monitoring**: Proactive monitoring and alerting
 - **Fallback System**: Graceful degradation when Wix API unavailable
+- **Enhanced Logging**: Comprehensive debug logging for B2B event detection and link population
 
 ## 📞 **SUPPORT & MAINTENANCE**
 
@@ -233,6 +243,9 @@ npm run cli test             # Test bot connection
 - ✅ **Enhanced DJ Info**: Photos and descriptions from Wix CMS
 - ✅ **B2B Event Support**: Professional handling of back-to-back events
 - ✅ **Smart Time Display**: Contextual "tonight" vs "today" based on event timing
+- ✅ **Automated Weekly Posting**: Bot automatically posts weekly schedule every Wednesday
+- ✅ **Multiple Group Support**: Posts to all configured group chats simultaneously
+- ✅ **Ecstatic Journey Support**: New event type "Ecstatic Journey" (displayed as "Journey")
 
 ### User Impact
 - **Automated Today's Schedule**: No manual schedule checking needed
@@ -246,6 +259,7 @@ npm run cli test             # Test bot connection
 
 ---
 
-**Last Updated**: December 2024  
-**Status**: Production Ready & Live with Enhanced B2B Event Support & Smart Time Display  
-**Next Review**: Monthly performance and feature assessment
+**Last Updated**: January 2025  
+**Status**: Production Ready & Live with Automated Weekly Posting, Multiple Group Support, and Enhanced Event Types  
+**Current Work**: Debugging B2B event link display in weekly schedule  
+**Next Review**: After B2B link issue resolution

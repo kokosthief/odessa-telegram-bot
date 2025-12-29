@@ -13,17 +13,20 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 ### ✅ **Core Features Implemented**
 - **Web Scraping**: Hipsy.no event data extraction with robust error handling
 - **Today's Schedule**: Real-time today's schedule creation with DJ information
+- **Weekly Schedule**: `/schedule` command for current week (Monday-Sunday)
+- **Automated Weekly Posting**: Bot automatically posts weekly schedule every Wednesday at 11:00 UTC (midday Amsterdam time)
+- **Multiple Group Posting**: Weekly schedule posts to all configured group chats via `TELEGRAM_GROUP_CHAT_ID`
 - **Telegram Integration**: Bot API with interactive command handling
-- **Interactive Commands**: `/whosplaying`, `/start`, `/help`
+- **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help`
 - **Rate Limiting**: 60-second rate limit per user to prevent spam
 - **Error Handling**: Comprehensive error handling with user-friendly messages
 - **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
 - **DJ Database**: 20+ DJs with social media links in `src/data/djs.json`
-- **Improved Event Types**: Full event names (Ecstatic Dance, Cacao Ecstatic Dance) instead of abbreviations
+- **Event Type Support**: ED, Cacao ED, Live Music, Queerstatic, and Ecstatic Journey (displayed as "Journey")
 - **Multi-Event Logic**: Smart intro text for multiple events with different DJs
-- **B2B Event Support**: Enhanced handling of back-to-back events with multiple DJs
+- **B2B Event Support**: Enhanced handling of back-to-back events with multiple DJs (currently debugging link display)
 - **Custom Event Support**: Special events display full titles instead of generic "Event | TBA"
-- **Intelligent Time Display**: Shows "tonight" for evening events (4 PM+) and "today" for daytime events
+- **Intelligent Time Display**: Shows "tonight" for evening events (4 PM+) and "today" only for Sunday morning events (before 4 PM)
 
 ### ✅ **User Experience Features**
 - **Typing Indicators**: Shows typing status during schedule generation
@@ -135,7 +138,8 @@ The application uses environment variables for all sensitive configuration. Copy
 
 **Required Variables:**
 - `TELEGRAM_BOT_TOKEN` - Your Telegram bot token from @BotFather
-- `TELEGRAM_CHAT_ID` - The chat ID where the bot should post
+- `TELEGRAM_CHAT_ID` - The chat ID where the bot should post (for manual commands)
+- `TELEGRAM_GROUP_CHAT_ID` - Comma-separated list of group chat IDs for automated weekly schedule posting
 - `HIPSY_API_KEY` - Your Hipsy.nl API key
 
 **Optional Variables:**
@@ -152,9 +156,13 @@ See `env.example` for the complete list of available variables.
 The bot supports interactive commands in Telegram:
 
 **Available Commands:**
+- `/schedule` - Get current week's schedule (Monday-Sunday) with video and DJ links
 - `/whosplaying` - Check who is playing today with DJ photos and descriptions
 - `/start` - Welcome message and bot introduction
 - `/help` - Show help information and available commands
+
+**Automated Features:**
+- **Weekly Schedule Auto-Post**: Bot automatically posts the weekly schedule every Wednesday at 11:00 UTC (midday Amsterdam time) to all configured group chats
 
 **Features:**
 - Works in both group chats and direct messages
