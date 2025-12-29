@@ -191,33 +191,42 @@ export class WeeklyScheduleGenerator {
         // Check if event has multiple DJs (B2B event)
         let facilitators: string[] | undefined = undefined;
         
+        // First priority: Use djNames array if it exists and has multiple DJs
         if (event.djNames && event.djNames.length > 1) {
-          // Already has multiple DJs from scraper
           facilitators = event.djNames;
-          console.log(`✅ B2B event detected from scraper: ${facilitators.join(' & ')}`);
-        } else if (event.djName) {
-          // Check if djName contains "and" separator (e.g., "Samaya and Henners", "Samaya & Henners")
-          // Use flexible patterns to handle various formats
+          console.log(`✅ B2B event detected from scraper (djNames array): ${facilitators.join(' & ')}`);
+        } 
+        // Second priority: Check if djName contains separators (fallback if scraper didn't detect)
+        else if (event.djName) {
+          console.log(`🔍 Checking djName for B2B: "${event.djName}"`);
+          
+          // Check for "and" separator (e.g., "Samaya and Henners", "Samaya & Henners")
+          // Use patterns in order of specificity
           const andPatterns = [
-            /\s+and\s+/i,           // "Samaya and Henners"
-            /\s+&\s+/,              // "Samaya & Henners" (with spaces)
-            /\s*&\s*/,              // "Samaya&Henners" or "Samaya &Henners" or "Samaya& Henners"
-            /\s*\+\s*/,             // "Samaya+Henners" or "Samaya + Henners"
+            { pattern: /\s+and\s+/i, name: 'and' },
+            { pattern: /\s+&\s+/, name: '& with spaces' },
+            { pattern: /&/, name: '&' },  // Catch-all for any &
+            { pattern: /\s*\+\s*/, name: '+' },
           ];
           
-          for (const pattern of andPatterns) {
+          for (const { pattern, name } of andPatterns) {
             if (pattern.test(event.djName)) {
               const parts = event.djName.split(pattern);
-              if (parts.length === 2) {
+              if (parts.length >= 2) {
                 const dj1 = parts[0]?.trim();
-                const dj2 = parts[1]?.trim();
-                if (dj1 && dj2 && dj1.length > 0 && dj2.length > 0) {
+                const dj2 = parts.slice(1).join(' ').trim(); // Handle multiple separators
+                
+                if (dj1 && dj2 && dj1.length > 0 && dj2.length > 0 && dj1 !== dj2) {
                   facilitators = [dj1, dj2];
-                  console.log(`✅ B2B event detected in formatWeeklyEvents: "${dj1}" & "${dj2}" from "${event.djName}"`);
+                  console.log(`✅ B2B event detected in formatWeeklyEvents via "${name}": "${dj1}" & "${dj2}" from "${event.djName}"`);
                   break;
                 }
               }
             }
+          }
+          
+          if (!facilitators) {
+            console.log(`ℹ️ Single DJ event: "${event.djName}"`);
           }
         }
         
@@ -285,7 +294,10 @@ export class WeeklyScheduleGenerator {
       }
 
       // Handle multiple facilitators for B2B events
-      if (event && event.facilitators && event.facilitators.length > 0) {
+      if (event && event.facilitators && event.facilitators.length > 1) {
+        console.log(`🔗 Processing ${event.facilitators.length} facilitators for B2B event: ${event.facilitators.join(' & ')}`);
+        
+        // Initialize facilitatorLinks array if needed
         if (!event.facilitatorLinks) {
           event.facilitatorLinks = [];
         }
@@ -298,7 +310,8 @@ export class WeeklyScheduleGenerator {
         // Get links for each facilitator
         for (let j = 0; j < event.facilitators.length; j++) {
           const facilitator = event.facilitators[j];
-          if (facilitator && (!event.facilitatorLinks[j] || event.facilitatorLinks[j] === '')) {
+          if (facilitator && facilitator.trim() !== '') {
+            // Always try to get link, even if one already exists (to refresh)
             try {
               const facilitatorData = await this.wixDJLoader.getDJInfoWithFallback(facilitator);
               
@@ -307,12 +320,21 @@ export class WeeklyScheduleGenerator {
                 console.log(`✅ Added link for facilitator "${facilitator}": ${facilitatorData.soundcloudUrl}`);
               } else {
                 console.log(`⚠️ No link found for facilitator "${facilitator}"`);
+                // Keep empty string if no link found
+                if (!event.facilitatorLinks[j]) {
+                  event.facilitatorLinks[j] = '';
+                }
               }
             } catch (error) {
               console.error(`❌ Error getting link for facilitator "${facilitator}":`, error);
+              if (!event.facilitatorLinks[j]) {
+                event.facilitatorLinks[j] = '';
+              }
             }
           }
         }
+        
+        console.log(`📊 Final facilitatorLinks: ${JSON.stringify(event.facilitatorLinks)}`);
       }
     }
     
@@ -333,13 +355,22 @@ export class WeeklyScheduleGenerator {
         displayText = event.originalTitle;
       } else if (event.facilitators && event.facilitators.length > 1) {
         // B2B event with multiple facilitators
+        console.log(`📝 Formatting B2B event with ${event.facilitators.length} facilitators`);
+        console.log(`   Facilitators: ${event.facilitators.join(', ')}`);
+        console.log(`   Links available: ${event.facilitatorLinks ? event.facilitatorLinks.length : 0} links`);
+        
         const facilitatorTexts = event.facilitators.map((facilitator, index) => {
           // Check if we have a link for this facilitator
-          if (event.facilitatorLinks && event.facilitatorLinks[index] && event.facilitatorLinks[index].trim() !== '') {
-            return `<a href="${event.facilitatorLinks[index]}">${facilitator}</a>`;
+          const link = event.facilitatorLinks && event.facilitatorLinks[index] ? event.facilitatorLinks[index].trim() : '';
+          if (link && link !== '') {
+            console.log(`   ✅ Linking "${facilitator}" to ${link}`);
+            return `<a href="${link}">${facilitator}</a>`;
+          } else {
+            console.log(`   ⚠️ No link for "${facilitator}"`);
+            return facilitator;
           }
-          return facilitator;
         });
+        
         // Use "&" separator for "and"/"&" events, "B2B" for actual B2B events
         const hasAndOrAmpersand = event.facilitator && (
           event.facilitator.toLowerCase().includes('and') || 
@@ -347,6 +378,7 @@ export class WeeklyScheduleGenerator {
         );
         const separator = hasAndOrAmpersand ? ' & ' : ' B2B ';
         displayText = `${event.eventType} | ${facilitatorTexts.join(separator)}`;
+        console.log(`   📤 Final display text: ${displayText}`);
       } else {
         // For known event types, use the facilitator name with link if available
         const facilitatorText = event.facilitatorLink 

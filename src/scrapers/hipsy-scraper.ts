@@ -137,22 +137,23 @@ export class HipsyScraper {
             }
           } else {
             // Check for "and" separator (e.g., "Samaya and Henners", "Samaya & Henners")
-            // Try more flexible patterns that handle spaces around separators
+            // Try patterns in order of specificity (most specific first)
             const andSeparators = [
-              /\s+and\s+/i,           // "Samaya and Henners"
-              /\s+&\s+/,             // "Samaya & Henners" (with spaces)
-              /\s*&\s*/,             // "Samaya&Henners" or "Samaya &Henners" or "Samaya& Henners"
-              /\s*\+\s*/,            // "Samaya+Henners" or "Samaya + Henners"
+              { pattern: /\s+and\s+/i, name: 'and' },           // "Samaya and Henners"
+              { pattern: /\s+&\s+/, name: '& with spaces' },   // "Samaya & Henners" (with spaces)
+              { pattern: /&/, name: '&' },                      // "Samaya&Henners" or any & (catch-all)
+              { pattern: /\s*\+\s*/, name: '+' },               // "Samaya+Henners" or "Samaya + Henners"
             ];
             
-            for (const pattern of andSeparators) {
+            for (const { pattern, name } of andSeparators) {
               if (pattern.test(djText)) {
                 const parts = djText.split(pattern);
-                if (parts.length === 2) {
+                if (parts.length >= 2) {
                   const dj1 = parts[0]?.trim();
-                  const dj2 = parts[1]?.trim();
+                  const dj2 = parts.slice(1).join(' ').trim(); // Handle multiple separators by joining remaining parts
+                  
                   if (dj1 && dj2 && dj1.length > 0 && dj2.length > 0) {
-                    console.log(`✅ Detected B2B event: "${dj1}" & "${dj2}" from "${djText}"`);
+                    console.log(`✅ Detected B2B event via "${name}": "${dj1}" & "${dj2}" from "${djText}"`);
                     return { djNames: [dj1, dj2], djName: dj1 }; // Return as B2B event
                   }
                 }
@@ -160,6 +161,7 @@ export class HipsyScraper {
             }
             
             // Single DJ event
+            console.log(`ℹ️ Single DJ event: "${djText}"`);
             return { djName: djText };
           }
         }
