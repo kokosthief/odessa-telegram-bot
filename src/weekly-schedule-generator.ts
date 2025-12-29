@@ -1,6 +1,7 @@
 import { HipsyScraper } from './scrapers/hipsy-scraper';
 import { WixDJLoader } from './utils/wix-dj-loader';
 import { Event, DateRange } from './types/event';
+import { sanitizeUrl } from './utils/url-validator';
 
 export interface WeeklySchedule {
   video: string;
@@ -46,7 +47,7 @@ export class WeeklyScheduleGenerator {
         return {
           video: this.VIDEO_ID,
           text: '🪩 <b><u>This Week</u></b> 🌴🎶\n\nNo events scheduled for this week.',
-          keyboard: this.createTicketsKeyboard()
+          keyboard: this.createTicketsKeyboard(undefined)
         };
       }
       
@@ -56,11 +57,14 @@ export class WeeklyScheduleGenerator {
       // Add facilitator links
       const eventsWithLinks = await this.addFacilitatorLinks(weeklyEvents);
       
-      // Generate formatted text
+      // Generate formatted text with ticket links
       const formattedText = this.generateFormattedText(eventsWithLinks);
       
-      // Create keyboard for tickets
-      const keyboard = this.createTicketsKeyboard();
+      // Create keyboard for tickets (use first event's ticket URL if available, otherwise default)
+      const firstEventTicketUrl = eventsWithLinks.length > 0 && eventsWithLinks[0]?.ticketUrl 
+        ? eventsWithLinks[0].ticketUrl 
+        : undefined;
+      const keyboard = this.createTicketsKeyboard(firstEventTicketUrl);
       
       return {
         video: this.VIDEO_ID,
@@ -75,7 +79,7 @@ export class WeeklyScheduleGenerator {
       return {
         video: this.VIDEO_ID,
         text: '🪩 <b><u>This Week</u></b> 🌴🎶\n\n❌ Sorry, I couldn\'t fetch the weekly schedule right now. Please try again later.',
-        keyboard: this.createTicketsKeyboard()
+        keyboard: this.createTicketsKeyboard(undefined)
       };
     }
   }
@@ -187,13 +191,42 @@ export class WeeklyScheduleGenerator {
       
       // Create weekly event for each event on this day
       for (const event of dayEvents) {
+        // Check if event has multiple DJs (B2B event)
+        let facilitators: string[] | undefined = undefined;
+        
+        if (event.djNames && event.djNames.length > 1) {
+          // Already has multiple DJs from scraper
+          facilitators = event.djNames;
+        } else if (event.djName) {
+          // Check if djName contains "and" separator (e.g., "Samaya and Henners")
+          const andPatterns = [
+            /\s+and\s+/i,
+            /\s+&\s+/,
+            /\s*\+\s*/,
+          ];
+          
+          for (const pattern of andPatterns) {
+            if (pattern.test(event.djName)) {
+              const parts = event.djName.split(pattern);
+              if (parts.length === 2) {
+                const dj1 = parts[0]?.trim();
+                const dj2 = parts[1]?.trim();
+                if (dj1 && dj2) {
+                  facilitators = [dj1, dj2];
+                  break;
+                }
+              }
+            }
+          }
+        }
+        
         const weeklyEvent: WeeklyEvent = {
           day: dayName,
           eventType: this.mapEventType(event.eventType, dayName),
           facilitator: event.djName || 'TBA',
           ticketUrl: event.ticketUrl || undefined,
           originalTitle: event.title, // Preserve the original event title
-          facilitators: event.djNames || undefined, // Store multiple facilitators for B2B events
+          facilitators: facilitators || event.djNames || undefined, // Store multiple facilitators for B2B events
         };
         
         weeklyEvents.push(weeklyEvent);
@@ -222,7 +255,7 @@ export class WeeklyScheduleGenerator {
       case 'Queerstatic':
         return 'Queerstatic';
       case 'Ecstatic Journey':
-        return 'Ecstatic Journey';
+        return 'Journey';
       default:
         return 'Event';
     }
@@ -288,12 +321,15 @@ export class WeeklyScheduleGenerator {
       } else if (event.facilitators && event.facilitators.length > 1) {
         // B2B event with multiple facilitators
         const facilitatorTexts = event.facilitators.map((facilitator, index) => {
-          if (event.facilitatorLinks && event.facilitatorLinks[index]) {
+          // Check if we have a link for this facilitator
+          if (event.facilitatorLinks && event.facilitatorLinks[index] && event.facilitatorLinks[index].trim() !== '') {
             return `<a href="${event.facilitatorLinks[index]}">${facilitator}</a>`;
           }
           return facilitator;
         });
-        displayText = `${event.eventType} | ${facilitatorTexts.join(' B2B ')}`;
+        // Use "&" separator for "and" events, "B2B" for actual B2B events
+        const separator = event.facilitator && event.facilitator.toLowerCase().includes('and') ? ' & ' : ' B2B ';
+        displayText = `${event.eventType} | ${facilitatorTexts.join(separator)}`;
       } else {
         // For known event types, use the facilitator name with link if available
         const facilitatorText = event.facilitatorLink 
@@ -302,7 +338,14 @@ export class WeeklyScheduleGenerator {
         displayText = `${event.eventType} | ${facilitatorText}`;
       }
       
-      text += `<b>🗓️ ${event.day}: ${displayText}</b>\n`;
+      // Add ticket link to event if available
+      let eventLine = `<b>🗓️ ${event.day}: ${displayText}</b>`;
+      if (event.ticketUrl) {
+        // Add clickable ticket link indicator (sanitize URL for safety)
+        const safeTicketUrl = sanitizeUrl(event.ticketUrl);
+        eventLine += ` <a href="${safeTicketUrl}">🎫</a>`;
+      }
+      text += `${eventLine}\n`;
     });
     
     return text;
@@ -310,14 +353,16 @@ export class WeeklyScheduleGenerator {
 
   /**
    * Create inline keyboard for tickets button
+   * Can optionally include event-specific ticket URLs
    */
-  private createTicketsKeyboard(): any {
+  private createTicketsKeyboard(eventTicketUrl?: string): any {
+    const ticketUrl = sanitizeUrl(eventTicketUrl || this.TICKETS_URL);
     return {
       inline_keyboard: [
         [
           {
             text: '🎫 TICKETS',
-            url: this.TICKETS_URL
+            url: ticketUrl
           }
         ]
       ]

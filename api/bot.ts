@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { OdessaTodayGenerator } from '../src/index';
 import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
+import { GroupTracker } from '../src/utils/group-tracker';
 import fs from 'fs';
 import path from 'path';
 
@@ -21,8 +22,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Handle Telegram webhook updates
     const update = req.body;
     
+    // Track groups/channels when bot receives messages
     if (update.message) {
       const { text, chat, from } = update.message;
+      
+      // Automatically track group chats and channels
+      const groupTracker = new GroupTracker();
+      if (groupTracker.isGroupOrChannel(chat.id)) {
+        groupTracker.addGroup(chat.id);
+      }
       
       // Handle commands with full formatting
       if (text === '/start') {

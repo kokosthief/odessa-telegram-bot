@@ -66,7 +66,7 @@ export class WhosPlayingFormatter {
       case 'Queerstatic':
         return 'Queerstatic';
       case 'Ecstatic Journey':
-        return 'Ecstatic Journey';
+        return 'Journey';
       default:
         return 'Event';
     }

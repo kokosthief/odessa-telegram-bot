@@ -124,7 +124,8 @@ export class HipsyScraper {
       if (match && match[1]) {
         const djText = match[1].trim();
         if (djText && djText !== 'TBA' && djText !== 'TBD') {
-          // Check if this is a B2B event
+          // Check if this is a B2B event or has multiple DJs with "and"
+          // First check for explicit B2B indicators
           if (djText.toLowerCase().includes('b2b') || djText.toLowerCase().includes('back to back')) {
             // Extract multiple DJ names from B2B format
             const djNames = this.extractB2BDJNames(djText);
@@ -135,6 +136,26 @@ export class HipsyScraper {
               }
             }
           } else {
+            // Check for "and" separator (e.g., "Samaya and Henners")
+            const andSeparators = [
+              /\s+and\s+/i,
+              /\s+&\s+/,
+              /\s*\+\s*/,
+            ];
+            
+            for (const pattern of andSeparators) {
+              if (pattern.test(djText)) {
+                const parts = djText.split(pattern);
+                if (parts.length === 2) {
+                  const dj1 = parts[0]?.trim();
+                  const dj2 = parts[1]?.trim();
+                  if (dj1 && dj2) {
+                    return { djNames: [dj1, dj2], djName: dj1 }; // Return as B2B event
+                  }
+                }
+              }
+            }
+            
             // Single DJ event
             return { djName: djText };
           }
@@ -212,8 +233,9 @@ export class HipsyScraper {
     
     console.log(`🎭 Classifying event type for title: "${title}" -> lowercase: "${lowerTitle}"`);
     
-    // Check for Ecstatic Journey first (before ED to avoid false matches)
-    if (lowerTitle.includes('ecstatic journey')) {
+    // Check for Ecstatic Journey - must be exact phrase to avoid false matches
+    // Use word boundaries to ensure "ecstatic journey" is a complete phrase
+    if (/\becstatic\s+journey\b/i.test(title)) {
       return 'Ecstatic Journey';
     }
     
