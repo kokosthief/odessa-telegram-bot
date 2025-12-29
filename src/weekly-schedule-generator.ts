@@ -188,6 +188,10 @@ export class WeeklyScheduleGenerator {
       
       // Create weekly event for each event on this day
       for (const event of dayEvents) {
+        console.log(`📅 Processing event: "${event.title}"`);
+        console.log(`   → event.djName: ${event.djName || 'undefined'}`);
+        console.log(`   → event.djNames: ${event.djNames ? JSON.stringify(event.djNames) : 'undefined'}`);
+        
         // Check if event has multiple DJs (B2B event)
         let facilitators: string[] | undefined = undefined;
         
@@ -238,6 +242,12 @@ export class WeeklyScheduleGenerator {
           originalTitle: event.title, // Preserve the original event title
           facilitators: facilitators || event.djNames || undefined, // Store multiple facilitators for B2B events
         };
+        
+        console.log(`   → Created WeeklyEvent:`);
+        console.log(`      - day: ${weeklyEvent.day}`);
+        console.log(`      - eventType: ${weeklyEvent.eventType}`);
+        console.log(`      - facilitator: ${weeklyEvent.facilitator}`);
+        console.log(`      - facilitators: ${weeklyEvent.facilitators ? JSON.stringify(weeklyEvent.facilitators) : 'undefined'}`);
         
         weeklyEvents.push(weeklyEvent);
       }
@@ -295,21 +305,25 @@ export class WeeklyScheduleGenerator {
 
       // Handle multiple facilitators for B2B events
       if (event && event.facilitators && event.facilitators.length > 1) {
-        console.log(`🔗 Processing ${event.facilitators.length} facilitators for B2B event: ${event.facilitators.join(' & ')}`);
+        console.log(`🔗 addFacilitatorLinks: Processing ${event.facilitators.length} facilitators for B2B event: ${event.facilitators.join(' & ')}`);
+        console.log(`   → Event day: ${event.day}, type: ${event.eventType}`);
         
         // Initialize facilitatorLinks array if needed
         if (!event.facilitatorLinks) {
           event.facilitatorLinks = [];
+          console.log(`   → Initialized empty facilitatorLinks array`);
         }
         
         // Ensure we have the same number of links as facilitators
         while (event.facilitatorLinks.length < event.facilitators.length) {
           event.facilitatorLinks.push('');
         }
+        console.log(`   → facilitatorLinks array size: ${event.facilitatorLinks.length}`);
         
         // Get links for each facilitator
         for (let j = 0; j < event.facilitators.length; j++) {
           const facilitator = event.facilitators[j];
+          console.log(`   → Processing facilitator ${j + 1}/${event.facilitators.length}: "${facilitator}"`);
           if (facilitator && facilitator.trim() !== '') {
             // Always try to get link, even if one already exists (to refresh)
             try {
@@ -317,24 +331,30 @@ export class WeeklyScheduleGenerator {
               
               if (facilitatorData && facilitatorData.soundcloudUrl) {
                 event.facilitatorLinks[j] = facilitatorData.soundcloudUrl;
-                console.log(`✅ Added link for facilitator "${facilitator}": ${facilitatorData.soundcloudUrl}`);
+                console.log(`   ✅ Added link for facilitator "${facilitator}": ${facilitatorData.soundcloudUrl}`);
               } else {
-                console.log(`⚠️ No link found for facilitator "${facilitator}"`);
+                console.log(`   ⚠️ No link found for facilitator "${facilitator}"`);
                 // Keep empty string if no link found
                 if (!event.facilitatorLinks[j]) {
                   event.facilitatorLinks[j] = '';
                 }
               }
             } catch (error) {
-              console.error(`❌ Error getting link for facilitator "${facilitator}":`, error);
+              console.error(`   ❌ Error getting link for facilitator "${facilitator}":`, error);
               if (!event.facilitatorLinks[j]) {
                 event.facilitatorLinks[j] = '';
               }
             }
+          } else {
+            console.log(`   ⚠️ Facilitator ${j + 1} is empty or whitespace`);
           }
         }
         
-        console.log(`📊 Final facilitatorLinks: ${JSON.stringify(event.facilitatorLinks)}`);
+        console.log(`📊 Final facilitatorLinks for "${event.day}": ${JSON.stringify(event.facilitatorLinks)}`);
+      } else {
+        if (event) {
+          console.log(`ℹ️ addFacilitatorLinks: Event "${event.day}" is not a B2B event (facilitators: ${event.facilitators ? JSON.stringify(event.facilitators) : 'undefined'})`);
+        }
       }
     }
     
