@@ -60,11 +60,8 @@ export class WeeklyScheduleGenerator {
       // Generate formatted text with ticket links
       const formattedText = this.generateFormattedText(eventsWithLinks);
       
-      // Create keyboard for tickets (use first event's ticket URL if available, otherwise default)
-      const firstEventTicketUrl = eventsWithLinks.length > 0 && eventsWithLinks[0]?.ticketUrl 
-        ? eventsWithLinks[0].ticketUrl 
-        : undefined;
-      const keyboard = this.createTicketsKeyboard(firstEventTicketUrl);
+      // Create keyboard for tickets (always use general tickets URL)
+      const keyboard = this.createTicketsKeyboard(undefined);
       
       return {
         video: this.VIDEO_ID,
@@ -197,12 +194,15 @@ export class WeeklyScheduleGenerator {
         if (event.djNames && event.djNames.length > 1) {
           // Already has multiple DJs from scraper
           facilitators = event.djNames;
+          console.log(`✅ B2B event detected from scraper: ${facilitators.join(' & ')}`);
         } else if (event.djName) {
-          // Check if djName contains "and" separator (e.g., "Samaya and Henners")
+          // Check if djName contains "and" separator (e.g., "Samaya and Henners", "Samaya & Henners")
+          // Use flexible patterns to handle various formats
           const andPatterns = [
-            /\s+and\s+/i,
-            /\s+&\s+/,
-            /\s*\+\s*/,
+            /\s+and\s+/i,           // "Samaya and Henners"
+            /\s+&\s+/,              // "Samaya & Henners" (with spaces)
+            /\s*&\s*/,              // "Samaya&Henners" or "Samaya &Henners" or "Samaya& Henners"
+            /\s*\+\s*/,             // "Samaya+Henners" or "Samaya + Henners"
           ];
           
           for (const pattern of andPatterns) {
@@ -211,8 +211,9 @@ export class WeeklyScheduleGenerator {
               if (parts.length === 2) {
                 const dj1 = parts[0]?.trim();
                 const dj2 = parts[1]?.trim();
-                if (dj1 && dj2) {
+                if (dj1 && dj2 && dj1.length > 0 && dj2.length > 0) {
                   facilitators = [dj1, dj2];
+                  console.log(`✅ B2B event detected in formatWeeklyEvents: "${dj1}" & "${dj2}" from "${event.djName}"`);
                   break;
                 }
               }
@@ -285,19 +286,31 @@ export class WeeklyScheduleGenerator {
 
       // Handle multiple facilitators for B2B events
       if (event && event.facilitators && event.facilitators.length > 0) {
-        event.facilitatorLinks = [];
+        if (!event.facilitatorLinks) {
+          event.facilitatorLinks = [];
+        }
         
-        for (const facilitator of event.facilitators) {
-          try {
-            const facilitatorData = await this.wixDJLoader.getDJInfoWithFallback(facilitator);
-            
-            if (facilitatorData && facilitatorData.soundcloudUrl) {
-              event.facilitatorLinks!.push(facilitatorData.soundcloudUrl);
-            } else {
-              event.facilitatorLinks!.push(''); // Empty string for facilitators without links
+        // Ensure we have the same number of links as facilitators
+        while (event.facilitatorLinks.length < event.facilitators.length) {
+          event.facilitatorLinks.push('');
+        }
+        
+        // Get links for each facilitator
+        for (let j = 0; j < event.facilitators.length; j++) {
+          const facilitator = event.facilitators[j];
+          if (facilitator && (!event.facilitatorLinks[j] || event.facilitatorLinks[j] === '')) {
+            try {
+              const facilitatorData = await this.wixDJLoader.getDJInfoWithFallback(facilitator);
+              
+              if (facilitatorData && facilitatorData.soundcloudUrl) {
+                event.facilitatorLinks[j] = facilitatorData.soundcloudUrl;
+                console.log(`✅ Added link for facilitator "${facilitator}": ${facilitatorData.soundcloudUrl}`);
+              } else {
+                console.log(`⚠️ No link found for facilitator "${facilitator}"`);
+              }
+            } catch (error) {
+              console.error(`❌ Error getting link for facilitator "${facilitator}":`, error);
             }
-          } catch (error) {
-            event.facilitatorLinks!.push(''); // Empty string on error
           }
         }
       }
@@ -327,8 +340,12 @@ export class WeeklyScheduleGenerator {
           }
           return facilitator;
         });
-        // Use "&" separator for "and" events, "B2B" for actual B2B events
-        const separator = event.facilitator && event.facilitator.toLowerCase().includes('and') ? ' & ' : ' B2B ';
+        // Use "&" separator for "and"/"&" events, "B2B" for actual B2B events
+        const hasAndOrAmpersand = event.facilitator && (
+          event.facilitator.toLowerCase().includes('and') || 
+          event.facilitator.includes('&')
+        );
+        const separator = hasAndOrAmpersand ? ' & ' : ' B2B ';
         displayText = `${event.eventType} | ${facilitatorTexts.join(separator)}`;
       } else {
         // For known event types, use the facilitator name with link if available
@@ -338,14 +355,7 @@ export class WeeklyScheduleGenerator {
         displayText = `${event.eventType} | ${facilitatorText}`;
       }
       
-      // Add ticket link to event if available
-      let eventLine = `<b>🗓️ ${event.day}: ${displayText}</b>`;
-      if (event.ticketUrl) {
-        // Add clickable ticket link indicator (sanitize URL for safety)
-        const safeTicketUrl = sanitizeUrl(event.ticketUrl);
-        eventLine += ` <a href="${safeTicketUrl}">🎫</a>`;
-      }
-      text += `${eventLine}\n`;
+      text += `<b>🗓️ ${event.day}: ${displayText}</b>\n`;
     });
     
     return text;

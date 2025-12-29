@@ -136,11 +136,13 @@ export class HipsyScraper {
               }
             }
           } else {
-            // Check for "and" separator (e.g., "Samaya and Henners")
+            // Check for "and" separator (e.g., "Samaya and Henners", "Samaya & Henners")
+            // Try more flexible patterns that handle spaces around separators
             const andSeparators = [
-              /\s+and\s+/i,
-              /\s+&\s+/,
-              /\s*\+\s*/,
+              /\s+and\s+/i,           // "Samaya and Henners"
+              /\s+&\s+/,             // "Samaya & Henners" (with spaces)
+              /\s*&\s*/,             // "Samaya&Henners" or "Samaya &Henners" or "Samaya& Henners"
+              /\s*\+\s*/,            // "Samaya+Henners" or "Samaya + Henners"
             ];
             
             for (const pattern of andSeparators) {
@@ -149,7 +151,8 @@ export class HipsyScraper {
                 if (parts.length === 2) {
                   const dj1 = parts[0]?.trim();
                   const dj2 = parts[1]?.trim();
-                  if (dj1 && dj2) {
+                  if (dj1 && dj2 && dj1.length > 0 && dj2.length > 0) {
+                    console.log(`✅ Detected B2B event: "${dj1}" & "${dj2}" from "${djText}"`);
                     return { djNames: [dj1, dj2], djName: dj1 }; // Return as B2B event
                   }
                 }
