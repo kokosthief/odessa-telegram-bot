@@ -29,15 +29,22 @@ export class DJLoader {
   }
 
   /**
-   * Normalize DJ name for matching (trim, lowercase for comparison)
+   * Normalize DJ name for matching (trim, lowercase, normalize special characters)
+   * Handles apostrophes, hyphens, and other special characters
    */
   private normalizeName(name: string): string {
-    return name.trim();
+    return name
+      .trim()
+      .toLowerCase()
+      .replace(/[''`]/g, "'") // Normalize different apostrophe types
+      .replace(/[-–—]/g, "-") // Normalize different hyphen types
+      .replace(/'/g, "-") // Treat apostrophe as hyphen for matching (Ma'rifa = Ma-rifa)
+      .replace(/\s+/g, " "); // Normalize whitespace
   }
 
   /**
    * Find DJ by name with fuzzy matching
-   * Tries exact match first, then case-insensitive, then partial match
+   * Tries exact match first, then case-insensitive, then normalized special chars, then partial match
    */
   private findDJByName(djName: string, djData: DJDatabase): string | null {
     const normalized = this.normalizeName(djName);
@@ -55,10 +62,18 @@ export class DJLoader {
       }
     }
     
+    // Try normalized match (handles apostrophes, hyphens, etc.)
+    for (const key in djData) {
+      const normalizedKey = this.normalizeName(key);
+      if (normalizedKey === normalized) {
+        return key;
+      }
+    }
+    
     // Try partial match (if "Ruby" is searched but "RubyDub" exists)
     for (const key in djData) {
-      const keyLower = key.toLowerCase();
-      if (keyLower.includes(lowerNormalized) || lowerNormalized.includes(keyLower)) {
+      const keyLower = this.normalizeName(key);
+      if (keyLower.includes(normalized) || normalized.includes(keyLower)) {
         return key;
       }
     }
