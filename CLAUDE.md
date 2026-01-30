@@ -96,7 +96,7 @@ npm test             # Run tests
 
 | Schedule | Endpoint | Description |
 |----------|----------|-------------|
-| Wed 11:00 UTC (~12:00 Amsterdam) | `/api/scheduled-schedule` | Weekly schedule post |
+| Wed 10:11 UTC (11:11 Amsterdam) | `/api/scheduled-schedule` | Weekly schedule post |
 | Tue 14:33 UTC (~15:33 Amsterdam) | `/api/scheduled-whosplaying` | Who's playing today |
 | Sat 08:33 UTC (~09:33 Amsterdam) | `/api/scheduled-whosplaying` | Who's playing today |
 

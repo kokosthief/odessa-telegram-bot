@@ -6,8 +6,8 @@ import { GroupTracker } from '../src/utils/group-tracker';
  * Scheduled endpoint to automatically post weekly schedule every Wednesday at midday
  * Called by Vercel cron job
  * 
- * Cron schedule: "0 11 * * 3" = Every Wednesday at 11:00 UTC
- * This is approximately 12:00 Amsterdam time (12:00 in winter UTC+1, 13:00 in summer UTC+2)
+ * Cron schedule: "11 10 * * 3" = Every Wednesday at 10:11 UTC
+ * This is 11:11 Amsterdam time (winter UTC+1) - a spiritually aligned time ✨
  * 
  * Posts to all group chats/channels specified in TELEGRAM_GROUP_CHAT_ID environment variable
  * Format: comma-separated group IDs (e.g., "-1001234567890,-1009876543210")

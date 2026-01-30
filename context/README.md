@@ -14,7 +14,7 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 - **Web Scraping**: Hipsy.no event data extraction with robust error handling
 - **Today's Schedule**: Real-time today's schedule creation with DJ information
 - **Weekly Schedule**: `/schedule` command for current week (Monday-Sunday)
-- **Automated Weekly Posting**: Bot automatically posts weekly schedule every Wednesday at 11:00 UTC (midday Amsterdam time)
+- **Automated Weekly Posting**: Bot automatically posts weekly schedule every Wednesday at 10:11 UTC (11:11 Amsterdam time)
 - **Automated Who's Playing Posts**: Bot posts today's schedule on Tuesday at 14:33 UTC (~3:33 PM Amsterdam) and Saturday at 08:33 UTC (~9:33 AM Amsterdam)
 - **Multiple Group Posting**: Weekly schedule posts to all configured group chats via `TELEGRAM_GROUP_CHAT_ID`
 - **Telegram Integration**: Bot API with interactive command handling
@@ -165,7 +165,7 @@ The bot supports interactive commands in Telegram:
 - `/help` - Show help information and available commands
 
 **Automated Features:**
-- **Weekly Schedule Auto-Post**: Bot automatically posts the weekly schedule every Wednesday at 11:00 UTC (midday Amsterdam time) to all configured group chats
+- **Weekly Schedule Auto-Post**: Bot automatically posts the weekly schedule every Wednesday at 10:11 UTC (11:11 Amsterdam time) to all configured group chats
 - **Who's Playing Auto-Post**: Bot automatically posts today's schedule on Tuesday at 14:33 UTC (~3:33 PM Amsterdam) and Saturday at 08:33 UTC (~9:33 AM Amsterdam)
 
 **Features:**
