@@ -15,6 +15,7 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 - **Today's Schedule**: Real-time today's schedule creation with DJ information
 - **Weekly Schedule**: `/schedule` command for current week (Monday-Sunday)
 - **Automated Weekly Posting**: Bot automatically posts weekly schedule every Wednesday at 11:00 UTC (midday Amsterdam time)
+- **Automated Who's Playing Posts**: Bot posts today's schedule on Tuesday at 14:33 UTC (~3:33 PM Amsterdam) and Saturday at 08:33 UTC (~9:33 AM Amsterdam)
 - **Multiple Group Posting**: Weekly schedule posts to all configured group chats via `TELEGRAM_GROUP_CHAT_ID`
 - **Telegram Integration**: Bot API with interactive command handling
 - **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help`
@@ -73,6 +74,8 @@ Team-Odessa-Telegram-Bot/
 │   └── test-*.ts              # Test files
 ├── api/                        # Vercel API routes
 │   ├── bot.ts                 # Telegram webhook handler
+│   ├── scheduled-schedule.ts  # Cron: weekly schedule (Wed 11:00 UTC)
+│   ├── scheduled-whosplaying.ts # Cron: who's playing (Tue 14:33, Sat 08:33 UTC)
 │   └── test.ts                # Test endpoint
 ├── scripts/                    # Deployment scripts
 │   ├── quick-start.sh         # Quick setup script
@@ -163,6 +166,7 @@ The bot supports interactive commands in Telegram:
 
 **Automated Features:**
 - **Weekly Schedule Auto-Post**: Bot automatically posts the weekly schedule every Wednesday at 11:00 UTC (midday Amsterdam time) to all configured group chats
+- **Who's Playing Auto-Post**: Bot automatically posts today's schedule on Tuesday at 14:33 UTC (~3:33 PM Amsterdam) and Saturday at 08:33 UTC (~9:33 AM Amsterdam)
 
 **Features:**
 - Works in both group chats and direct messages
