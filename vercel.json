@@ -12,12 +12,24 @@
     {
       "src": "/api/scheduled-schedule",
       "dest": "/api/scheduled-schedule.ts"
+    },
+    {
+      "src": "/api/scheduled-whosplaying",
+      "dest": "/api/scheduled-whosplaying.ts"
     }
   ],
   "crons": [
     {
       "path": "/api/scheduled-schedule",
       "schedule": "0 11 * * 3"
+    },
+    {
+      "path": "/api/scheduled-whosplaying",
+      "schedule": "33 14 * * 2"
+    },
+    {
+      "path": "/api/scheduled-whosplaying",
+      "schedule": "33 8 * * 6"
     }
   ],
   "env": {
