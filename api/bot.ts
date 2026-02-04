@@ -468,12 +468,20 @@ and phone-free spaces. 🙏`;
 
           const messageText = `📍 <b>Odessa Location</b>
 
-🚢 Veemkade 259, 1019 CZ Amsterdam
+<blockquote>🚢 Veemkade 259
+1019 CZ Amsterdam
+Netherlands</blockquote>`;
 
-Open in Google Maps:
-https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}`;
+          const keyboard = {
+            inline_keyboard: [
+              [
+                { text: '📍 GOOGLE MAPS', url: `https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}` },
+                { text: '🍎 APPLE MAPS', url: 'https://maps.apple.com/place?place-id=IB3919CD17894B119&address=Veemkade+259%2C+1019+CZ+Amsterdam%2C+Netherlands&coordinate=52.3745084%2C4.9376496&name=Odessa&_provider=9902' }
+              ]
+            ]
+          };
 
-          await sendTelegramMessage(chat.id, messageText);
+          await sendTelegramMessageWithKeyboard(chat.id, messageText, keyboard);
 
         } catch (error) {
           console.error('Error handling /location:', error);
