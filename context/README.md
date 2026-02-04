@@ -169,9 +169,9 @@ The bot supports interactive commands in Telegram:
 | `/countdown` | Countdown to next event |
 | `/dj [name]` | DJ profile with photo, bio, SoundCloud/Instagram/Website buttons |
 | `/discover` | Random DJ profile |
-| `/venue` | Venue info (capacity, facilities) |
+| `/venue` | Venue info with stacked buttons (Website, Maps, Tickets) |
 | `/types` | Event types explained (ED, Cacao ED, Journey, etc.) |
-| `/location` | Google Maps link to Odessa (Veemkade 259, 1019 CZ) |
+| `/location` | Map pin + stacked Google Maps & Apple Maps buttons |
 | `/parking` | Parking options (ParkBee P+R, Albert Heijn garage) |
 | `/commands` | List all available commands |
 | `/help` | Help and support info |

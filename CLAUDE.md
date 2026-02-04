@@ -18,9 +18,9 @@ Automated schedule generator for Odessa boat events (Ecstatic Dance) in Amsterda
 | `/countdown` | Countdown to next event |
 | `/dj [name]` | DJ profile with photo, bio, SoundCloud/Instagram/Website buttons |
 | `/discover` | Random DJ profile |
-| `/venue` | Venue info (capacity, facilities) |
+| `/venue` | Venue info with stacked buttons (Website, Maps, Tickets) |
 | `/types` | Event types explained (ED, Cacao ED, Journey, etc.) |
-| `/location` | Google Maps link to Odessa |
+| `/location` | Map pin + stacked Google Maps & Apple Maps buttons |
 | `/parking` | Parking options (ParkBee P+R, Albert Heijn garage) |
 | `/commands` | List all available commands |
 | `/help` | Help and support info |
@@ -119,8 +119,10 @@ npm test             # Run tests
 - **Enhanced DJ database**: 21 DJs with full profiles (photo, bio, soundcloud, instagram, website)
 - **Blockquote bios**: DJ descriptions now use Telegram's `<blockquote>` formatting
 - **Social link buttons**: `/whosplaying` and `/dj` show Instagram + Website buttons (not just SoundCloud)
-- **Correct location**: Veemkade 259, 1019 CZ coordinates (52.374501, 4.937627)
+- **Correct location**: Veemkade 259, 1019 CZ Amsterdam (52.374501, 4.937627)
 - **Parking command**: ParkBee P+R Zeeburg + Albert Heijn garage (closes 22:00 warning)
+- **Stacked buttons**: `/location` (Google + Apple Maps), `/venue` (Website, Maps, Tickets)
+- **Better spacing**: `/next` message has improved readability with line breaks
 
 ### Previous Changes
 - Scheduled "who's playing" posts (Tue 3:33 PM, Sat 9:33 AM Amsterdam)
