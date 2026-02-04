@@ -474,10 +474,8 @@ Netherlands</blockquote>`;
 
           const keyboard = {
             inline_keyboard: [
-              [
-                { text: '📍 GOOGLE MAPS', url: `https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}` },
-                { text: '🍎 APPLE MAPS', url: 'https://maps.apple.com/place?place-id=IB3919CD17894B119&address=Veemkade+259%2C+1019+CZ+Amsterdam%2C+Netherlands&coordinate=52.3745084%2C4.9376496&name=Odessa&_provider=9902' }
-              ]
+              [{ text: '📍 GOOGLE MAPS', url: `https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}` }],
+              [{ text: '🍎 APPLE MAPS', url: 'https://maps.apple.com/place?place-id=IB3919CD17894B119&address=Veemkade+259%2C+1019+CZ+Amsterdam%2C+Netherlands&coordinate=52.3745084%2C4.9376496&name=Odessa&_provider=9902' }]
             ]
           };
 
