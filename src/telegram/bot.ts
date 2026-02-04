@@ -1,17 +1,29 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { OdessaTodayGenerator } from '../index';
 import { WeeklyScheduleGenerator } from '../weekly-schedule-generator';
+import { DJLoader } from '../utils/dj-loader';
+import { WixDJLoader } from '../utils/wix-dj-loader';
+import { utcToZonedTime } from 'date-fns-tz';
 
 export class OdessaBot {
   private bot: TelegramBot;
   private generator: OdessaTodayGenerator;
   private weeklyGenerator: WeeklyScheduleGenerator;
+  private djLoader: DJLoader;
+  private wixDJLoader: WixDJLoader;
   private userRateLimits: Map<number, number> = new Map();
+  private amsterdamTimezone = 'Europe/Amsterdam';
 
-  constructor(token: string) {
-    this.bot = new TelegramBot(token, { polling: false });
+  // Odessa boat coordinates (NDSM Wharf)
+  private readonly ODESSA_LATITUDE = 52.4012;
+  private readonly ODESSA_LONGITUDE = 4.8917;
+
+  constructor(token: string, options?: { polling?: boolean }) {
+    this.bot = new TelegramBot(token, { polling: options?.polling ?? false });
     this.generator = new OdessaTodayGenerator();
     this.weeklyGenerator = new WeeklyScheduleGenerator();
+    this.djLoader = new DJLoader();
+    this.wixDJLoader = new WixDJLoader();
   }
 
   /**
@@ -36,6 +48,46 @@ export class OdessaBot {
     // Handle /schedule command
     this.bot.onText(/\/schedule/, async (msg) => {
       await this.handleScheduleCommand(msg);
+    });
+
+    // Handle /next command
+    this.bot.onText(/\/next/, async (msg) => {
+      await this.handleNextCommand(msg);
+    });
+
+    // Handle /countdown command
+    this.bot.onText(/\/countdown/, async (msg) => {
+      await this.handleCountdownCommand(msg);
+    });
+
+    // Handle /dj command (with optional name argument)
+    this.bot.onText(/\/dj(?:\s+(.+))?/, async (msg, match) => {
+      await this.handleDJCommand(msg, match?.[1]);
+    });
+
+    // Handle /discover command
+    this.bot.onText(/\/discover/, async (msg) => {
+      await this.handleDiscoverCommand(msg);
+    });
+
+    // Handle /venue command
+    this.bot.onText(/\/venue/, async (msg) => {
+      await this.handleVenueCommand(msg);
+    });
+
+    // Handle /types command
+    this.bot.onText(/\/types/, async (msg) => {
+      await this.handleTypesCommand(msg);
+    });
+
+    // Handle /location command
+    this.bot.onText(/\/location/, async (msg) => {
+      await this.handleLocationCommand(msg);
+    });
+
+    // Handle /commands command
+    this.bot.onText(/\/commands/, async (msg) => {
+      await this.handleCommandsCommand(msg);
     });
   }
 
@@ -142,12 +194,13 @@ export class OdessaBot {
   public async handleStartCommand(msg: TelegramBot.Message): Promise<void> {
     const welcomeMessage = `🤖 <b>Welcome to the Odessa Schedule Bot!</b>
 
-I can help you check who's playing today at Odessa boat events in Amsterdam.
+I can help you check who's playing at Odessa boat events in Amsterdam.
 
-<b>Available commands:</b>
-• /whosplaying - Check who is facilitating today
-• /schedule - View this week's schedule
-• /help - Show this help message
+<b>Quick commands:</b>
+• /whosplaying - Who's facilitating today
+• /schedule - This week's schedule
+• /next - Next upcoming event
+• /commands - See all commands
 
 Just send /whosplaying to get started! 🌴🎶`;
 
@@ -160,10 +213,17 @@ Just send /whosplaying to get started! 🌴🎶`;
   public async handleHelpCommand(msg: TelegramBot.Message): Promise<void> {
     const helpMessage = `🤖 <b>Odessa Schedule Bot Help</b>
 
-<b>Commands:</b>
-• /whosplaying - Check who is facilitating today
-• /schedule - View the week's schedule
-• /help - Show this help message`;
+<b>Main commands:</b>
+• /whosplaying - Who's facilitating today
+• /schedule - This week's schedule
+• /next - Next upcoming event
+• /countdown - Countdown to next event
+• /dj [name] - DJ profile lookup
+• /discover - Discover a random DJ
+• /venue - Boat location & info
+• /location - Get map pin
+• /types - Event types explained
+• /commands - Full command list`;
 
     await this.bot.sendMessage(msg.chat.id, helpMessage, { parse_mode: 'HTML' });
   }
@@ -210,6 +270,501 @@ Just send /whosplaying to get started! 🌴🎶`;
         { parse_mode: 'HTML' }
       );
     }
+  }
+
+  /**
+   * Handle /next command - show next upcoming event
+   */
+  public async handleNextCommand(msg: TelegramBot.Message): Promise<void> {
+    const userId = msg.from?.id;
+    if (!userId) return;
+
+    // Check rate limiting
+    const now = Date.now();
+    const lastRequest = this.userRateLimits.get(userId);
+    if (lastRequest && now - lastRequest < 60000) {
+      await this.bot.sendMessage(msg.chat.id,
+        '⏰ Please wait a moment before requesting again.',
+        { parse_mode: 'HTML' }
+      );
+      return;
+    }
+
+    this.userRateLimits.set(userId, now);
+
+    try {
+      await this.bot.sendChatAction(msg.chat.id, 'typing');
+
+      const nextEvent = await this.generator.findNextUpcomingEvent();
+
+      if (!nextEvent) {
+        await this.bot.sendMessage(msg.chat.id,
+          '🚢 No upcoming events found. Check back later!',
+          { parse_mode: 'HTML' }
+        );
+        return;
+      }
+
+      const eventDate = new Date(nextEvent.date);
+      const eventDateInAmsterdam = utcToZonedTime(eventDate, this.amsterdamTimezone);
+      const nowInAmsterdam = utcToZonedTime(new Date(), this.amsterdamTimezone);
+
+      // Format date nicely
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dayName = dayNames[eventDateInAmsterdam.getDay()];
+      const monthName = monthNames[eventDateInAmsterdam.getMonth()];
+      const dayNum = eventDateInAmsterdam.getDate();
+      const hours = eventDateInAmsterdam.getHours().toString().padStart(2, '0');
+      const minutes = eventDateInAmsterdam.getMinutes().toString().padStart(2, '0');
+
+      // Calculate relative time
+      const diffMs = eventDateInAmsterdam.getTime() - nowInAmsterdam.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+      let relativeTime = '';
+      if (diffDays > 0) {
+        relativeTime = `In ${diffDays} day${diffDays > 1 ? 's' : ''}, ${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+      } else if (diffHours > 0) {
+        relativeTime = `In ${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+      } else {
+        relativeTime = 'Starting soon!';
+      }
+
+      // Get DJ info
+      const djInfo = nextEvent.djName ? await this.wixDJLoader.getDJInfoWithFallback(nextEvent.djName) : null;
+
+      const text = `🚀 <b>Next up on Odessa:</b>
+
+🗓️ ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
+🎶 ${nextEvent.title}
+⏰ ${relativeTime}`;
+
+      const buttons: Array<{ text: string; url: string }> = [];
+      if (nextEvent.ticketUrl) {
+        buttons.push({ text: '🎫 TICKETS', url: nextEvent.ticketUrl });
+      }
+      if (djInfo?.soundcloudUrl) {
+        buttons.push({ text: '🎧 LISTEN', url: djInfo.soundcloudUrl });
+      }
+
+      const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
+
+      if (djInfo?.photo) {
+        await this.bot.sendPhoto(msg.chat.id, djInfo.photo, {
+          caption: text,
+          parse_mode: 'HTML',
+          reply_markup: keyboard
+        });
+      } else {
+        await this.bot.sendMessage(msg.chat.id, text, {
+          parse_mode: 'HTML',
+          reply_markup: keyboard
+        });
+      }
+
+    } catch (error) {
+      console.error('Error handling /next command:', error);
+      await this.bot.sendMessage(msg.chat.id,
+        '❌ Sorry, I couldn\'t fetch the next event. Please try again later.',
+        { parse_mode: 'HTML' }
+      );
+    }
+  }
+
+  /**
+   * Handle /countdown command - visual countdown to next event
+   */
+  public async handleCountdownCommand(msg: TelegramBot.Message): Promise<void> {
+    const userId = msg.from?.id;
+    if (!userId) return;
+
+    const now = Date.now();
+    const lastRequest = this.userRateLimits.get(userId);
+    if (lastRequest && now - lastRequest < 60000) {
+      await this.bot.sendMessage(msg.chat.id,
+        '⏰ Please wait a moment before requesting again.',
+        { parse_mode: 'HTML' }
+      );
+      return;
+    }
+
+    this.userRateLimits.set(userId, now);
+
+    try {
+      await this.bot.sendChatAction(msg.chat.id, 'typing');
+
+      const nextEvent = await this.generator.findNextUpcomingEvent();
+
+      if (!nextEvent) {
+        await this.bot.sendMessage(msg.chat.id,
+          '🚢 No upcoming events found. Check back later!',
+          { parse_mode: 'HTML' }
+        );
+        return;
+      }
+
+      const eventDate = new Date(nextEvent.date);
+      const eventDateInAmsterdam = utcToZonedTime(eventDate, this.amsterdamTimezone);
+      const nowInAmsterdam = utcToZonedTime(new Date(), this.amsterdamTimezone);
+
+      // Format date
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dayName = dayNames[eventDateInAmsterdam.getDay()];
+      const monthName = monthNames[eventDateInAmsterdam.getMonth()];
+      const dayNum = eventDateInAmsterdam.getDate();
+      const hours = eventDateInAmsterdam.getHours().toString().padStart(2, '0');
+      const minutes = eventDateInAmsterdam.getMinutes().toString().padStart(2, '0');
+
+      // Calculate countdown
+      const diffMs = eventDateInAmsterdam.getTime() - nowInAmsterdam.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+      let countdown = '';
+      if (diffDays > 0) {
+        countdown = `${diffDays} day${diffDays > 1 ? 's' : ''}, ${diffHours} hour${diffHours !== 1 ? 's' : ''}, ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+      } else if (diffHours > 0) {
+        countdown = `${diffHours} hour${diffHours !== 1 ? 's' : ''}, ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+      } else if (diffMinutes > 0) {
+        countdown = `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+      } else {
+        countdown = 'Starting now!';
+      }
+
+      // Extract event type from title
+      const eventType = nextEvent.title.split(' with ')[0] || nextEvent.title;
+
+      const text = `⏱️ <b>Countdown to ${eventType}</b>
+
+🎶 DJ: ${nextEvent.djName || 'TBA'}
+📅 ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
+
+⏳ <b>${countdown}</b>
+
+The boat is calling! 🚢`;
+
+      const buttons: Array<{ text: string; url: string }> = [];
+      if (nextEvent.ticketUrl) {
+        buttons.push({ text: '🎫 TICKETS', url: nextEvent.ticketUrl });
+      }
+
+      const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
+
+      await this.bot.sendMessage(msg.chat.id, text, {
+        parse_mode: 'HTML',
+        reply_markup: keyboard
+      });
+
+    } catch (error) {
+      console.error('Error handling /countdown command:', error);
+      await this.bot.sendMessage(msg.chat.id,
+        '❌ Sorry, I couldn\'t fetch the countdown. Please try again later.',
+        { parse_mode: 'HTML' }
+      );
+    }
+  }
+
+  /**
+   * Handle /dj command - DJ profile lookup
+   */
+  public async handleDJCommand(msg: TelegramBot.Message, djName?: string): Promise<void> {
+    const userId = msg.from?.id;
+    if (!userId) return;
+
+    const now = Date.now();
+    const lastRequest = this.userRateLimits.get(userId);
+    if (lastRequest && now - lastRequest < 60000) {
+      await this.bot.sendMessage(msg.chat.id,
+        '⏰ Please wait a moment before requesting again.',
+        { parse_mode: 'HTML' }
+      );
+      return;
+    }
+
+    this.userRateLimits.set(userId, now);
+
+    try {
+      await this.bot.sendChatAction(msg.chat.id, 'typing');
+
+      if (!djName || djName.trim() === '') {
+        // List all DJs
+        const allDJs = this.djLoader.getAllDJNames();
+        const djList = allDJs.sort().map(name => `• ${name}`).join('\n');
+
+        const text = `🎧 <b>Odessa DJs</b>
+
+Choose a DJ to learn more:
+
+${djList}
+
+<i>Usage: /dj Samaya</i>`;
+
+        await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
+        return;
+      }
+
+      // Look up specific DJ
+      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName.trim());
+
+      if (!djInfo) {
+        await this.bot.sendMessage(msg.chat.id,
+          `❌ DJ "${djName}" not found. Try /dj to see all available DJs.`,
+          { parse_mode: 'HTML' }
+        );
+        return;
+      }
+
+      let text = `🎧 <b>${djInfo.name.toUpperCase()}</b>`;
+
+      if (djInfo.shortDescription) {
+        text += `\n\n"${djInfo.shortDescription}"`;
+      }
+
+      const links: string[] = [];
+      if (djInfo.soundcloudUrl) {
+        links.push(`🔗 <a href="${djInfo.soundcloudUrl}">SoundCloud</a>`);
+      }
+      if (djInfo.instagramUrl) {
+        links.push(`📸 <a href="${djInfo.instagramUrl}">Instagram</a>`);
+      }
+      if (djInfo.website) {
+        links.push(`🌐 <a href="${djInfo.website}">Website</a>`);
+      }
+
+      if (links.length > 0) {
+        text += '\n\n' + links.join('\n');
+      }
+
+      const buttons: Array<{ text: string; url: string }> = [];
+      if (djInfo.soundcloudUrl) {
+        buttons.push({ text: '🎧 LISTEN ON SOUNDCLOUD', url: djInfo.soundcloudUrl });
+      }
+
+      const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
+
+      if (djInfo.photo) {
+        await this.bot.sendPhoto(msg.chat.id, djInfo.photo, {
+          caption: text,
+          parse_mode: 'HTML',
+          reply_markup: keyboard
+        });
+      } else {
+        await this.bot.sendMessage(msg.chat.id, text, {
+          parse_mode: 'HTML',
+          reply_markup: keyboard
+        });
+      }
+
+    } catch (error) {
+      console.error('Error handling /dj command:', error);
+      await this.bot.sendMessage(msg.chat.id,
+        '❌ Sorry, I couldn\'t fetch DJ info. Please try again later.',
+        { parse_mode: 'HTML' }
+      );
+    }
+  }
+
+  /**
+   * Handle /discover command - random DJ discovery
+   */
+  public async handleDiscoverCommand(msg: TelegramBot.Message): Promise<void> {
+    const userId = msg.from?.id;
+    if (!userId) return;
+
+    const now = Date.now();
+    const lastRequest = this.userRateLimits.get(userId);
+    if (lastRequest && now - lastRequest < 60000) {
+      await this.bot.sendMessage(msg.chat.id,
+        '⏰ Please wait a moment before requesting again.',
+        { parse_mode: 'HTML' }
+      );
+      return;
+    }
+
+    this.userRateLimits.set(userId, now);
+
+    try {
+      await this.bot.sendChatAction(msg.chat.id, 'typing');
+
+      const randomDJ = this.djLoader.getRandomDJ();
+
+      if (!randomDJ) {
+        await this.bot.sendMessage(msg.chat.id,
+          '❌ No DJs found in the database.',
+          { parse_mode: 'HTML' }
+        );
+        return;
+      }
+
+      // Get enhanced info
+      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(randomDJ.name);
+
+      let text = `🎲 <b>Discover a DJ</b>
+
+✨ <b>${(djInfo?.name || randomDJ.name).toUpperCase()}</b> ✨`;
+
+      if (djInfo?.shortDescription) {
+        text += `\n\n"${djInfo.shortDescription}"`;
+      }
+
+      text += '\n\nGive them a listen before the next event!';
+
+      const buttons: Array<{ text: string; url: string }> = [];
+      const soundcloudUrl = djInfo?.soundcloudUrl || randomDJ.link;
+      if (soundcloudUrl) {
+        buttons.push({ text: '🎧 LISTEN ON SOUNDCLOUD', url: soundcloudUrl });
+      }
+
+      const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
+
+      if (djInfo?.photo) {
+        await this.bot.sendPhoto(msg.chat.id, djInfo.photo, {
+          caption: text,
+          parse_mode: 'HTML',
+          reply_markup: keyboard
+        });
+      } else {
+        await this.bot.sendMessage(msg.chat.id, text, {
+          parse_mode: 'HTML',
+          reply_markup: keyboard
+        });
+      }
+
+    } catch (error) {
+      console.error('Error handling /discover command:', error);
+      await this.bot.sendMessage(msg.chat.id,
+        '❌ Sorry, I couldn\'t fetch a random DJ. Please try again later.',
+        { parse_mode: 'HTML' }
+      );
+    }
+  }
+
+  /**
+   * Handle /venue command - static venue information
+   */
+  public async handleVenueCommand(msg: TelegramBot.Message): Promise<void> {
+    const text = `🚢 <b>ODESSA - The Boat</b>
+
+📍 NDSM Wharf, Amsterdam
+🗺️ Coordinates: ${this.ODESSA_LATITUDE}° N, ${this.ODESSA_LONGITUDE}° E
+
+🚌 <b>Getting there:</b>
+• Ferry 901/907 from Centraal (free!)
+• Bus 38 to NDSM Werf
+• Bike parking available
+
+📝 <b>Good to know:</b>
+• Barefoot dancing space
+• Phone-free environment
+• Bring water bottle
+• Dress comfortably
+
+🌐 hipsy.nl/odessa-amsterdam-ecstatic-dance`;
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '📍 GOOGLE MAPS', url: `https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}` },
+          { text: '🎫 TICKETS', url: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance' }
+        ]
+      ]
+    };
+
+    await this.bot.sendMessage(msg.chat.id, text, {
+      parse_mode: 'HTML',
+      reply_markup: keyboard
+    });
+  }
+
+  /**
+   * Handle /types command - event types explained
+   */
+  public async handleTypesCommand(msg: TelegramBot.Message): Promise<void> {
+    const text = `🎭 <b>Event Types at Odessa</b>
+
+🌅 <b>Ecstatic Dance (ED)</b>
+Free-form dancing to a DJ-guided journey.
+Sunday mornings are "Morning ED"!
+
+🍫 <b>Cacao Ecstatic Dance</b>
+Heart-opening cacao ceremony followed
+by ecstatic dance.
+
+🌈 <b>Queerstatic</b>
+LGBTQ+ inclusive dance celebration.
+
+🎵 <b>Live Music</b>
+Live musicians creating the sonic journey.
+
+🌌 <b>Journey</b>
+Deeper, longer explorations of sound
+and movement.
+
+━━━━━━━━━━━━━━━━━━━━━
+All events are sober, barefoot,
+and phone-free spaces. 🙏`;
+
+    await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
+  }
+
+  /**
+   * Handle /location command - send map pin
+   */
+  public async handleLocationCommand(msg: TelegramBot.Message): Promise<void> {
+    try {
+      // Send the location pin
+      await this.bot.sendLocation(msg.chat.id, this.ODESSA_LATITUDE, this.ODESSA_LONGITUDE);
+
+      // Follow up with Google Maps link
+      const text = `📍 <b>Odessa Location</b>
+
+🚢 NDSM Wharf, Amsterdam
+
+Open in Google Maps:
+https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}`;
+
+      await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
+
+    } catch (error) {
+      console.error('Error handling /location command:', error);
+      await this.bot.sendMessage(msg.chat.id,
+        '❌ Sorry, I couldn\'t send the location. Please try again.',
+        { parse_mode: 'HTML' }
+      );
+    }
+  }
+
+  /**
+   * Handle /commands command - list all available commands
+   */
+  public async handleCommandsCommand(msg: TelegramBot.Message): Promise<void> {
+    const text = `🤖 <b>Available Commands</b>
+
+<b>Events & Schedule:</b>
+• /whosplaying - Who's facilitating today
+• /schedule - This week's schedule
+• /next - Next upcoming event
+• /countdown - Countdown to next event
+
+<b>DJ Info:</b>
+• /dj [name] - DJ profile lookup
+• /discover - Discover a random DJ
+
+<b>Venue & Info:</b>
+• /venue - Boat location & practical info
+• /location - Get map pin
+• /types - Event types explained
+
+<b>Help:</b>
+• /start - Welcome message
+• /help - Quick help
+• /commands - This list`;
+
+    await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
   }
 
   /**

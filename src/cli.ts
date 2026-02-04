@@ -72,8 +72,8 @@ async function testBot() {
 }
 
 async function runBot() {
-  console.log('🤖 Starting interactive bot...');
-  
+  console.log('🤖 Starting interactive bot (polling mode)...');
+
   const token = process.env['TELEGRAM_BOT_TOKEN'];
   if (!token) {
     console.error('❌ TELEGRAM_BOT_TOKEN not set');
@@ -81,11 +81,12 @@ async function runBot() {
   }
 
   try {
-    const bot = new OdessaBot(token);
+    // Enable polling for local testing
+    const bot = new OdessaBot(token, { polling: true });
     bot.initialize();
-    
+
     console.log('✅ Bot is now running and listening for commands!');
-    console.log('📱 Commands available: /whosplaying, /start, /help');
+    console.log('📱 Send commands to your bot in Telegram to test');
     console.log('⏹️  Press Ctrl+C to stop the bot');
     
     // Keep the process running

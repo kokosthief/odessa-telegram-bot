@@ -125,7 +125,7 @@ export class OdessaTodayGenerator {
   /**
    * Find the next upcoming event
    */
-  private async findNextUpcomingEvent(): Promise<any> {
+  public async findNextUpcomingEvent(): Promise<any> {
     try {
       const result = await this.scraper.getEvents(1, 'upcoming', 10);
       

@@ -117,4 +117,16 @@ export class DJLoader {
     const djData = this.loadDJData();
     return djName in djData;
   }
+
+  /**
+   * Get a random DJ from the database
+   */
+  getRandomDJ(): { name: string; link?: string | undefined; photo?: string | undefined } | null {
+    const djNames = this.getAllDJNames();
+    if (djNames.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * djNames.length);
+    const name = djNames[randomIndex] as string;
+    const info = this.getDJInfo(name);
+    return { name, link: info?.link, photo: info?.photo };
+  }
 } 
