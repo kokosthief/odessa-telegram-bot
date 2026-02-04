@@ -71,11 +71,13 @@ This guide provides implementation patterns and standards for building an automa
 - **Web Scraping**: Hipsy.no event data extraction with error handling
 - **Today's Schedule Generation**: Real-time today's schedule creation with DJ information
 - **Telegram Integration**: Bot API integration with message posting
-- **Interactive Commands**: `/whosplaying`, `/start`, `/help` command handling
+- **Interactive Commands**: `/whosplaying`, `/schedule`, `/next`, `/countdown`, `/dj`, `/discover`, `/venue`, `/types`, `/location`, `/parking`, `/commands`, `/help`
 - **Rate Limiting**: 60-second rate limit per user to prevent spam
 - **Error Handling**: Comprehensive error handling with user-friendly messages
 - **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
-- **DJ Database**: 20+ DJs with social media links in `src/data/djs.json`
+- **DJ Database**: 21 DJs with full profiles (photo, bio, soundcloud, instagram, website) in `src/data/djs.json`
+- **Blockquote Bios**: DJ descriptions displayed using Telegram's `<blockquote>` formatting
+- **Social Link Buttons**: SoundCloud, Instagram, and Website buttons on DJ profiles
 - **B2B Event Support**: Enhanced handling of back-to-back events with multiple DJs
 - **Custom Event Support**: Special events display full titles instead of "Event | TBA"
 - **Intelligent Time Display**: Shows "tonight" for evening events (4 PM+) and "today" for daytime events
@@ -388,12 +390,17 @@ async function postTodayScheduleToTelegram(schedule: TodaySchedule): Promise<voi
 ```json
 {
   "DJ Name": {
-    "link": "https://soundcloud.com/dj_name",
-    "photo": "https://wix-cms-photo-url",
-    "shortDescription": "DJ description from Wix"
+    "photo": "https://static.wixstatic.com/media/...",
+    "shortDescription": "DJ bio displayed in blockquote format",
+    "soundcloud": "https://soundcloud.com/dj_name",
+    "instagram": "https://www.instagram.com/dj_name/",
+    "website": "https://dj-website.com/",
+    "tags": ["Resident"]
   }
 }
 ```
+
+**Note**: `link` field is legacy fallback for SoundCloud. New entries use `soundcloud` field.
 
 ### DJ Data Implementation
 
@@ -554,16 +561,20 @@ npm run cli run
 
 1. **Web Scraping**: Hipsy.no scraper with error handling
 2. **Today's Schedule Generation**: Real-time today's schedule creation
-3. **Telegram Integration**: Bot with command handling
-4. **Interactive Commands**: `/whosplaying`, `/start`, `/help`
+3. **Telegram Integration**: Bot with command handling via webhook (`api/bot.ts`)
+4. **Interactive Commands**: `/whosplaying`, `/schedule`, `/next`, `/countdown`, `/dj`, `/discover`, `/venue`, `/types`, `/location`, `/parking`, `/commands`, `/help`
 5. **Rate Limiting**: 60-second rate limit per user
 6. **Error Handling**: Comprehensive error handling
 7. **CLI Interface**: Command-line tools for management
 8. **Testing Suite**: Test coverage for all components
 9. **Documentation**: Complete documentation and guides
-10. **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
-11. **DJ Database**: 20+ DJs with social media links
+10. **Enhanced DJ Integration**: Photos and bios from local database (`src/data/djs.json`)
+11. **DJ Database**: 21 DJs with full profiles (photo, bio, soundcloud, instagram, website)
 12. **Context Engineering**: Organized documentation in `context/`
+13. **Blockquote Bios**: DJ descriptions use Telegram's `<blockquote>` formatting
+14. **Social Link Buttons**: SoundCloud, Instagram, Website buttons on DJ profiles
+15. **Location Info**: Correct coordinates for Oostelijke Handelskade (52.374501, 4.937627)
+16. **Parking Info**: ParkBee P+R Zeeburg + Albert Heijn garage details
 
 ### 🔄 Future Enhancements
 

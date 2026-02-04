@@ -21,8 +21,10 @@ An automated schedule checking tool for Odessa boat events in Amsterdam. This sy
 - **Interactive Commands**: `/schedule`, `/whosplaying`, `/start`, `/help`
 - **Rate Limiting**: 60-second rate limit per user to prevent spam
 - **Error Handling**: Comprehensive error handling with user-friendly messages
-- **Enhanced DJ Integration**: Photos and descriptions from Wix CMS
-- **DJ Database**: 20+ DJs with social media links in `src/data/djs.json`
+- **Enhanced DJ Integration**: Photos and descriptions from local database
+- **DJ Database**: 21 DJs with full profiles (photo, bio, soundcloud, instagram, website) in `src/data/djs.json`
+- **Blockquote Bios**: DJ descriptions displayed using Telegram's `<blockquote>` formatting
+- **Social Link Buttons**: SoundCloud, Instagram, and Website buttons on DJ profiles
 - **Event Type Support**: ED, Cacao ED, Live Music, Queerstatic, and Ecstatic Journey (displayed as "Journey")
 - **Multi-Event Logic**: Smart intro text for multiple events with different DJs
 - **B2B Event Support**: Enhanced handling of back-to-back events with multiple DJs (currently debugging link display)
@@ -159,10 +161,22 @@ See `env.example` for the complete list of available variables.
 The bot supports interactive commands in Telegram:
 
 **Available Commands:**
-- `/schedule` - Get current week's schedule (Monday-Sunday) with video and DJ links
-- `/whosplaying` - Check who is playing today with DJ photos and descriptions
-- `/start` - Welcome message and bot introduction
-- `/help` - Show help information and available commands
+| Command | Description |
+|---------|-------------|
+| `/whosplaying` | Today's events with DJ photos, bios (blockquote), ticket + social links |
+| `/schedule` | Weekly schedule (Mon-Sun) with video |
+| `/next` | Next upcoming event with DJ info |
+| `/countdown` | Countdown to next event |
+| `/dj [name]` | DJ profile with photo, bio, SoundCloud/Instagram/Website buttons |
+| `/discover` | Random DJ profile |
+| `/venue` | Venue info (capacity, facilities) |
+| `/types` | Event types explained (ED, Cacao ED, Journey, etc.) |
+| `/location` | Google Maps link to Odessa (Oostelijke Handelskade) |
+| `/parking` | Parking options (ParkBee P+R, Albert Heijn garage) |
+| `/commands` | List all available commands |
+| `/help` | Help and support info |
+
+**Note**: `/start` is handled by a separate welcome bot.
 
 **Automated Features:**
 - **Weekly Schedule Auto-Post**: Bot automatically posts the weekly schedule every Wednesday at 10:11 UTC (11:11 Amsterdam time) to all configured group chats

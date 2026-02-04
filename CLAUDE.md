@@ -1,20 +1,29 @@
 # Odessa Telegram Bot
 
-Automated schedule generator for Odessa boat events (Ecstatic Dance) in Amsterdam. Scrapes event data from Hipsy.nl, enriches with DJ info from Wix CMS, and posts to Telegram.
+Automated schedule generator for Odessa boat events (Ecstatic Dance) in Amsterdam. Scrapes event data from Hipsy.nl, enriches with DJ info from local database, and posts to Telegram.
 
 ## Quick Reference
 
 **Live**: https://odessa-telegram-bot.vercel.app
 **Status**: Production-ready, deployed on Vercel with webhook + cron jobs
+**Location**: Oostelijke Handelskade, Amsterdam (52.374501, 4.937627)
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `/whosplaying` | Today's events with DJ photos, bios, ticket links |
+| `/whosplaying` | Today's events with DJ photos, bios (blockquote), ticket + social links |
 | `/schedule` | Weekly schedule (Mon-Sun) with video |
-| `/start` | Welcome message |
-| `/help` | Available commands |
+| `/next` | Next upcoming event with DJ info |
+| `/countdown` | Countdown to next event |
+| `/dj [name]` | DJ profile with photo, bio, SoundCloud/Instagram/Website buttons |
+| `/discover` | Random DJ profile |
+| `/venue` | Venue info (capacity, facilities) |
+| `/types` | Event types explained (ED, Cacao ED, Journey, etc.) |
+| `/location` | Google Maps link to Odessa |
+| `/parking` | Parking options (ParkBee P+R, Albert Heijn garage) |
+| `/commands` | List all available commands |
+| `/help` | Help and support info |
 
 ## Project Structure
 
@@ -49,9 +58,11 @@ api/
 ## Data Flow
 
 1. **HipsyScraper** fetches events from Hipsy.nl API
-2. **WixDJLoader** enriches with DJ photos/bios (falls back to djs.json)
+2. **DJLoader** enriches with DJ photos/bios from `src/data/djs.json`
 3. **WhosPlayingFormatter** or **WeeklyScheduleGenerator** formats output
-4. **OdessaBot** sends to Telegram with inline keyboards
+4. **Webhook handler** (`api/bot.ts`) sends to Telegram with inline keyboards
+
+**Note**: Production commands are handled directly in `api/bot.ts` webhook handler, not via the `OdessaBot` class.
 
 ## Environment Variables
 
@@ -90,7 +101,8 @@ npm test             # Run tests
 - **Fuzzy DJ Matching**: Handles special characters (e.g., Ma'rifa variants)
 - **Smart Time Display**: "tonight" for 4PM+, "today" for Sunday morning
 - **Rate Limiting**: 60s per user to prevent spam
-- **Wix Caching**: 1-hour cache for DJ data
+- **Rich DJ Profiles**: Photo, bio (blockquote format), SoundCloud, Instagram, Website buttons
+- **21 DJs in Database**: Full profiles with social links in `src/data/djs.json`
 
 ## Scheduled Posts (Cron Jobs)
 
@@ -100,12 +112,29 @@ npm test             # Run tests
 | Tue 14:33 UTC (~15:33 Amsterdam) | `/api/scheduled-whosplaying` | Who's playing today |
 | Sat 08:33 UTC (~09:33 Amsterdam) | `/api/scheduled-whosplaying` | Who's playing today |
 
-## Recent Changes
+## Recent Changes (Feb 2026)
 
-- Added scheduled "who's playing" posts (Tue 3:33 PM, Sat 9:33 AM Amsterdam)
+- **New commands**: `/next`, `/countdown`, `/dj`, `/discover`, `/venue`, `/types`, `/location`, `/parking`, `/commands`
+- **Removed `/start`**: Handled by separate welcome bot
+- **Enhanced DJ database**: 21 DJs with full profiles (photo, bio, soundcloud, instagram, website)
+- **Blockquote bios**: DJ descriptions now use Telegram's `<blockquote>` formatting
+- **Social link buttons**: `/whosplaying` and `/dj` show Instagram + Website buttons (not just SoundCloud)
+- **Correct location**: Oostelijke Handelskade coordinates (52.374501, 4.937627)
+- **Parking command**: ParkBee P+R Zeeburg + Albert Heijn garage (closes 22:00 warning)
+
+### Previous Changes
+- Scheduled "who's playing" posts (Tue 3:33 PM, Sat 9:33 AM Amsterdam)
 - Improved fuzzy matching for DJ names with special characters
 - B2B event handling with proper DJ link display
 - Custom event support (non-standard event titles)
+
+## DJ Database Status
+
+**Complete profiles (21 DJs)**: Anica, Divana, Faraldu\u00edn, Henners, Indi Raeva, Inphiknight, Jethro, Lady Joker, Leela, Lizzy, MOREAH, Ma'rifa, Rachi, Renee Roozeboom, Ruby, Samaya, Stijn, Tayphoon, Yarun Dee, Yona
+
+**Missing bios**: MOREAH, Renee Roozeboom
+
+**Missing websites**: Anica, Indi Raeva, Jethro, Leela, Lizzy, Ma'rifa, Rachi, MOREAH, Renee Roozeboom, Yona
 
 ## Detailed Documentation
 
