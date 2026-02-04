@@ -8,9 +8,9 @@ import { utcToZonedTime } from 'date-fns-tz';
 import fs from 'fs';
 import path from 'path';
 
-// Odessa boat coordinates (Veemkade 259, Amsterdam)
-const ODESSA_LATITUDE = 52.3763;
-const ODESSA_LONGITUDE = 4.9318;
+// Odessa boat coordinates (Oostelijke Handelskade, Amsterdam)
+const ODESSA_LATITUDE = 52.374501;
+const ODESSA_LONGITUDE = 4.937627;
 const AMSTERDAM_TIMEZONE = 'Europe/Amsterdam';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -428,7 +428,7 @@ ${djList}
       } else if (text === '/venue') {
         const messageText = `🚢 <b>ODESSA - The Boat</b>
 
-📍 Veemkade 259, 1019 CZ Amsterdam
+📍 Oostelijke Handelskade, Amsterdam
 
 🚌 <b>Getting there:</b>
 • Tram 26 from Amsterdam CS Oostzijde
@@ -484,7 +484,7 @@ and phone-free spaces. 🙏`;
 
           const messageText = `📍 <b>Odessa Location</b>
 
-🚢 Veemkade 259, Amsterdam
+🚢 Oostelijke Handelskade, Amsterdam
 
 Open in Google Maps:
 https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}`;
@@ -522,27 +522,30 @@ https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}`;
       } else if (text === '/parking') {
         const messageText = `🚗 <b>Parking near Odessa</b>
 
-<b>P+R Zeeburg (Recommended)</b>
-📍 Zuiderzeeweg 46a, 1095 KJ Amsterdam
-💰 €2.50/hour (€1/day with OV chip!)
+<b>ParkBee Winkelcentrum Brazilië</b>
+📍 Right next to Odessa (under Albert Heijn)
+💰 Check ParkBee app for rates
+⚠️ <b>CLOSES AT 22:00!</b> Your car gets
+locked in overnight - no way home!
+
+<b>P+R Zeeburg</b>
+📍 Zuiderzeeweg 46a
+💰 €1/day with OV-chipkaart
 🚊 Tram 26 → 1 stop to Rietlandpark
 
 <b>Street Parking</b>
-📍 Veemkade area
-💰 ~€5/hour (check signs)
-⚠️ Limited availability on event nights
+📍 Oostelijke Handelskade area
+💰 €5-7.50/hour (check signs)
+⏰ Often free after 22:00 or midnight
 
-<b>Other P+R Options</b>
-• P+R Arena (€1/day with OV)
-• P+R Sloterdijk (€1/day with OV)
-
-💡 <i>Tip: P+R is €1/day if you use public transport with your OV-chipkaart!</i>`;
+💡 <i>Tip: For evening events, street parking
+becomes free later - check the signs!</i>`;
 
         const keyboard = {
           inline_keyboard: [
             [
-              { text: '📍 P+R ZEEBURG', url: 'https://maps.google.com/?q=52.3665,4.9595' },
-              { text: '📍 ODESSA', url: `https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}` }
+              { text: '📍 PARKBEE', url: 'https://maps.google.com/?q=52.3738452,4.9385437' },
+              { text: '📍 P+R ZEEBURG', url: 'https://maps.google.com/?q=52.3665,4.9595' }
             ]
           ]
         };
