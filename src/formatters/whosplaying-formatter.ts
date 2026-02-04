@@ -1,14 +1,38 @@
 import { Event } from '../types/event';
-import { WixDJLoader } from '../utils/wix-dj-loader';
+import { DJLoader } from '../utils/dj-loader';
 import { utcToZonedTime } from 'date-fns-tz';
 import { sanitizeUrl } from '../utils/url-validator';
 
 export class WhosPlayingFormatter {
-  private wixDJLoader: WixDJLoader;
+  private djLoader: DJLoader;
   private amsterdamTimezone = 'Europe/Amsterdam';
 
   constructor() {
-    this.wixDJLoader = new WixDJLoader();
+    this.djLoader = new DJLoader();
+  }
+
+  /**
+   * Get DJ info from local database
+   */
+  private getDJInfo(djName: string): {
+    name: string;
+    photo?: string | undefined;
+    shortDescription?: string | undefined;
+    soundcloudUrl?: string | undefined;
+    instagramUrl?: string | undefined;
+    website?: string | undefined;
+  } | null {
+    const info = this.djLoader.getDJInfo(djName);
+    if (!info) return null;
+
+    return {
+      name: djName,
+      photo: info.photo,
+      shortDescription: info.shortDescription,
+      soundcloudUrl: info.soundcloud || info.link,
+      instagramUrl: info.instagram,
+      website: info.website
+    };
   }
 
   /**
@@ -201,7 +225,7 @@ export class WhosPlayingFormatter {
   }> {
     console.log('🎭 Formatting enhanced today schedule...');
     console.log(`📊 Processing ${events.length} events`);
-    console.log('🔍 WixDJLoader available:', !!this.wixDJLoader);
+    console.log('🔍 DJLoader available:', !!this.djLoader);
     
     if (events.length === 0) {
       return { text: '🎭 <b>Today\'s Schedule</b>\n\nNo events scheduled for today.' };
@@ -256,7 +280,7 @@ export class WhosPlayingFormatter {
       // Create separate message for each DJ in the B2B event
       for (const djName of event.djNames) {
         // Get enhanced DJ info from Wix with fallback
-        const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+        const djInfo = this.getDJInfo(djName);
         
         // For B2B events, just show the description without repetitive event text
         let eventText = '';
@@ -266,27 +290,40 @@ export class WhosPlayingFormatter {
           eventText = djInfo.shortDescription;
         }
         
-        // Create ticket and SoundCloud buttons for this DJ
-        const ticketButtonText = 'TICKETS 🎟️';
-        const buttons = [{
-          text: ticketButtonText,
-          url: sanitizeUrl(event.ticketUrl)
-        }];
-        
-        // Add SoundCloud button for this DJ if available
-        if (djInfo && djInfo.soundcloudUrl) {
+        // Create buttons row for this DJ
+        const buttons: Array<{ text: string; url: string }> = [];
+
+        // Tickets button
+        const ticketUrl = sanitizeUrl(event.ticketUrl);
+        if (ticketUrl) {
+          buttons.push({ text: '🎟️ TICKETS', url: ticketUrl });
+        }
+
+        // SoundCloud button if available
+        if (djInfo?.soundcloudUrl) {
           const soundcloudUrl = sanitizeUrl(djInfo.soundcloudUrl);
           if (soundcloudUrl) {
-            buttons.push({
-              text: `🎧 ${djName} on SoundCloud`,
-              url: soundcloudUrl
-            });
+            buttons.push({ text: '🎧 LISTEN', url: soundcloudUrl });
           }
         }
-        
-        const keyboard = {
-          inline_keyboard: [buttons]
-        };
+
+        // Instagram button if available
+        if (djInfo?.instagramUrl) {
+          const instagramUrl = sanitizeUrl(djInfo.instagramUrl);
+          if (instagramUrl) {
+            buttons.push({ text: '📸 INSTAGRAM', url: instagramUrl });
+          }
+        }
+
+        // Website button if available
+        if (djInfo?.website) {
+          const websiteUrl = sanitizeUrl(djInfo.website);
+          if (websiteUrl) {
+            buttons.push({ text: '🌐 WEBSITE', url: websiteUrl });
+          }
+        }
+
+        const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
         
         const message: {
           text: string;
@@ -315,7 +352,7 @@ export class WhosPlayingFormatter {
       const djName = event.djName || 'TBA';
       
       // Get enhanced DJ info from Wix with fallback
-      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+      const djInfo = this.getDJInfo(djName);
       
       // Build the enhanced event text - combine intro and event into one line
       // Use the same time logic as B2B events - capitalize when first word
@@ -329,28 +366,41 @@ export class WhosPlayingFormatter {
         eventText += `\n\n${djInfo.shortDescription}`;
       }
       
-      // Create ticket and SoundCloud buttons
-      const ticketButtonText = 'TICKETS 🎟️';
-      const buttons = [{
-        text: ticketButtonText,
-        url: sanitizeUrl(event.ticketUrl)
-      }];
-      
-      // Add SoundCloud button if available
-      if (djInfo && djInfo.soundcloudUrl) {
+      // Create buttons row
+      const buttons: Array<{ text: string; url: string }> = [];
+
+      // Tickets button
+      const ticketUrl = sanitizeUrl(event.ticketUrl);
+      if (ticketUrl) {
+        buttons.push({ text: '🎟️ TICKETS', url: ticketUrl });
+      }
+
+      // SoundCloud button if available
+      if (djInfo?.soundcloudUrl) {
         const soundcloudUrl = sanitizeUrl(djInfo.soundcloudUrl);
         if (soundcloudUrl) {
-          buttons.push({
-            text: '🎧 LISTEN',
-            url: soundcloudUrl
-          });
+          buttons.push({ text: '🎧 LISTEN', url: soundcloudUrl });
         }
       }
-      
-      const keyboard = {
-        inline_keyboard: [buttons]
-      };
-      
+
+      // Instagram button if available
+      if (djInfo?.instagramUrl) {
+        const instagramUrl = sanitizeUrl(djInfo.instagramUrl);
+        if (instagramUrl) {
+          buttons.push({ text: '📸 INSTAGRAM', url: instagramUrl });
+        }
+      }
+
+      // Website button if available
+      if (djInfo?.website) {
+        const websiteUrl = sanitizeUrl(djInfo.website);
+        if (websiteUrl) {
+          buttons.push({ text: '🌐 WEBSITE', url: websiteUrl });
+        }
+      }
+
+      const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
+
       return {
         text: eventText,
         photos: djInfo?.photo ? [djInfo.photo] : undefined,
@@ -384,7 +434,7 @@ export class WhosPlayingFormatter {
       const djName = event.djName || 'TBA';
       
       // Get enhanced DJ info from Wix with fallback
-      const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName);
+      const djInfo = this.getDJInfo(djName);
       
       // Build the event text - use simplified one-line format
       // Use the same time logic as other formats - capitalize when first word
@@ -398,27 +448,40 @@ export class WhosPlayingFormatter {
         eventText += `\n\n${djInfo.shortDescription}`;
       }
       
-      // Create ticket and SoundCloud buttons for this event
-      const ticketButtonText = 'TICKETS 🎟️';
-      const buttons = [{
-        text: ticketButtonText,
-        url: sanitizeUrl(event.ticketUrl)
-      }];
-      
-      // Add SoundCloud button if available
-      if (djInfo && djInfo.soundcloudUrl) {
+      // Create buttons row for this event
+      const buttons: Array<{ text: string; url: string }> = [];
+
+      // Tickets button
+      const ticketUrl = sanitizeUrl(event.ticketUrl);
+      if (ticketUrl) {
+        buttons.push({ text: '🎟️ TICKETS', url: ticketUrl });
+      }
+
+      // SoundCloud button if available
+      if (djInfo?.soundcloudUrl) {
         const soundcloudUrl = sanitizeUrl(djInfo.soundcloudUrl);
         if (soundcloudUrl) {
-          buttons.push({
-            text: '🎧 LISTEN',
-            url: soundcloudUrl
-          });
+          buttons.push({ text: '🎧 LISTEN', url: soundcloudUrl });
         }
       }
-      
-      const keyboard = {
-        inline_keyboard: [buttons]
-      };
+
+      // Instagram button if available
+      if (djInfo?.instagramUrl) {
+        const instagramUrl = sanitizeUrl(djInfo.instagramUrl);
+        if (instagramUrl) {
+          buttons.push({ text: '📸 INSTAGRAM', url: instagramUrl });
+        }
+      }
+
+      // Website button if available
+      if (djInfo?.website) {
+        const websiteUrl = sanitizeUrl(djInfo.website);
+        if (websiteUrl) {
+          buttons.push({ text: '🌐 WEBSITE', url: websiteUrl });
+        }
+      }
+
+      const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
       
       const message: {
         text: string;
