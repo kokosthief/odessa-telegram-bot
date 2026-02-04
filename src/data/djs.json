@@ -1,68 +1,152 @@
 {
   "Anica": {
-    "link": "https://soundcloud.com/dj_anica"
+    "photo": "https://static.wixstatic.com/media/36fde5_024f6b23c4c54d01a898cc45beab767c~mv2.jpg",
+    "shortDescription": "Weaving electronic, ambient and world music into sets that ground the body and lift the spirit.",
+    "soundcloud": "https://soundcloud.com/dj_anica",
+    "instagram": "https://www.instagram.com/anica_moves",
+    "tags": ["Resident"]
   },
   "Divana": {
-    "link": "https://www.divanamusic.com/"
+    "photo": "https://static.wixstatic.com/media/36fde5_14d9b4db9644497b9514c48f45c2bca6~mv2.jpg",
+    "shortDescription": "Genre defying boundary pushing musical story teller and mixing teacher.",
+    "soundcloud": "https://soundcloud.com/djdivana",
+    "instagram": "https://www.instagram.com/djdivana",
+    "website": "https://www.divanamusic.com/",
+    "tags": ["Resident"]
   },
-  "Yarl": {
-    "link": "https://www.mixcloud.com/yarl/"
+  "Faralduín": {
+    "photo": "https://static.wixstatic.com/media/36fde5_65d4ca34c3ed404da941cb0c3a2ca567~mv2.jpg",
+    "shortDescription": "Faralduín, a fervent dancer & musician, weaves joyful, heart-opening journeys.",
+    "soundcloud": "https://soundcloud.com/djfaralduin",
+    "instagram": "https://www.instagram.com/faralduin/",
+    "website": "https://www.fleurenfrederik.nl/frederik",
+    "tags": ["Resident"]
   },
   "Faralduin": {
-    "link": "https://soundcloud.com/djfaralduin"
+    "photo": "https://static.wixstatic.com/media/36fde5_65d4ca34c3ed404da941cb0c3a2ca567~mv2.jpg",
+    "shortDescription": "Faralduín, a fervent dancer & musician, weaves joyful, heart-opening journeys.",
+    "soundcloud": "https://soundcloud.com/djfaralduin",
+    "instagram": "https://www.instagram.com/faralduin/",
+    "website": "https://www.fleurenfrederik.nl/frederik",
+    "tags": ["Resident"]
   },
   "Henners": {
-    "link": "https://soundcloud.com/hennerrsss"
+    "photo": "https://static.wixstatic.com/media/36fde5_4c7268270a054606a12db81edf47f9fb~mv2.jpg",
+    "shortDescription": "As the facilitator, his intention is clear: to move in harmony with the dancers",
+    "soundcloud": "https://soundcloud.com/hennerrsss",
+    "instagram": "https://www.instagram.com/henners_music",
+    "website": "https://dj.henners.bio/",
+    "tags": ["Resident"]
   },
   "Indi Raeva": {
-    "link": "https://soundcloud.com/dj_indi_raeva"
+    "photo": "https://static.wixstatic.com/media/36fde5_f7787b6c4d6d4995932bb5379d787f32~mv2.jpg",
+    "shortDescription": "From slow movement to absolute booty shaking madness - dance with all parts of YOU.",
+    "soundcloud": "https://soundcloud.com/dj_indi_raeva",
+    "instagram": "https://www.instagram.com/clarissaxindira.eva",
+    "tags": ["Resident"]
   },
   "Inphiknight": {
-    "link": "https://soundcloud.com/inphiknight"
+    "photo": "https://static.wixstatic.com/media/36fde5_da56c5be75d04cd381fda3786928b0c9~mv2.jpg",
+    "shortDescription": "Eclectic, eccentric & electric with hypnotic twists and weird knots spiralling into galaxies.",
+    "soundcloud": "https://soundcloud.com/inphiknight",
+    "instagram": "https://www.instagram.com/inphiknightdj/",
+    "website": "https://www.thomasteunmeijer.nl/inphiknight/",
+    "tags": ["Resident"]
   },
   "Jethro": {
-    "link": "https://soundcloud.com/jethro-obadja-rahajaan"
+    "photo": "https://static.wixstatic.com/media/36fde5_a01cd903c3d24df5992a65891668c778~mv2.jpg",
+    "shortDescription": "Jethro, a former professional dancer, crafting deep, transformative journeys worldwide.",
+    "soundcloud": "https://soundcloud.com/jethro-obadja-rahajaan",
+    "instagram": "https://www.instagram.com/jethroobadja/",
+    "tags": ["Resident"]
   },
   "Lady Joker": {
     "link": "https://soundcloud.com/ladyjoker_club/"
   },
   "Leela": {
-    "link": "https://soundcloud.com/djleela"
+    "photo": "https://static.wixstatic.com/media/36fde5_99e26f4c401a4dd1b5084e9c9e094e83~mv2.jpg",
+    "shortDescription": "Leela = Sanskrit for The Dance of Life. Meet both the dark and bright sides of life's waves.",
+    "soundcloud": "https://soundcloud.com/djleela",
+    "instagram": "https://www.instagram.com/djleelaamsterdam/",
+    "tags": ["Resident"]
   },
   "Lizzy": {
-    "link": "https://soundcloud.com/lieske-de-vos"
-  },
-  "Ma'rifa": {
-    "link": "https://soundcloud.com/ma-rifa"
-  },
-  "Ma-rifa": {
-    "link": "https://soundcloud.com/ma-rifa"
+    "photo": "https://static.wixstatic.com/media/36fde5_bdd39077b1cd448a9711d924fe91a07c~mv2.jpg",
+    "shortDescription": "Balancing introspective journeys with shared joy and celebration.",
+    "soundcloud": "https://soundcloud.com/lieske-de-vos",
+    "instagram": "https://www.instagram.com/lieske.de.vos/",
+    "tags": ["Resident"]
   },
   "MOREAH": {
     "link": "https://soundcloud.com/user-745608865"
   },
+  "Ma'rifa": {
+    "photo": "https://static.wixstatic.com/media/36fde5_99241848cd8c425aae6188f211b78604~mv2.jpg",
+    "shortDescription": "Ma'rifa holds the mystical and intuitive knowledge that you'll find through ecstatic experiences.",
+    "soundcloud": "https://soundcloud.com/ma-rifa",
+    "instagram": "https://www.instagram.com/ma.rifa_",
+    "tags": ["Resident"]
+  },
+  "Ma-rifa": {
+    "photo": "https://static.wixstatic.com/media/36fde5_99241848cd8c425aae6188f211b78604~mv2.jpg",
+    "shortDescription": "Ma'rifa holds the mystical and intuitive knowledge that you'll find through ecstatic experiences.",
+    "soundcloud": "https://soundcloud.com/ma-rifa",
+    "instagram": "https://www.instagram.com/ma.rifa_",
+    "tags": ["Resident"]
+  },
   "Rachi": {
-    "link": "https://soundcloud.com/ra_chi"
+    "photo": "https://static.wixstatic.com/media/36fde5_3eb907f91b5447e49310ab3b475eba53~mv2.jpg",
+    "shortDescription": "Rachi, a U.K. dancer and DJ, weaves vibrant musical journeys for deep self-discovery.",
+    "soundcloud": "https://soundcloud.com/ra_chi/",
+    "instagram": "https://www.instagram.com/Rachiflows/",
+    "tags": ["Resident"]
   },
   "Renee Roozeboom": {
     "link": "https://soundcloud.com/renee-roozeboom"
   },
   "Ruby": {
-    "link": "https://soundcloud.com/rubydub"
+    "photo": "https://static.wixstatic.com/media/36fde5_dc517257d8b244ad8ad72ebb5dd49717~mv2.jpg",
+    "shortDescription": "From professional dancer to DJ, Rubén aims to guide you to converse through your body.",
+    "soundcloud": "https://soundcloud.com/rubydub",
+    "instagram": "https://www.instagram.com/rub_y_dub/",
+    "website": "https://linktr.ee/ruby_Dub",
+    "tags": ["Resident"]
   },
   "Samaya": {
-    "link": "https://soundcloud.com/samayamusic"
+    "photo": "https://static.wixstatic.com/media/36fde5_1976f66a5d0b4fdc82a43fdf8a164171~mv2.jpg",
+    "shortDescription": "Passionately crafting auditory tapestries of electronic world fusion music journeys.",
+    "soundcloud": "https://soundcloud.com/samayamusic",
+    "instagram": "https://www.instagram.com/samayamusic",
+    "website": "https://lnk.bio/SamayaMusic",
+    "tags": ["Resident"]
   },
   "Stijn": {
-    "link": "https://www.mixcloud.com/stijn-van-beek/"
+    "photo": "https://static.wixstatic.com/media/36fde5_7d7b0e61a0c94331b84578c0d704ccac~mv2.jpg",
+    "shortDescription": "I collect tracks with a soul and weave them together to tell a story.",
+    "soundcloud": "https://soundcloud.com/stijnvanbeek",
+    "instagram": "https://www.instagram.com/stijnvanbeek25",
+    "website": "http://www.stijnvanbeek.nl/",
+    "tags": ["Resident"]
   },
   "Tayphoon": {
     "link": "https://soundcloud.com/tayphoon"
   },
+  "Yarl": {
+    "link": "https://www.mixcloud.com/yarl/"
+  },
   "Yarun Dee": {
-    "link": "https://soundcloud.com/yarun"
+    "photo": "https://static.wixstatic.com/media/36fde5_0b2c9f4ca9594be09d23f93c1094e1d5~mv2.jpg",
+    "shortDescription": "From Amsterdam sharing his magic the last 8 years in the Conscious Community around the globe!",
+    "soundcloud": "https://soundcloud.com/yarun",
+    "instagram": "https://www.instagram.com/dj_yarun_dee/",
+    "website": "https://linktr.ee/djyarundee",
+    "tags": ["Resident"]
   },
   "Yona": {
-    "link": "https://soundcloud.com/dj-yona-803533532"
+    "photo": "https://static.wixstatic.com/media/36fde5_d627eb39016d45dabeaa21c8b93e47ed~mv2.jpg",
+    "shortDescription": "From dark to light, from depth to ecstasy. A melodic journey through sound and emotion.",
+    "soundcloud": "https://soundcloud.com/dj-yona",
+    "instagram": "https://www.instagram.com/yona_music_/",
+    "tags": ["Resident"]
   }
-} 
+}

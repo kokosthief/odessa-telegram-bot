@@ -7,6 +7,11 @@ export interface DJDatabase {
   [key: string]: {
     link?: string;
     photo?: string;
+    shortDescription?: string;
+    soundcloud?: string;
+    instagram?: string;
+    website?: string;
+    tags?: string[];
   };
 }
 

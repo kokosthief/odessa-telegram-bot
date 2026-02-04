@@ -8,9 +8,9 @@ import { utcToZonedTime } from 'date-fns-tz';
 import fs from 'fs';
 import path from 'path';
 
-// Odessa boat coordinates (NDSM Wharf)
-const ODESSA_LATITUDE = 52.4012;
-const ODESSA_LONGITUDE = 4.8917;
+// Odessa boat coordinates (Veemkade 259, Amsterdam)
+const ODESSA_LATITUDE = 52.3763;
+const ODESSA_LONGITUDE = 4.9318;
 const AMSTERDAM_TIMEZONE = 'Europe/Amsterdam';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -41,26 +41,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       // Handle commands with full formatting
-      if (text === '/start') {
-        const welcomeMessage = `🤖 <b>Welcome to the Odessa Schedule Bot!</b>
-
-I can help you check who's playing today at Odessa boat events in Amsterdam.
-
-<b>Available commands:</b>
-• /whosplaying - Check who is facilitating today
-• /schedule - View this week's schedule
-• /help - Show this help message
-
-Just send /whosplaying to get started! 🌴🎶`;
-        
-        await sendTelegramMessage(chat.id, welcomeMessage);
-      } else if (text === '/help') {
+      if (text === '/help') {
         const helpMessage = `🤖 <b>Odessa Schedule Bot Help</b>
 
-<b>Commands:</b>
-• /whosplaying - Check who is facilitating today
-• /schedule - View the week's schedule
-• /help - Show this help message`;
+Type /commands to see all available commands.
+
+<b>Quick commands:</b>
+• /whosplaying - Who's facilitating today
+• /schedule - This week's schedule
+• /next - Next upcoming event`;
         
         await sendTelegramMessage(chat.id, helpMessage);
       } else if (text === '/whosplaying') {
@@ -181,8 +170,9 @@ If this problem persists, contact the bot administrator.`;
             relativeTime = 'Starting soon!';
           }
 
-          const wixDJLoader = new WixDJLoader();
-          const djInfo = nextEvent.djName ? await wixDJLoader.getDJInfoWithFallback(nextEvent.djName) : null;
+          // Get DJ info from local database
+          const djLoader = new DJLoader();
+          const djInfo = nextEvent.djName ? djLoader.getDJInfo(nextEvent.djName) : null;
 
           const messageText = `🚀 <b>Next up on Odessa:</b>
 
@@ -190,12 +180,17 @@ If this problem persists, contact the bot administrator.`;
 🎶 ${nextEvent.title}
 ⏰ ${relativeTime}`;
 
+          // Build button rows
           const buttons: Array<{ text: string; url: string }> = [];
           if (nextEvent.ticketUrl) {
             buttons.push({ text: '🎫 TICKETS', url: nextEvent.ticketUrl });
           }
-          if (djInfo?.soundcloudUrl) {
-            buttons.push({ text: '🎧 LISTEN', url: djInfo.soundcloudUrl });
+          const soundcloudUrl = djInfo?.soundcloud || djInfo?.link;
+          if (soundcloudUrl) {
+            buttons.push({ text: '🎧 LISTEN', url: soundcloudUrl });
+          }
+          if (djInfo?.instagram) {
+            buttons.push({ text: '📸 INSTAGRAM', url: djInfo.instagram });
           }
 
           const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
@@ -252,6 +247,10 @@ If this problem persists, contact the bot administrator.`;
 
           const eventType = nextEvent.title.split(' with ')[0] || nextEvent.title;
 
+          // Get DJ info from local database
+          const djLoader = new DJLoader();
+          const djInfo = nextEvent.djName ? djLoader.getDJInfo(nextEvent.djName) : null;
+
           const messageText = `⏱️ <b>Countdown to ${eventType}</b>
 
 🎶 DJ: ${nextEvent.djName || 'TBA'}
@@ -261,14 +260,24 @@ If this problem persists, contact the bot administrator.`;
 
 The boat is calling! 🚢`;
 
+          // Build button rows
           const buttons: Array<{ text: string; url: string }> = [];
           if (nextEvent.ticketUrl) {
             buttons.push({ text: '🎫 TICKETS', url: nextEvent.ticketUrl });
           }
+          const soundcloudUrl = djInfo?.soundcloud || djInfo?.link;
+          if (soundcloudUrl) {
+            buttons.push({ text: '🎧 LISTEN', url: soundcloudUrl });
+          }
+          if (djInfo?.instagram) {
+            buttons.push({ text: '📸 INSTAGRAM', url: djInfo.instagram });
+          }
 
           const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
 
-          if (keyboard) {
+          if (djInfo?.photo) {
+            await sendTelegramMessageWithPhoto(chat.id, messageText, djInfo.photo, keyboard);
+          } else if (keyboard) {
             await sendTelegramMessageWithKeyboard(chat.id, messageText, keyboard);
           } else {
             await sendTelegramMessage(chat.id, messageText);
@@ -282,11 +291,12 @@ The boat is calling! 🚢`;
         try {
           const djName = text.replace('/dj', '').trim();
           const djLoader = new DJLoader();
-          const wixDJLoader = new WixDJLoader();
 
           if (!djName) {
             const allDJs = djLoader.getAllDJNames();
-            const djList = allDJs.sort().map(name => `• ${name}`).join('\n');
+            // Filter out duplicates like Ma-rifa (keep Ma'rifa)
+            const uniqueDJs = allDJs.filter(name => name !== 'Ma-rifa' && name !== 'Faralduin');
+            const djList = uniqueDJs.sort().map(name => `• ${name}`).join('\n');
 
             const messageText = `🎧 <b>Odessa DJs</b>
 
@@ -300,25 +310,33 @@ ${djList}
             return res.status(200).json({ ok: true });
           }
 
-          const djInfo = await wixDJLoader.getDJInfoWithFallback(djName);
+          const djInfo = djLoader.getDJInfo(djName);
 
           if (!djInfo) {
             await sendTelegramMessage(chat.id, `❌ DJ "${djName}" not found. Try /dj to see all available DJs.`);
             return res.status(200).json({ ok: true });
           }
 
-          let messageText = `🎧 <b>${djInfo.name.toUpperCase()}</b>`;
+          // Find the actual DJ name (for display)
+          const matchedName = djLoader.getAllDJNames().find(n =>
+            n.toLowerCase() === djName.toLowerCase() ||
+            n.toLowerCase().includes(djName.toLowerCase())
+          ) || djName;
+
+          let messageText = `🎧 <b>${matchedName.toUpperCase()}</b>`;
 
           if (djInfo.shortDescription) {
             messageText += `\n\n"${djInfo.shortDescription}"`;
           }
 
+          // Build inline links in the message
           const links: string[] = [];
-          if (djInfo.soundcloudUrl) {
-            links.push(`🔗 <a href="${djInfo.soundcloudUrl}">SoundCloud</a>`);
+          const soundcloudUrl = djInfo.soundcloud || djInfo.link;
+          if (soundcloudUrl) {
+            links.push(`🔗 <a href="${soundcloudUrl}">SoundCloud</a>`);
           }
-          if (djInfo.instagramUrl) {
-            links.push(`📸 <a href="${djInfo.instagramUrl}">Instagram</a>`);
+          if (djInfo.instagram) {
+            links.push(`📸 <a href="${djInfo.instagram}">Instagram</a>`);
           }
           if (djInfo.website) {
             links.push(`🌐 <a href="${djInfo.website}">Website</a>`);
@@ -328,9 +346,16 @@ ${djList}
             messageText += '\n\n' + links.join('\n');
           }
 
+          // Build button row
           const buttons: Array<{ text: string; url: string }> = [];
-          if (djInfo.soundcloudUrl) {
-            buttons.push({ text: '🎧 LISTEN ON SOUNDCLOUD', url: djInfo.soundcloudUrl });
+          if (soundcloudUrl) {
+            buttons.push({ text: '🎧 SOUNDCLOUD', url: soundcloudUrl });
+          }
+          if (djInfo.instagram) {
+            buttons.push({ text: '📸 INSTAGRAM', url: djInfo.instagram });
+          }
+          if (djInfo.website) {
+            buttons.push({ text: '🌐 WEBSITE', url: djInfo.website });
           }
 
           const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
@@ -350,19 +375,22 @@ ${djList}
       } else if (text === '/discover') {
         try {
           const djLoader = new DJLoader();
-          const wixDJLoader = new WixDJLoader();
-          const randomDJ = djLoader.getRandomDJ();
 
-          if (!randomDJ) {
+          // Get all DJs and filter out duplicates
+          const allDJs = djLoader.getAllDJNames().filter(name => name !== 'Ma-rifa' && name !== 'Faralduin');
+          if (allDJs.length === 0) {
             await sendTelegramMessage(chat.id, '❌ No DJs found in the database.');
             return res.status(200).json({ ok: true });
           }
 
-          const djInfo = await wixDJLoader.getDJInfoWithFallback(randomDJ.name);
+          // Pick a random DJ
+          const randomIndex = Math.floor(Math.random() * allDJs.length);
+          const djName = allDJs[randomIndex] as string;
+          const djInfo = djLoader.getDJInfo(djName);
 
           let messageText = `🎲 <b>Discover a DJ</b>
 
-✨ <b>${(djInfo?.name || randomDJ.name).toUpperCase()}</b> ✨`;
+✨ <b>${djName.toUpperCase()}</b> ✨`;
 
           if (djInfo?.shortDescription) {
             messageText += `\n\n"${djInfo.shortDescription}"`;
@@ -370,10 +398,17 @@ ${djList}
 
           messageText += '\n\nGive them a listen before the next event!';
 
+          // Build buttons
           const buttons: Array<{ text: string; url: string }> = [];
-          const soundcloudUrl = djInfo?.soundcloudUrl || randomDJ.link;
+          const soundcloudUrl = djInfo?.soundcloud || djInfo?.link;
           if (soundcloudUrl) {
-            buttons.push({ text: '🎧 LISTEN ON SOUNDCLOUD', url: soundcloudUrl });
+            buttons.push({ text: '🎧 SOUNDCLOUD', url: soundcloudUrl });
+          }
+          if (djInfo?.instagram) {
+            buttons.push({ text: '📸 INSTAGRAM', url: djInfo.instagram });
+          }
+          if (djInfo?.website) {
+            buttons.push({ text: '🌐 WEBSITE', url: djInfo.website });
           }
 
           const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
@@ -393,13 +428,13 @@ ${djList}
       } else if (text === '/venue') {
         const messageText = `🚢 <b>ODESSA - The Boat</b>
 
-📍 NDSM Wharf, Amsterdam
-🗺️ Coordinates: ${ODESSA_LATITUDE}° N, ${ODESSA_LONGITUDE}° E
+📍 Veemkade 259, 1019 CZ Amsterdam
 
 🚌 <b>Getting there:</b>
-• Ferry 901/907 from Centraal (free!)
-• Bus 38 to NDSM Werf
-• Bike parking available
+• Tram 26 from Amsterdam CS Oostzijde
+  → Stop: Rietlandpark
+• P+R Zeeburg (€2.50/hour)
+  → Tram 26, 1 stop to Rietlandpark
 
 📝 <b>Good to know:</b>
 • Barefoot dancing space
@@ -407,7 +442,7 @@ ${djList}
 • Bring water bottle
 • Dress comfortably
 
-🌐 hipsy.nl/odessa-amsterdam-ecstatic-dance`;
+🌐 odessa.amsterdam`;
 
         const keyboard = {
           inline_keyboard: [
@@ -427,18 +462,16 @@ Free-form dancing to a DJ-guided journey.
 Sunday mornings are "Morning ED"!
 
 🍫 <b>Cacao Ecstatic Dance</b>
-Heart-opening cacao ceremony followed
-by ecstatic dance.
+Live music opening, heart-opening cacao
+ceremony, followed by ecstatic dance.
 
 🌈 <b>Queerstatic</b>
 LGBTQ+ inclusive dance celebration.
 
-🎵 <b>Live Music</b>
-Live musicians creating the sonic journey.
-
 🌌 <b>Journey</b>
-Deeper, longer explorations of sound
-and movement.
+Live music opening, cacao ceremony,
+and a 3-hour ecstatic dance journey.
+The deepest exploration on Saturdays.
 
 ━━━━━━━━━━━━━━━━━━━━━
 All events are sober, barefoot,
@@ -451,7 +484,7 @@ and phone-free spaces. 🙏`;
 
           const messageText = `📍 <b>Odessa Location</b>
 
-🚢 NDSM Wharf, Amsterdam
+🚢 Veemkade 259, Amsterdam
 
 Open in Google Maps:
 https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}`;
@@ -478,14 +511,43 @@ https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}`;
 <b>Venue & Info:</b>
 • /venue - Boat location & practical info
 • /location - Get map pin
+• /parking - Parking options nearby
 • /types - Event types explained
 
 <b>Help:</b>
-• /start - Welcome message
 • /help - Quick help
 • /commands - This list`;
 
         await sendTelegramMessage(chat.id, messageText);
+      } else if (text === '/parking') {
+        const messageText = `🚗 <b>Parking near Odessa</b>
+
+<b>P+R Zeeburg (Recommended)</b>
+📍 Zuiderzeeweg 46a, 1095 KJ Amsterdam
+💰 €2.50/hour (€1/day with OV chip!)
+🚊 Tram 26 → 1 stop to Rietlandpark
+
+<b>Street Parking</b>
+📍 Veemkade area
+💰 ~€5/hour (check signs)
+⚠️ Limited availability on event nights
+
+<b>Other P+R Options</b>
+• P+R Arena (€1/day with OV)
+• P+R Sloterdijk (€1/day with OV)
+
+💡 <i>Tip: P+R is €1/day if you use public transport with your OV-chipkaart!</i>`;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              { text: '📍 P+R ZEEBURG', url: 'https://maps.google.com/?q=52.3665,4.9595' },
+              { text: '📍 ODESSA', url: `https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}` }
+            ]
+          ]
+        };
+
+        await sendTelegramMessageWithKeyboard(chat.id, messageText, keyboard);
       }
       // Only respond to specific commands - ignore all other messages
     }

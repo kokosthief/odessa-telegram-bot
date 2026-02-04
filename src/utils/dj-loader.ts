@@ -84,21 +84,29 @@ export class DJLoader {
   /**
    * Get DJ information by name with fuzzy matching
    */
-  getDJInfo(djName: string): { link?: string; photo?: string } | null {
+  getDJInfo(djName: string): {
+    link?: string;
+    photo?: string;
+    shortDescription?: string;
+    soundcloud?: string;
+    instagram?: string;
+    website?: string;
+    tags?: string[];
+  } | null {
     const djData = this.loadDJData();
-    
+
     // Try exact match first
     if (djData[djName]) {
       return djData[djName];
     }
-    
+
     // Try fuzzy matching
     const matchedKey = this.findDJByName(djName, djData);
     if (matchedKey) {
       const result = djData[matchedKey];
       return result || null;
     }
-    
+
     return null;
   }
 
@@ -121,12 +129,30 @@ export class DJLoader {
   /**
    * Get a random DJ from the database
    */
-  getRandomDJ(): { name: string; link?: string | undefined; photo?: string | undefined } | null {
+  getRandomDJ(): {
+    name: string;
+    link?: string | undefined;
+    photo?: string | undefined;
+    shortDescription?: string | undefined;
+    soundcloud?: string | undefined;
+    instagram?: string | undefined;
+    website?: string | undefined;
+    tags?: string[] | undefined;
+  } | null {
     const djNames = this.getAllDJNames();
     if (djNames.length === 0) return null;
     const randomIndex = Math.floor(Math.random() * djNames.length);
     const name = djNames[randomIndex] as string;
     const info = this.getDJInfo(name);
-    return { name, link: info?.link, photo: info?.photo };
+    return {
+      name,
+      link: info?.link,
+      photo: info?.photo,
+      shortDescription: info?.shortDescription,
+      soundcloud: info?.soundcloud,
+      instagram: info?.instagram,
+      website: info?.website,
+      tags: info?.tags
+    };
   }
 } 
