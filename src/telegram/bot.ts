@@ -338,7 +338,9 @@ Just send /whosplaying to get started! 🌴🎶`;
       const text = `🚀 <b>Next up at Odessa:</b>
 
 🗓️ ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
+
 🎶 ${nextEvent.title}
+
 ⏰ ${relativeTime}`;
 
       const buttons: Array<{ text: string; url: string }> = [];

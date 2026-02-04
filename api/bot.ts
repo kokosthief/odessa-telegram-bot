@@ -177,7 +177,9 @@ If this problem persists, contact the bot administrator.`;
           const messageText = `🚀 <b>Next up at Odessa:</b>
 
 🗓️ ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
+
 🎶 ${nextEvent.title}
+
 ⏰ ${relativeTime}`;
 
           // Build button rows
