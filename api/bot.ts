@@ -329,24 +329,8 @@ ${djList}
             messageText += `\n\n<blockquote>${djInfo.shortDescription}</blockquote>`;
           }
 
-          // Build inline links in the message
-          const links: string[] = [];
-          const soundcloudUrl = djInfo.soundcloud || djInfo.link;
-          if (soundcloudUrl) {
-            links.push(`🔗 <a href="${soundcloudUrl}">SoundCloud</a>`);
-          }
-          if (djInfo.instagram) {
-            links.push(`📸 <a href="${djInfo.instagram}">Instagram</a>`);
-          }
-          if (djInfo.website) {
-            links.push(`🌐 <a href="${djInfo.website}">Website</a>`);
-          }
-
-          if (links.length > 0) {
-            messageText += '\n\n' + links.join('\n');
-          }
-
           // Build button row
+          const soundcloudUrl = djInfo.soundcloud || djInfo.link;
           const buttons: Array<{ text: string; url: string }> = [];
           if (soundcloudUrl) {
             buttons.push({ text: '🎧 SOUNDCLOUD', url: soundcloudUrl });
