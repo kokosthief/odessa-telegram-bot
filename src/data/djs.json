@@ -129,7 +129,9 @@
     "tags": ["Resident"]
   },
   "Tayphoon": {
-    "link": "https://soundcloud.com/tayphoon"
+    "soundcloud": "https://soundcloud.com/tayphoon",
+    "instagram": "https://www.instagram.com/_tayphoon/",
+    "website": "https://linktr.ee/tayphoon"
   },
   "Yarun Dee": {
     "photo": "https://static.wixstatic.com/media/36fde5_0b2c9f4ca9594be09d23f93c1094e1d5~mv2.jpg",
