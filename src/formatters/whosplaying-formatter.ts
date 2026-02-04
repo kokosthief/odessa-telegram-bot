@@ -287,7 +287,7 @@ export class WhosPlayingFormatter {
         
         // Add description if available
         if (djInfo && djInfo.shortDescription) {
-          eventText = djInfo.shortDescription;
+          eventText = `<blockquote>${djInfo.shortDescription}</blockquote>`;
         }
         
         // Create buttons row for this DJ
@@ -363,7 +363,7 @@ export class WhosPlayingFormatter {
       
       // Add description if available
       if (djInfo && djInfo.shortDescription) {
-        eventText += `\n\n${djInfo.shortDescription}`;
+        eventText += `\n\n<blockquote>${djInfo.shortDescription}</blockquote>`;
       }
       
       // Create buttons row
@@ -445,7 +445,7 @@ export class WhosPlayingFormatter {
       
       // Add description if available
       if (djInfo && djInfo.shortDescription) {
-        eventText += `\n\n${djInfo.shortDescription}`;
+        eventText += `\n\n<blockquote>${djInfo.shortDescription}</blockquote>`;
       }
       
       // Create buttons row for this event

@@ -326,7 +326,7 @@ ${djList}
           let messageText = `🎧 <b>${matchedName.toUpperCase()}</b>`;
 
           if (djInfo.shortDescription) {
-            messageText += `\n\n"${djInfo.shortDescription}"`;
+            messageText += `\n\n<blockquote>${djInfo.shortDescription}</blockquote>`;
           }
 
           // Build inline links in the message
@@ -393,7 +393,7 @@ ${djList}
 ✨ <b>${djName.toUpperCase()}</b> ✨`;
 
           if (djInfo?.shortDescription) {
-            messageText += `\n\n"${djInfo.shortDescription}"`;
+            messageText += `\n\n<blockquote>${djInfo.shortDescription}</blockquote>`;
           }
 
           messageText += '\n\nGive them a listen before the next event!';
