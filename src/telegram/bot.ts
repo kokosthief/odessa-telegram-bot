@@ -199,7 +199,7 @@ I can help you check who's playing at Odessa boat events in Amsterdam.
 <b>Quick commands:</b>
 • /whosplaying - Who's facilitating today
 • /schedule - This week's schedule
-• /next - Next upcoming event
+• /next - Who's facilitating next
 • /commands - See all commands
 
 Just send /whosplaying to get started! 🌴🎶`;
@@ -216,7 +216,7 @@ Just send /whosplaying to get started! 🌴🎶`;
 <b>Main commands:</b>
 • /whosplaying - Who's facilitating today
 • /schedule - This week's schedule
-• /next - Next upcoming event
+• /next - Who's facilitating next
 • /countdown - Countdown to next event
 • /dj [name] - DJ profile lookup
 • /discover - Discover a random DJ
@@ -747,7 +747,7 @@ https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}`;
 <b>Events & Schedule:</b>
 • /whosplaying - Who's facilitating today
 • /schedule - This week's schedule
-• /next - Next upcoming event
+• /next - Who's facilitating next
 • /countdown - Countdown to next event
 
 <b>DJ Info:</b>

@@ -6,7 +6,7 @@ Automated schedule generator for Odessa boat events (Ecstatic Dance) in Amsterda
 
 **Live**: https://odessa-telegram-bot.vercel.app
 **Status**: Production-ready, deployed on Vercel with webhook + cron jobs
-**Location**: Oostelijke Handelskade, Amsterdam (52.374501, 4.937627)
+**Location**: Veemkade 259, 1019 CZ, Amsterdam (52.374501, 4.937627)
 
 ## Commands
 
@@ -14,7 +14,7 @@ Automated schedule generator for Odessa boat events (Ecstatic Dance) in Amsterda
 |---------|-------------|
 | `/whosplaying` | Today's events with DJ photos, bios (blockquote), ticket + social links |
 | `/schedule` | Weekly schedule (Mon-Sun) with video |
-| `/next` | Next upcoming event with DJ info |
+| `/next` | Who's facilitating next |
 | `/countdown` | Countdown to next event |
 | `/dj [name]` | DJ profile with photo, bio, SoundCloud/Instagram/Website buttons |
 | `/discover` | Random DJ profile |
@@ -119,7 +119,7 @@ npm test             # Run tests
 - **Enhanced DJ database**: 21 DJs with full profiles (photo, bio, soundcloud, instagram, website)
 - **Blockquote bios**: DJ descriptions now use Telegram's `<blockquote>` formatting
 - **Social link buttons**: `/whosplaying` and `/dj` show Instagram + Website buttons (not just SoundCloud)
-- **Correct location**: Oostelijke Handelskade coordinates (52.374501, 4.937627)
+- **Correct location**: Veemkade 259, 1019 CZ coordinates (52.374501, 4.937627)
 - **Parking command**: ParkBee P+R Zeeburg + Albert Heijn garage (closes 22:00 warning)
 
 ### Previous Changes

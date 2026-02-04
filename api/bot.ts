@@ -8,7 +8,7 @@ import { utcToZonedTime } from 'date-fns-tz';
 import fs from 'fs';
 import path from 'path';
 
-// Odessa boat coordinates (Oostelijke Handelskade, Amsterdam)
+// Odessa boat coordinates (Veemkade 259, 1019 CZ Amsterdam)
 const ODESSA_LATITUDE = 52.374501;
 const ODESSA_LONGITUDE = 4.937627;
 const AMSTERDAM_TIMEZONE = 'Europe/Amsterdam';
@@ -49,7 +49,7 @@ Type /commands to see all available commands.
 <b>Quick commands:</b>
 • /whosplaying - Who's facilitating today
 • /schedule - This week's schedule
-• /next - Next upcoming event`;
+• /next - Who's facilitating next`;
         
         await sendTelegramMessage(chat.id, helpMessage);
       } else if (text === '/whosplaying') {
@@ -412,7 +412,7 @@ ${djList}
       } else if (text === '/venue') {
         const messageText = `🚢 <b>ODESSA - The Boat</b>
 
-📍 Oostelijke Handelskade, Amsterdam
+📍 Veemkade 259, 1019 CZ Amsterdam
 
 🚌 <b>Getting there:</b>
 • Tram 26 from Amsterdam CS Oostzijde
@@ -468,7 +468,7 @@ and phone-free spaces. 🙏`;
 
           const messageText = `📍 <b>Odessa Location</b>
 
-🚢 Oostelijke Handelskade, Amsterdam
+🚢 Veemkade 259, 1019 CZ Amsterdam
 
 Open in Google Maps:
 https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}`;
@@ -485,7 +485,7 @@ https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}`;
 <b>Events & Schedule:</b>
 • /whosplaying - Who's facilitating today
 • /schedule - This week's schedule
-• /next - Next upcoming event
+• /next - Who's facilitating next
 • /countdown - Countdown to next event
 
 <b>DJ Info:</b>
@@ -518,7 +518,7 @@ locked in overnight - no way home!
 🚊 Tram 26 → 1 stop to Rietlandpark
 
 <b>Street Parking</b>
-📍 Oostelijke Handelskade area
+📍 Veemkade area
 💰 €5-7.50/hour (check signs)
 ⏰ Often free after 22:00 or midnight
 

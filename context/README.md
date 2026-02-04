@@ -165,13 +165,13 @@ The bot supports interactive commands in Telegram:
 |---------|-------------|
 | `/whosplaying` | Today's events with DJ photos, bios (blockquote), ticket + social links |
 | `/schedule` | Weekly schedule (Mon-Sun) with video |
-| `/next` | Next upcoming event with DJ info |
+| `/next` | Who's facilitating next |
 | `/countdown` | Countdown to next event |
 | `/dj [name]` | DJ profile with photo, bio, SoundCloud/Instagram/Website buttons |
 | `/discover` | Random DJ profile |
 | `/venue` | Venue info (capacity, facilities) |
 | `/types` | Event types explained (ED, Cacao ED, Journey, etc.) |
-| `/location` | Google Maps link to Odessa (Oostelijke Handelskade) |
+| `/location` | Google Maps link to Odessa (Veemkade 259, 1019 CZ) |
 | `/parking` | Parking options (ParkBee P+R, Albert Heijn garage) |
 | `/commands` | List all available commands |
 | `/help` | Help and support info |

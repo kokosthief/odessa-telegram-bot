@@ -573,7 +573,7 @@ npm run cli run
 12. **Context Engineering**: Organized documentation in `context/`
 13. **Blockquote Bios**: DJ descriptions use Telegram's `<blockquote>` formatting
 14. **Social Link Buttons**: SoundCloud, Instagram, Website buttons on DJ profiles
-15. **Location Info**: Correct coordinates for Oostelijke Handelskade (52.374501, 4.937627)
+15. **Location Info**: Correct coordinates for Veemkade 259, 1019 CZ (52.374501, 4.937627)
 16. **Parking Info**: ParkBee P+R Zeeburg + Albert Heijn garage details
 
 ### 🔄 Future Enhancements
