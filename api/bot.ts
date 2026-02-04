@@ -174,7 +174,7 @@ If this problem persists, contact the bot administrator.`;
           const djLoader = new DJLoader();
           const djInfo = nextEvent.djName ? djLoader.getDJInfo(nextEvent.djName) : null;
 
-          const messageText = `🚀 <b>Next up on Odessa:</b>
+          const messageText = `🚀 <b>Next up at Odessa:</b>
 
 🗓️ ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
 🎶 ${nextEvent.title}

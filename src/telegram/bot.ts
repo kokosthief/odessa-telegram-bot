@@ -335,7 +335,7 @@ Just send /whosplaying to get started! 🌴🎶`;
       // Get DJ info
       const djInfo = nextEvent.djName ? await this.wixDJLoader.getDJInfoWithFallback(nextEvent.djName) : null;
 
-      const text = `🚀 <b>Next up on Odessa:</b>
+      const text = `🚀 <b>Next up at Odessa:</b>
 
 🗓️ ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
 🎶 ${nextEvent.title}
