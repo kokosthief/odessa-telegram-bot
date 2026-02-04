@@ -424,16 +424,13 @@ ${djList}
 • Barefoot dancing space
 • Phone-free environment
 • Bring water bottle
-• Dress comfortably
-
-🌐 odessa.amsterdam`;
+• Dress comfortably`;
 
         const keyboard = {
           inline_keyboard: [
-            [
-              { text: '📍 GOOGLE MAPS', url: `https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}` },
-              { text: '🎫 TICKETS', url: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance' }
-            ]
+            [{ text: '🌐 ODESSA.AMSTERDAM', url: 'https://odessa.amsterdam' }],
+            [{ text: '📍 GOOGLE MAPS', url: `https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}` }],
+            [{ text: '🎫 TICKETS', url: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance' }]
           ]
         };
 
