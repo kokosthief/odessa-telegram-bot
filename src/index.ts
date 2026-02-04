@@ -123,31 +123,19 @@ export class OdessaTodayGenerator {
   }
 
   /**
-   * Find the next upcoming event
+   * Find the next upcoming event (including today)
    */
   public async findNextUpcomingEvent(): Promise<any> {
     try {
       const result = await this.scraper.getEvents(1, 'upcoming', 10);
-      
+
       if (!result.success || result.events.length === 0) {
         return null;
       }
-      
-      // Find the first event that's after today
-      const today = this.getTodayInAmsterdam();
-      const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      
-      for (const event of result.events) {
-        const eventDate = new Date(event.date);
-        const eventDateInAmsterdam = utcToZonedTime(eventDate, this.amsterdamTimezone);
-        const eventDateOnly = new Date(eventDateInAmsterdam.getFullYear(), eventDateInAmsterdam.getMonth(), eventDateInAmsterdam.getDate());
-        
-        if (eventDateOnly.getTime() > todayOnly.getTime()) {
-          return event;
-        }
-      }
-      
-      return null;
+
+      // Return the first upcoming event (Hipsy API already returns them in order)
+      // This includes today's events
+      return result.events[0] || null;
     } catch (error) {
       console.error('Error finding next upcoming event:', error);
       return null;
