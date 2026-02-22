@@ -89,6 +89,11 @@ export class OdessaBot {
     this.bot.onText(/\/commands/, async (msg) => {
       await this.handleCommandsCommand(msg);
     });
+
+    // Handle /report command
+    this.bot.onText(/\/report/, async (msg) => {
+      await this.handleReportCommand(msg);
+    });
   }
 
   /**
@@ -223,7 +228,9 @@ Just send /whosplaying to get started! 🌴🎶`;
 • /venue - Boat location & info
 • /location - Get map pin
 • /types - Event types explained
-• /commands - Full command list`;
+• /commands - Full command list
+
+🚨 <b>Spam or abuse?</b> Use /report for instructions.`;
 
     await this.bot.sendMessage(msg.chat.id, helpMessage, { parse_mode: 'HTML' });
   }
@@ -761,10 +768,40 @@ https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}`;
 • /location - Get map pin
 • /types - Event types explained
 
+<b>🚨 Group Safety:</b>
+• /report - How to report spam or abuse
+
 <b>Help:</b>
 • /start - Welcome message
 • /help - Quick help
 • /commands - This list`;
+
+    await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
+  }
+
+  /**
+   * Handle /report command - explain how to report spam in Telegram
+   */
+  public async handleReportCommand(msg: TelegramBot.Message): Promise<void> {
+    const text = `🚨 <b>How to Report Spam or Abuse</b>
+
+Reporting is done directly in Telegram — no bot command needed.
+
+<b>Report a specific message:</b>
+1. Long-press the message
+2. Tap <b>Report</b>
+3. Choose a reason (Spam, Violence, etc.)
+4. Telegram will review it
+
+<b>Report a user:</b>
+1. Tap their name/profile
+2. Tap ⋮ (menu) → <b>Report</b>
+3. Select the reason
+
+<b>Report to group admins:</b>
+Reply to the spam message and tag an admin, or forward it to <b>@odessa_amsterdam</b>
+
+<i>Admins can delete messages and remove users from the group.</i>`;
 
     await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
   }
