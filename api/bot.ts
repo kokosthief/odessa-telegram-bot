@@ -49,7 +49,9 @@ Type /commands to see all available commands.
 <b>Quick commands:</b>
 • /whosplaying - Who's facilitating today
 • /schedule - This week's schedule
-• /next - Who's facilitating next`;
+• /next - Who's facilitating next
+
+🚨 Spam or abuse? Use /report for instructions.`;
         
         await sendTelegramMessage(chat.id, helpMessage);
       } else if (text === '/whosplaying') {
@@ -503,9 +505,34 @@ Netherlands</blockquote>`;
 • /parking - Parking options nearby
 • /types - Event types explained
 
+<b>🚨 Group Safety:</b>
+• /report - How to report spam or abuse
+
 <b>Help:</b>
 • /help - Quick help
 • /commands - This list`;
+
+        await sendTelegramMessage(chat.id, messageText);
+      } else if (text === '/report') {
+        const messageText = `🚨 <b>How to Report Spam or Abuse</b>
+
+Reporting is done directly in Telegram — no bot command needed.
+
+<b>Report a message:</b>
+1. Long-press the message
+2. Tap <b>Report</b>
+3. Choose the reason (spam, abuse, etc.)
+
+<b>Report a user:</b>
+1. Tap their name or profile photo
+2. Tap the three dots ⋮ (top right)
+3. Tap <b>Report</b>
+
+<b>Report to an admin:</b>
+• Tag an admin in the group
+• Or forward the message to @odessa_amsterdam
+
+Telegram reviews all reports. Thank you for keeping the community safe 🙏`;
 
         await sendTelegramMessage(chat.id, messageText);
       } else if (text === '/parking') {
