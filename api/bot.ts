@@ -41,7 +41,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       // Handle commands with full formatting
-      if (text === '/whosplaying') {
+      if (text === '/help') {
+        const helpMessage = `🤖 <b>Odessa Schedule Bot Help</b>
+
+Type /commands to see all available commands.
+
+<b>Quick commands:</b>
+• /whosplaying - Who's facilitating today
+• /schedule - This week's schedule
+• /next - Who's facilitating next
+
+🚨 Spam or abuse? Reply to the message and send /report`;
+        
+        await sendTelegramMessage(chat.id, helpMessage);
+      } else if (text === '/whosplaying') {
         try {
           console.log('🎭 /whosplaying command received - generating enhanced schedule...');
           
@@ -496,6 +509,7 @@ Netherlands</blockquote>`;
 • /report - How to report spam or abuse
 
 <b>Help:</b>
+• /help - Quick help
 • /commands - This list`;
 
         await sendTelegramMessage(chat.id, messageText);
