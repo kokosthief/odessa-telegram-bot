@@ -516,10 +516,8 @@ Netherlands</blockquote>`;
       } else if (text === '/report') {
         const messageText = `🚨 <b>How to Report Spam or Abuse</b>
 
-<b>Quickest — alert the admins directly:</b>
-1. <b>Reply</b> to the offending message
-2. Send <code>/report</code>
-3. Admins get notified instantly ✅
+<b>Report to an admin:</b>
+• Reply to the message and send <code>/report</code>
 
 <b>Report to Telegram (spam/scam):</b>
 1. Long-press the message
