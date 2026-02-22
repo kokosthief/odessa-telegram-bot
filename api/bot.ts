@@ -516,23 +516,20 @@ Netherlands</blockquote>`;
       } else if (text === '/report') {
         const messageText = `🚨 <b>How to Report Spam or Abuse</b>
 
-Reporting is done directly in Telegram — no bot command needed.
+<b>Quickest — alert the admins directly:</b>
+1. <b>Reply</b> to the offending message
+2. Send <code>/report</code>
+3. Admins get notified instantly ✅
 
-<b>Report a message:</b>
+<b>Report to Telegram (spam/scam):</b>
 1. Long-press the message
+2. Tap <b>Report</b> → choose reason
+
+<b>Report a user profile:</b>
+1. Tap their name → three dots ⋮
 2. Tap <b>Report</b>
-3. Choose the reason (spam, abuse, etc.)
 
-<b>Report a user:</b>
-1. Tap their name or profile photo
-2. Tap the three dots ⋮ (top right)
-3. Tap <b>Report</b>
-
-<b>Report to an admin:</b>
-• Tag an admin in the group
-• Or forward the message to @odessa_amsterdam
-
-Telegram reviews all reports. Thank you for keeping the community safe 🙏`;
+Thank you for keeping the community safe 🙏`;
 
         await sendTelegramMessage(chat.id, messageText);
       } else if (text === '/parking') {
