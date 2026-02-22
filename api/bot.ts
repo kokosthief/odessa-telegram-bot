@@ -513,23 +513,6 @@ Netherlands</blockquote>`;
 • /commands - This list`;
 
         await sendTelegramMessage(chat.id, messageText);
-      } else if (text === '/report') {
-        const messageText = `🚨 <b>How to Report Spam or Abuse</b>
-
-<b>Report to an admin:</b>
-• Reply to the message and send <code>/report</code>
-
-<b>Report to Telegram (spam/scam):</b>
-1. Long-press the message
-2. Tap <b>Report</b> → choose reason
-
-<b>Report a user profile:</b>
-1. Tap their name → three dots ⋮
-2. Tap <b>Report</b>
-
-Thank you for keeping the community safe 🙏`;
-
-        await sendTelegramMessage(chat.id, messageText);
       } else if (text === '/parking') {
         const messageText = `🚗 <b>Parking near Odessa</b>
 
