@@ -41,14 +41,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (text === '/help') {
         const helpMessage = `🤖 <b>Odessa Schedule Bot Help</b>
 
-Type /commands to see all available commands.
+<b>Main commands:</b>
+• /whosplaying — Who's facilitating today
+• /schedule — This week's schedule
+• /next — Who's facilitating next
+• /dj [name] — DJ profile lookup
+• /discover — Discover a random DJ
+• /membership — Join our MemberShip
+• /location — Get map pin
+• /types — Event types explained
+• /commands — Full command list
 
-<b>Quick commands:</b>
-• /whosplaying - Who's facilitating today
-• /schedule - This week's schedule
-• /next - Who's facilitating next
-
-🚨 Spam or abuse? Reply to the message and send /report`;
+🚨 <b>Spam or abuse?</b> Use /report for instructions.`;
         
         await sendTelegramMessage(chat.id, helpMessage);
       } else if (text === '/whosplaying') {
@@ -208,86 +212,6 @@ If this problem persists, contact the bot administrator.`;
           console.error('Error handling /next:', error);
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch the next event. Please try again later.');
         }
-      } else if (text === '/countdown') {
-        try {
-          const generator = new OdessaTodayGenerator();
-          const nextEvent = await generator.findNextUpcomingEvent();
-
-          if (!nextEvent) {
-            await sendTelegramMessage(chat.id, '🚢 No upcoming events found. Check back later!');
-            return res.status(200).json({ ok: true });
-          }
-
-          const eventDate = new Date(nextEvent.date);
-          const eventDateInAmsterdam = utcToZonedTime(eventDate, AMSTERDAM_TIMEZONE);
-          const nowInAmsterdam = utcToZonedTime(new Date(), AMSTERDAM_TIMEZONE);
-
-          const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          const dayName = dayNames[eventDateInAmsterdam.getDay()];
-          const monthName = monthNames[eventDateInAmsterdam.getMonth()];
-          const dayNum = eventDateInAmsterdam.getDate();
-          const hours = eventDateInAmsterdam.getHours().toString().padStart(2, '0');
-          const minutes = eventDateInAmsterdam.getMinutes().toString().padStart(2, '0');
-
-          const diffMs = eventDateInAmsterdam.getTime() - nowInAmsterdam.getTime();
-          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-          const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-          let countdown = '';
-          if (diffDays > 0) {
-            countdown = `${diffDays} day${diffDays > 1 ? 's' : ''}, ${diffHours} hour${diffHours !== 1 ? 's' : ''}, ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-          } else if (diffHours > 0) {
-            countdown = `${diffHours} hour${diffHours !== 1 ? 's' : ''}, ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-          } else if (diffMinutes > 0) {
-            countdown = `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-          } else {
-            countdown = 'Starting now!';
-          }
-
-          const eventType = nextEvent.title.split(' with ')[0] || nextEvent.title;
-
-          // Get DJ info from local database
-          const djLoader = new DJLoader();
-          const djInfo = nextEvent.djName ? djLoader.getDJInfo(nextEvent.djName) : null;
-
-          const messageText = `⏱️ <b>Countdown to ${eventType}</b>
-
-🎶 DJ: ${nextEvent.djName || 'TBA'}
-📅 ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
-
-⏳ <b>${countdown}</b>
-
-The boat is calling! 🚢`;
-
-          // Build button rows
-          const buttons: Array<{ text: string; url: string }> = [];
-          if (nextEvent.ticketUrl) {
-            buttons.push({ text: '🎫 TICKETS', url: nextEvent.ticketUrl });
-          }
-          const soundcloudUrl = djInfo?.soundcloud || djInfo?.link;
-          if (soundcloudUrl) {
-            buttons.push({ text: '🎧 LISTEN', url: soundcloudUrl });
-          }
-          if (djInfo?.instagram) {
-            buttons.push({ text: '📸 INSTAGRAM', url: djInfo.instagram });
-          }
-
-          const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
-
-          if (djInfo?.photo) {
-            await sendTelegramMessageWithPhoto(chat.id, messageText, djInfo.photo, keyboard);
-          } else if (keyboard) {
-            await sendTelegramMessageWithKeyboard(chat.id, messageText, keyboard);
-          } else {
-            await sendTelegramMessage(chat.id, messageText);
-          }
-
-        } catch (error) {
-          console.error('Error handling /countdown:', error);
-          await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch the countdown. Please try again later.');
-        }
       } else if (text?.startsWith('/dj')) {
         try {
           const djName = text.replace('/dj', '').trim();
@@ -410,28 +334,28 @@ ${djList}
           console.error('Error handling /discover:', error);
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch a random DJ. Please try again later.');
         }
-      } else if (text === '/venue') {
-        const messageText = `🚢 <b>ODESSA - The Boat</b>
+      } else if (text === '/membership') {
+        const messageText = `💳 <b>Odessa MemberShip</b>
 
-📍 Veemkade 259, 1019 CZ Amsterdam
+Access all regular Odessa events, month after month.
 
-🚌 <b>Getting there:</b>
-• Tram 26 from Amsterdam CS Oostzijde
-  → Stop: Rietlandpark
-• P+R Zeeburg (€2.50/hour)
-  → Tram 26, 1 stop to Rietlandpark
+<b>€120 / month</b>
 
-📝 <b>Good to know:</b>
-• Barefoot dancing space
-• Phone-free environment
-• Bring water bottle
-• Dress comfortably`;
+<b>✅ Includes:</b>
+• Ecstatic Dance
+• Cacao Ceremonies
+• Ecstatic Journeys
+• All regular events
+
+<b>❌ Not included:</b>
+• Special events (NYE, Christmas, festivals, retreats)
+• These are charged separately
+
+Billed monthly. Cancel anytime. 🚢`;
 
         const keyboard = {
           inline_keyboard: [
-            [{ text: '🌐 ODESSA.AMSTERDAM', url: 'https://odessa.amsterdam' }],
-            [{ text: '📍 GOOGLE MAPS', url: `https://maps.google.com/?q=${ODESSA_LATITUDE},${ODESSA_LONGITUDE}` }],
-            [{ text: '🎫 TICKETS', url: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance' }]
+            [{ text: '✨ SUBSCRIBE', url: 'https://mijn.odessa.amsterdam' }]
           ]
         };
 
@@ -487,27 +411,27 @@ Netherlands</blockquote>`;
         const messageText = `🤖 <b>Available Commands</b>
 
 <b>Events & Schedule:</b>
-• /whosplaying - Who's facilitating today
-• /schedule - This week's schedule
-• /next - Who's facilitating next
-• /countdown - Countdown to next event
+• /whosplaying — Who's facilitating today
+• /schedule — This week's schedule
+• /next — Who's facilitating next
 
 <b>DJ Info:</b>
-• /dj [name] - DJ profile lookup
-• /discover - Discover a random DJ
+• /dj [name] — DJ profile lookup
+• /discover — Discover a random DJ
 
-<b>Venue & Info:</b>
-• /venue - Boat location & practical info
-• /location - Get map pin
-• /parking - Parking options nearby
-• /types - Event types explained
+<b>Join Us:</b>
+• /membership — Join our MemberShip
+
+<b>Info:</b>
+• /location — Get map pin
+• /types — Event types explained
 
 <b>🚨 Group Safety:</b>
-• /report - How to report spam or abuse
+• /report — How to report spam or abuse
 
 <b>Help:</b>
-• /help - Quick help
-• /commands - This list`;
+• /help — Quick help
+• /commands — This list`;
 
         await sendTelegramMessage(chat.id, messageText);
       } else if (text === '/parking') {
