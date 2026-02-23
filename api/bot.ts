@@ -320,19 +320,16 @@ ${djList}
       } else if (text === '/membership') {
         const messageText = `💳 <b>Odessa MemberShip</b>
 
-Access all regular Odessa events, month after month.
-
 <b>€120 / month</b>
 
-<b>✅ Includes:</b>
+<b>What's included:</b>
+All regular Odessa events
 • Ecstatic Dance
 • Cacao Ceremonies
 • Ecstatic Journeys
-• All regular events
 
-<b>❌ Not included:</b>
-• Special events (NYE, Christmas, festivals, retreats)
-• These are charged separately
+<b>Not included:</b>
+Special events like NYE, Christmas, festivals, retreats (charged separately)
 
 Billed monthly. Cancel anytime. 🚢`;
 
@@ -342,7 +339,8 @@ Billed monthly. Cancel anytime. 🚢`;
           ]
         };
 
-        await sendTelegramMessageWithKeyboard(chat.id, messageText, keyboard);
+        const imageUrl = 'https://odessa-telegram-bot.vercel.app/membership.jpg';
+        await sendTelegramMessageWithPhoto(chat.id, messageText, imageUrl, keyboard);
       } else if (text === '/types') {
         const messageText = `🎭 <b>Event Types at Odessa</b>
 

@@ -538,19 +538,16 @@ ${djList}
   public async handleMembershipCommand(msg: TelegramBot.Message): Promise<void> {
     const text = `💳 <b>Odessa MemberShip</b>
 
-Access all regular Odessa events, month after month.
-
 <b>€120 / month</b>
 
-<b>✅ Includes:</b>
+<b>What's included:</b>
+All regular Odessa events
 • Ecstatic Dance
 • Cacao Ceremonies
 • Ecstatic Journeys
-• All regular events
 
-<b>❌ Not included:</b>
-• Special events (NYE, Christmas, festivals, retreats)
-• These are charged separately
+<b>Not included:</b>
+Special events like NYE, Christmas, festivals, retreats (charged separately)
 
 Billed monthly. Cancel anytime. 🚢`;
 
@@ -560,10 +557,22 @@ Billed monthly. Cancel anytime. 🚢`;
       ]
     };
 
-    await this.bot.sendMessage(msg.chat.id, text, {
-      parse_mode: 'HTML',
-      reply_markup: keyboard
-    });
+    const imageUrl = 'https://odessa-telegram-bot.vercel.app/membership.jpg';
+
+    try {
+      await this.bot.sendPhoto(msg.chat.id, imageUrl, {
+        caption: text,
+        parse_mode: 'HTML',
+        reply_markup: keyboard
+      });
+    } catch (error) {
+      console.error('Error sending membership photo:', error);
+      // Fallback to text if photo fails
+      await this.bot.sendMessage(msg.chat.id, text, {
+        parse_mode: 'HTML',
+        reply_markup: keyboard
+      });
+    }
   }
 
   /**
