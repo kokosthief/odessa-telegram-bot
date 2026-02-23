@@ -2,6 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { OdessaTodayGenerator } from '../src/index';
 import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
 import { GroupTracker } from '../src/utils/group-tracker';
+import { DJLoader } from '../src/utils/dj-loader';
 import { utcToZonedTime } from 'date-fns-tz';
 
 // Odessa boat coordinates (Veemkade 259, 1019 CZ Amsterdam)
@@ -295,8 +296,8 @@ The boat is calling! 🚢`;
           if (!djName) {
             const allDJs = djLoader.getAllDJNames();
             // Filter out duplicates like Ma-rifa (keep Ma'rifa)
-            const uniqueDJs = allDJs.filter(name => name !== 'Ma-rifa' && name !== 'Faralduin');
-            const djList = uniqueDJs.sort().map(name => `• ${name}`).join('\n');
+            const uniqueDJs = allDJs.filter((name: string) => name !== 'Ma-rifa' && name !== 'Faralduin');
+            const djList = uniqueDJs.sort().map((name: string) => `• ${name}`).join('\n');
 
             const messageText = `🎧 <b>Odessa DJs</b>
 
@@ -318,7 +319,7 @@ ${djList}
           }
 
           // Find the actual DJ name (for display)
-          const matchedName = djLoader.getAllDJNames().find(n =>
+          const matchedName = djLoader.getAllDJNames().find((n: string) =>
             n.toLowerCase() === djName.toLowerCase() ||
             n.toLowerCase().includes(djName.toLowerCase())
           ) || djName;
@@ -361,7 +362,7 @@ ${djList}
           const djLoader = new DJLoader();
 
           // Get all DJs and filter out duplicates
-          const allDJs = djLoader.getAllDJNames().filter(name => name !== 'Ma-rifa' && name !== 'Faralduin');
+          const allDJs = djLoader.getAllDJNames().filter((name: string) => name !== 'Ma-rifa' && name !== 'Faralduin');
           if (allDJs.length === 0) {
             await sendTelegramMessage(chat.id, '❌ No DJs found in the database.');
             return res.status(200).json({ ok: true });
