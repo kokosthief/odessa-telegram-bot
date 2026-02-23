@@ -35,11 +35,6 @@ export class OdessaBot {
       await this.handleWhosPlayingCommand(msg);
     });
 
-    // Handle /start command
-    this.bot.onText(/\/start/, async (msg) => {
-      await this.handleStartCommand(msg);
-    });
-
     // Handle /help command
     this.bot.onText(/\/help/, async (msg) => {
       await this.handleHelpCommand(msg);
@@ -55,11 +50,6 @@ export class OdessaBot {
       await this.handleNextCommand(msg);
     });
 
-    // Handle /countdown command
-    this.bot.onText(/\/countdown/, async (msg) => {
-      await this.handleCountdownCommand(msg);
-    });
-
     // Handle /dj command (with optional name argument)
     this.bot.onText(/\/dj(?:\s+(.+))?/, async (msg, match) => {
       await this.handleDJCommand(msg, match?.[1]);
@@ -70,9 +60,9 @@ export class OdessaBot {
       await this.handleDiscoverCommand(msg);
     });
 
-    // Handle /venue command
-    this.bot.onText(/\/venue/, async (msg) => {
-      await this.handleVenueCommand(msg);
+    // Handle /membership command
+    this.bot.onText(/\/membership/, async (msg) => {
+      await this.handleMembershipCommand(msg);
     });
 
     // Handle /types command
@@ -194,25 +184,6 @@ export class OdessaBot {
   }
 
   /**
-   * Handle /start command
-   */
-  public async handleStartCommand(msg: TelegramBot.Message): Promise<void> {
-    const welcomeMessage = `🤖 <b>Welcome to the Odessa Schedule Bot!</b>
-
-I can help you check who's playing at Odessa boat events in Amsterdam.
-
-<b>Quick commands:</b>
-• /whosplaying - Who's facilitating today
-• /schedule - This week's schedule
-• /next - Who's facilitating next
-• /commands - See all commands
-
-Just send /whosplaying to get started! 🌴🎶`;
-
-    await this.bot.sendMessage(msg.chat.id, welcomeMessage, { parse_mode: 'HTML' });
-  }
-
-  /**
    * Handle /help command
    */
   public async handleHelpCommand(msg: TelegramBot.Message): Promise<void> {
@@ -222,10 +193,9 @@ Just send /whosplaying to get started! 🌴🎶`;
 • /whosplaying - Who's facilitating today
 • /schedule - This week's schedule
 • /next - Who's facilitating next
-• /countdown - Countdown to next event
 • /dj [name] - DJ profile lookup
 • /discover - Discover a random DJ
-• /venue - Boat location & info
+• /membership - Join our membership
 • /location - Get map pin
 • /types - Event types explained
 • /commands - Full command list
@@ -377,101 +347,6 @@ Just send /whosplaying to get started! 🌴🎶`;
       console.error('Error handling /next command:', error);
       await this.bot.sendMessage(msg.chat.id,
         '❌ Sorry, I couldn\'t fetch the next event. Please try again later.',
-        { parse_mode: 'HTML' }
-      );
-    }
-  }
-
-  /**
-   * Handle /countdown command - visual countdown to next event
-   */
-  public async handleCountdownCommand(msg: TelegramBot.Message): Promise<void> {
-    const userId = msg.from?.id;
-    if (!userId) return;
-
-    const now = Date.now();
-    const lastRequest = this.userRateLimits.get(userId);
-    if (lastRequest && now - lastRequest < 60000) {
-      await this.bot.sendMessage(msg.chat.id,
-        '⏰ Please wait a moment before requesting again.',
-        { parse_mode: 'HTML' }
-      );
-      return;
-    }
-
-    this.userRateLimits.set(userId, now);
-
-    try {
-      await this.bot.sendChatAction(msg.chat.id, 'typing');
-
-      const nextEvent = await this.generator.findNextUpcomingEvent();
-
-      if (!nextEvent) {
-        await this.bot.sendMessage(msg.chat.id,
-          '🚢 No upcoming events found. Check back later!',
-          { parse_mode: 'HTML' }
-        );
-        return;
-      }
-
-      const eventDate = new Date(nextEvent.date);
-      const eventDateInAmsterdam = utcToZonedTime(eventDate, this.amsterdamTimezone);
-      const nowInAmsterdam = utcToZonedTime(new Date(), this.amsterdamTimezone);
-
-      // Format date
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const dayName = dayNames[eventDateInAmsterdam.getDay()];
-      const monthName = monthNames[eventDateInAmsterdam.getMonth()];
-      const dayNum = eventDateInAmsterdam.getDate();
-      const hours = eventDateInAmsterdam.getHours().toString().padStart(2, '0');
-      const minutes = eventDateInAmsterdam.getMinutes().toString().padStart(2, '0');
-
-      // Calculate countdown
-      const diffMs = eventDateInAmsterdam.getTime() - nowInAmsterdam.getTime();
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-      let countdown = '';
-      if (diffDays > 0) {
-        countdown = `${diffDays} day${diffDays > 1 ? 's' : ''}, ${diffHours} hour${diffHours !== 1 ? 's' : ''}, ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-      } else if (diffHours > 0) {
-        countdown = `${diffHours} hour${diffHours !== 1 ? 's' : ''}, ${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-      } else if (diffMinutes > 0) {
-        countdown = `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-      } else {
-        countdown = 'Starting now!';
-      }
-
-      // Extract event type from title
-      const eventType = nextEvent.title.split(' with ')[0] || nextEvent.title;
-
-      const text = `⏱️ <b>Countdown to ${eventType}</b>
-
-🎶 DJ: ${nextEvent.djName || 'TBA'}
-📅 ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
-
-⏳ <b>${countdown}</b>
-
-The boat is calling! 🚢`;
-
-      const buttons: Array<{ text: string; url: string }> = [];
-      if (nextEvent.ticketUrl) {
-        buttons.push({ text: '🎫 TICKETS', url: nextEvent.ticketUrl });
-      }
-
-      const keyboard = buttons.length > 0 ? { inline_keyboard: [buttons] } : undefined;
-
-      await this.bot.sendMessage(msg.chat.id, text, {
-        parse_mode: 'HTML',
-        reply_markup: keyboard
-      });
-
-    } catch (error) {
-      console.error('Error handling /countdown command:', error);
-      await this.bot.sendMessage(msg.chat.id,
-        '❌ Sorry, I couldn\'t fetch the countdown. Please try again later.',
         { parse_mode: 'HTML' }
       );
     }
@@ -653,33 +528,33 @@ ${djList}
   }
 
   /**
-   * Handle /venue command - static venue information
+   * Handle /membership command - membership info and signup
    */
-  public async handleVenueCommand(msg: TelegramBot.Message): Promise<void> {
-    const text = `🚢 <b>ODESSA - The Boat</b>
+  public async handleMembershipCommand(msg: TelegramBot.Message): Promise<void> {
+    const text = `💳 <b>Odessa MemberShip</b>
 
-📍 NDSM Wharf, Amsterdam
-🗺️ Coordinates: ${this.ODESSA_LATITUDE}° N, ${this.ODESSA_LONGITUDE}° E
+Join our community and unlock unlimited access to all events!
 
-🚌 <b>Getting there:</b>
-• Ferry 901/907 from Centraal (free!)
-• Bus 38 to NDSM Werf
-• Bike parking available
+<b>€25/month</b> (or €250/year)
 
-📝 <b>Good to know:</b>
-• Barefoot dancing space
-• Phone-free environment
-• Bring water bottle
-• Dress comfortably
+<b>✅ What's included:</b>
+• Unlimited access to all Odessa events
+• Early access to special announcements
+• Exclusive member-only gatherings
+• Digital ticket delivery
+• Member status on the boat
 
-🌐 hipsy.nl/odessa-amsterdam-ecstatic-dance`;
+<b>❌ What's not included:</b>
+• Free drinks (BYOB)
+• Reserved seating
+• Skip-the-line access
+• Guest passes
+
+Start your journey today! 🌴✨`;
 
     const keyboard = {
       inline_keyboard: [
-        [
-          { text: '📍 GOOGLE MAPS', url: `https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}` },
-          { text: '🎫 TICKETS', url: 'https://hipsy.nl/odessa-amsterdam-ecstatic-dance' }
-        ]
+        [{ text: '✨ JOIN NOW', url: 'https://mijn.odessa.amsterdam' }]
       ]
     };
 
@@ -757,14 +632,15 @@ https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}`;
 • /whosplaying - Who's facilitating today
 • /schedule - This week's schedule
 • /next - Who's facilitating next
-• /countdown - Countdown to next event
 
 <b>DJ Info:</b>
 • /dj [name] - DJ profile lookup
 • /discover - Discover a random DJ
 
-<b>Venue & Info:</b>
-• /venue - Boat location & practical info
+<b>Join Us:</b>
+• /membership - Join our MemberShip
+
+<b>Info:</b>
 • /location - Get map pin
 • /types - Event types explained
 
@@ -772,7 +648,6 @@ https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}`;
 • /report - How to report spam or abuse
 
 <b>Help:</b>
-• /start - Welcome message
 • /help - Quick help
 • /commands - This list`;
 
