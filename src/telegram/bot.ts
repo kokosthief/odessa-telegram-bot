@@ -190,15 +190,15 @@ export class OdessaBot {
     const helpMessage = `🤖 <b>Odessa Schedule Bot Help</b>
 
 <b>Main commands:</b>
-• /whosplaying - Who's facilitating today
-• /schedule - This week's schedule
-• /next - Who's facilitating next
-• /dj [name] - DJ profile lookup
-• /discover - Discover a random DJ
-• /membership - Join our membership
-• /location - Get map pin
-• /types - Event types explained
-• /commands - Full command list
+• /whosplaying — Who's facilitating today
+• /schedule — This week's schedule
+• /next — Who's facilitating next
+• /dj [name] — DJ profile lookup
+• /discover — Discover a random DJ
+• /membership — Join our MemberShip
+• /location — Get map pin
+• /types — Event types explained
+• /commands — Full command list
 
 🚨 <b>Spam or abuse?</b> Use /report for instructions.`;
 
