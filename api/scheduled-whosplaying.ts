@@ -148,7 +148,7 @@ async function sendWhosPlayingToChat(
   }
 
   // Single message - check if we have a photo
-  if (schedule.photos && schedule.photos.length > 0) {
+  if (schedule.photos && schedule.photos.length > 0 && schedule.photos[0]) {
     await sendTelegramPhoto(chatId, schedule.photos[0], schedule.text, schedule.keyboard);
   } else {
     await sendTelegramMessage(chatId, schedule.text, schedule.keyboard);
@@ -178,7 +178,7 @@ async function sendTelegramPhoto(chatId: number, photo: string, caption: string,
     throw new Error(`Telegram API error: ${response.status} ${errorText}`);
   }
 
-  const result = await response.json();
+  const result = await response.json() as any;
   console.log('Telegram photo sent successfully:', result.result?.message_id);
 }
 
@@ -204,6 +204,6 @@ async function sendTelegramMessage(chatId: number, text: string, replyMarkup?: a
     throw new Error(`Telegram API error: ${response.status} ${errorText}`);
   }
 
-  const result = await response.json();
+  const result = await response.json() as any;
   console.log('Telegram message sent successfully:', result.result?.message_id);
 }

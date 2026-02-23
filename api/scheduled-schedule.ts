@@ -147,7 +147,7 @@ async function sendTelegramMessageWithVideo(chatId: number, caption: string, vid
       throw new Error(`Telegram API error: ${response.status} ${errorText}`);
     }
 
-    const result = await response.json();
+    const result = await response.json() as any;
     console.log('Telegram video sent successfully:', result.message_id);
   } catch (error) {
     console.error('Error sending Telegram video:', error);

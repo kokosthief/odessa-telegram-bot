@@ -2,11 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { OdessaTodayGenerator } from '../src/index';
 import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
 import { GroupTracker } from '../src/utils/group-tracker';
-import { DJLoader } from '../src/utils/dj-loader';
-import { WixDJLoader } from '../src/utils/wix-dj-loader';
 import { utcToZonedTime } from 'date-fns-tz';
-import fs from 'fs';
-import path from 'path';
 
 // Odessa boat coordinates (Veemkade 259, 1019 CZ Amsterdam)
 const ODESSA_LATITUDE = 52.374501;
@@ -32,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     // Track groups/channels when bot receives messages
     if (update.message) {
-      const { text, chat, from } = update.message;
+      const { text, chat } = update.message;
       
       // Automatically track group chats and channels
       const groupTracker = new GroupTracker();
