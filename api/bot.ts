@@ -339,7 +339,7 @@ Billed monthly. Cancel anytime. 🚢`;
           ]
         };
 
-        const imageUrl = 'https://odessa-telegram-bot.vercel.app/membership.jpg';
+        const imageUrl = 'https://raw.githubusercontent.com/kokosthief/odessa-telegram-bot/main/assets/membership.jpg';
         await sendTelegramMessageWithPhoto(chat.id, messageText, imageUrl, keyboard);
       } else if (text === '/types') {
         const messageText = `🎭 <b>Event Types at Odessa</b>

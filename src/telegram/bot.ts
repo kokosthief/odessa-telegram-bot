@@ -557,7 +557,7 @@ Billed monthly. Cancel anytime. 🚢`;
       ]
     };
 
-    const imageUrl = 'https://odessa-telegram-bot.vercel.app/membership.jpg';
+    const imageUrl = 'https://raw.githubusercontent.com/kokosthief/odessa-telegram-bot/main/assets/membership.jpg';
 
     try {
       await this.bot.sendPhoto(msg.chat.id, imageUrl, {
