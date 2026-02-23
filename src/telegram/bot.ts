@@ -70,6 +70,11 @@ export class OdessaBot {
       await this.handleTypesCommand(msg);
     });
 
+    // Handle /lostproperty command
+    this.bot.onText(/\/lostproperty/, async (msg) => {
+      await this.handleLostPropertyCommand(msg);
+    });
+
     // Handle /location command
     this.bot.onText(/\/location/, async (msg) => {
       await this.handleLocationCommand(msg);
@@ -620,33 +625,32 @@ https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}`;
   }
 
   /**
+   * Handle /lostproperty command - lost and found info
+   */
+  public async handleLostPropertyCommand(msg: TelegramBot.Message): Promise<void> {
+    const text = `🔍 <b>Lost & Found</b>
+
+You can check the lost and found in the wardrobe/locker area during opening hours. Every month we give away the contents to charity as it gets too full to keep. ✨`;
+
+    await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
+  }
+
+  /**
    * Handle /commands command - list all available commands
    */
   public async handleCommandsCommand(msg: TelegramBot.Message): Promise<void> {
     const text = `🤖 <b>Available Commands</b>
 
-<b>Events & Schedule:</b>
-• /whosplaying - Who's facilitating today
-• /schedule - This week's schedule
-• /next - Who's facilitating next
-
-<b>DJ Info:</b>
-• /dj [name] - DJ profile lookup
-• /discover - Discover a random DJ
-
-<b>Join Us:</b>
-• /membership - Join our MemberShip
-
-<b>Info:</b>
-• /location - Get map pin
-• /types - Event types explained
-
-<b>🚨 Group Safety:</b>
-• /report - How to report spam or abuse
-
-<b>Help:</b>
-• /help - Quick help
-• /commands - This list`;
+• /whosplaying — Who's facilitating today
+• /schedule — This week's schedule
+• /next — Who's facilitating next
+• /dj [name] — DJ profile lookup
+• /discover — Discover a random DJ
+• /membership — Join our MemberShip
+• /location — Get map pin
+• /types — Event types explained
+• /lostproperty — Lost & found info
+• /commands — This list`;
 
     await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
   }

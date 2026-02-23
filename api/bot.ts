@@ -390,6 +390,12 @@ Netherlands</blockquote>`;
           console.error('Error handling /location:', error);
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t send the location. Please try again.');
         }
+      } else if (text === '/lostproperty') {
+        const messageText = `🔍 <b>Lost & Found</b>
+
+You can check the lost and found in the wardrobe/locker area during opening hours. Every month we give away the contents to charity as it gets too full to keep. ✨`;
+
+        await sendTelegramMessage(chat.id, messageText);
       } else if (text === '/commands') {
         const messageText = `🤖 <b>Available Commands</b>
 
@@ -401,6 +407,7 @@ Netherlands</blockquote>`;
 • /membership — Join our MemberShip
 • /location — Get map pin
 • /types — Event types explained
+• /lostproperty — Lost & found info
 • /commands — This list`;
 
         await sendTelegramMessage(chat.id, messageText);
