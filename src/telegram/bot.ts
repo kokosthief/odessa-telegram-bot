@@ -533,28 +533,25 @@ ${djList}
   public async handleMembershipCommand(msg: TelegramBot.Message): Promise<void> {
     const text = `💳 <b>Odessa MemberShip</b>
 
-Join our community and unlock unlimited access to all events!
+Access all regular Odessa events, month after month.
 
-<b>€25/month</b> (or €250/year)
+<b>€120 / month</b>
 
-<b>✅ What's included:</b>
-• Unlimited access to all Odessa events
-• Early access to special announcements
-• Exclusive member-only gatherings
-• Digital ticket delivery
-• Member status on the boat
+<b>✅ Includes:</b>
+• Ecstatic Dance
+• Cacao Ceremonies
+• Ecstatic Journeys
+• All regular events
 
-<b>❌ What's not included:</b>
-• Free drinks (BYOB)
-• Reserved seating
-• Skip-the-line access
-• Guest passes
+<b>❌ Not included:</b>
+• Special events (NYE, Christmas, festivals, retreats)
+• These are charged separately
 
-Start your journey today! 🌴✨`;
+Billed monthly. Cancel anytime. 🚢`;
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '✨ JOIN NOW', url: 'https://mijn.odessa.amsterdam' }]
+        [{ text: '✨ SUBSCRIBE', url: 'https://mijn.odessa.amsterdam' }]
       ]
     };
 
