@@ -38,24 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       // Handle commands with full formatting
-      if (text === '/help') {
-        const helpMessage = `🤖 <b>Odessa Schedule Bot Help</b>
-
-<b>Main commands:</b>
-• /whosplaying — Who's facilitating today
-• /schedule — This week's schedule
-• /next — Who's facilitating next
-• /dj [name] — DJ profile lookup
-• /discover — Discover a random DJ
-• /membership — Join our MemberShip
-• /location — Get map pin
-• /types — Event types explained
-• /commands — Full command list
-
-🚨 <b>Spam or abuse?</b> Use /report for instructions.`;
-        
-        await sendTelegramMessage(chat.id, helpMessage);
-      } else if (text === '/whosplaying') {
+      if (text === '/whosplaying') {
         try {
           console.log('🎭 /whosplaying command received - generating enhanced schedule...');
           
@@ -410,27 +393,14 @@ Netherlands</blockquote>`;
       } else if (text === '/commands') {
         const messageText = `🤖 <b>Available Commands</b>
 
-<b>Events & Schedule:</b>
 • /whosplaying — Who's facilitating today
 • /schedule — This week's schedule
 • /next — Who's facilitating next
-
-<b>DJ Info:</b>
 • /dj [name] — DJ profile lookup
 • /discover — Discover a random DJ
-
-<b>Join Us:</b>
 • /membership — Join our MemberShip
-
-<b>Info:</b>
 • /location — Get map pin
 • /types — Event types explained
-
-<b>🚨 Group Safety:</b>
-• /report — How to report spam or abuse
-
-<b>Help:</b>
-• /help — Quick help
 • /commands — This list`;
 
         await sendTelegramMessage(chat.id, messageText);
