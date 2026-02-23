@@ -120,18 +120,19 @@ export class WeeklyScheduleGenerator {
   private async fetchWeeklyEvents(weekRange: DateRange): Promise<Event[]> {
     const allEvents: Event[] = [];
     let page = 1;
-    const limit = 10; // Limit to 10 events like /whosplaying command
+    const limit = 100; // Fetch more events at once to ensure we get the full week
     
     while (true) {
       try {
-        // Use 'upcoming' instead of 'all' to match working /whosplaying approach
-        const result = await this.hipsyScraper.getEvents(page, 'upcoming', limit);
+        // Use 'all' instead of 'upcoming' to get past events too
+        // This ensures we capture Mon-Sun even if called mid-week (e.g., Saturday)
+        const result = await this.hipsyScraper.getEvents(page, 'all', limit);
         
         if (!result.success || result.events.length === 0) {
           break;
         }
         
-        // Filter events within our week range
+        // Filter events within our week range (Monday-Sunday)
         const weekEvents = result.events.filter(event => {
           const eventDate = new Date(event.date);
           return eventDate >= weekRange.startDate && eventDate <= weekRange.endDate;
