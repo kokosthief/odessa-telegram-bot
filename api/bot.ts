@@ -320,7 +320,7 @@ ${djList}
       } else if (text === '/membership') {
         const messageText = `💳 <b>Odessa MemberShip</b>
 
-<b>€120 / month</b>
+<b>€150 / month</b>
 
 <b>What's included:</b>
 All regular Odessa events
