@@ -30,6 +30,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Track groups/channels when bot receives messages
     if (update.message) {
       const { text, chat } = update.message;
+
+      // Normalize command: strip @BotUsername suffix (group chats send /cmd@BotName)
+      const command = text?.split('@')[0];
       
       // Automatically track group chats and channels
       const groupTracker = new GroupTracker();
@@ -38,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       // Handle commands with full formatting
-      if (text === '/whosplaying') {
+      if (command === '/whosplaying') {
         try {
           console.log('🎭 /whosplaying command received - generating enhanced schedule...');
           
@@ -96,7 +99,7 @@ Sorry, I couldn't fetch today's schedule. Please try again later.
 If this problem persists, contact the bot administrator.`;
           await sendTelegramMessage(chat.id, errorMessage);
         }
-      } else if (text === '/schedule') {
+      } else if (command === '/schedule') {
         try {
           console.log('📅 /schedule command received - generating weekly schedule...');
 
@@ -121,7 +124,7 @@ Sorry, I couldn't fetch the weekly schedule. Please try again later.
 If this problem persists, contact the bot administrator.`;
           await sendTelegramMessage(chat.id, errorMessage);
         }
-      } else if (text === '/next') {
+      } else if (command === '/next') {
         try {
           const generator = new OdessaTodayGenerator();
           const nextEvent = await generator.findNextUpcomingEvent();
@@ -195,9 +198,9 @@ If this problem persists, contact the bot administrator.`;
           console.error('Error handling /next:', error);
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch the next event. Please try again later.');
         }
-      } else if (text?.startsWith('/dj')) {
+      } else if (command?.startsWith('/dj')) {
         try {
-          const djName = text.replace('/dj', '').trim();
+          const djName = (command || '').replace('/dj', '').trim();
           const djLoader = new DJLoader();
 
           if (!djName) {
@@ -264,7 +267,7 @@ ${djList}
           console.error('Error handling /dj:', error);
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch DJ info. Please try again later.');
         }
-      } else if (text === '/discover') {
+      } else if (command === '/discover') {
         try {
           const djLoader = new DJLoader();
 
@@ -317,7 +320,7 @@ ${djList}
           console.error('Error handling /discover:', error);
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch a random DJ. Please try again later.');
         }
-      } else if (text === '/membership') {
+      } else if (command === '/membership') {
         const messageText = `💳 <b>Odessa MemberShip</b>
 
 <b>€150 / month</b>
@@ -341,7 +344,7 @@ Billed monthly. Cancel anytime. 🚢`;
 
         const imageUrl = 'https://raw.githubusercontent.com/kokosthief/odessa-telegram-bot/main/assets/membership.jpg';
         await sendTelegramMessageWithPhoto(chat.id, messageText, imageUrl, keyboard);
-      } else if (text === '/types') {
+      } else if (command === '/types') {
         const messageText = `🎭 <b>Event Types at Odessa</b>
 
 🌅 <b>Ecstatic Dance (ED)</b>
@@ -365,7 +368,7 @@ All events are sober, barefoot,
 and phone-free spaces. 🙏`;
 
         await sendTelegramMessage(chat.id, messageText);
-      } else if (text === '/location') {
+      } else if (command === '/location') {
         try {
           await sendTelegramLocation(chat.id, ODESSA_LATITUDE, ODESSA_LONGITUDE);
 
@@ -388,13 +391,13 @@ Netherlands</blockquote>`;
           console.error('Error handling /location:', error);
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t send the location. Please try again.');
         }
-      } else if (text === '/lostproperty') {
+      } else if (command === '/lostproperty') {
         const messageText = `🔍 <b>Lost & Found</b>
 
 You can check the lost and found in the wardrobe/locker area during opening hours. Every month we give away the contents to charity as it gets too full to keep. ✨`;
 
         await sendTelegramMessage(chat.id, messageText);
-      } else if (text === '/commands') {
+      } else if (command === '/commands') {
         const messageText = `🤖 <b>Available Commands</b>
 
 • /whosplaying — Who's facilitating today
@@ -409,7 +412,7 @@ You can check the lost and found in the wardrobe/locker area during opening hour
 • /commands — This list`;
 
         await sendTelegramMessage(chat.id, messageText);
-      } else if (text === '/parking') {
+      } else if (command === '/parking') {
         const messageText = `🚗 <b>Parking near Odessa</b>
 
 <b>ParkBee Winkelcentrum Brazilië</b>
