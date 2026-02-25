@@ -328,11 +328,8 @@ ${djList}
 <b>What's included:</b>
 All regular Odessa events
 • Ecstatic Dance
-• Cacao Ceremonies
-• Ecstatic Journeys
-
-<b>Not included:</b>
-Special events like NYE, Christmas, festivals, retreats (charged separately)
+• Friday's Cacao Ecstatic
+• Saturday's Ecstatic Journeys
 
 Billed monthly. Cancel anytime. 🚢`;
 
