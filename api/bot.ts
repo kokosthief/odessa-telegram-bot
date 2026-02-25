@@ -321,17 +321,20 @@ ${djList}
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch a random DJ. Please try again later.');
         }
       } else if (command === '/membership') {
-        const messageText = `💳 <b>Odessa MemberShip</b>
+        const messageText = `<b>Odessa MemberShip</b> 🏴‍☠️
 
 <b>€150 / month</b>
 
 <b>What's included:</b>
 All regular Odessa events
 • Ecstatic Dance
-• Friday's Cacao Ecstatic
-• Saturday's Ecstatic Journeys
+• Cacao Ceremonies
+• Ecstatic Journeys
 
-Billed monthly. Cancel anytime. 🚢`;
+<b>Not included:</b>
+Special events like NYE, Christmas, festivals, retreats (charged separately)
+
+Billed monthly. Cancel anytime ⚓️`;
 
         const keyboard = {
           inline_keyboard: [

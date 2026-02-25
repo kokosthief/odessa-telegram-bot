@@ -536,17 +536,20 @@ ${djList}
    * Handle /membership command - membership info and signup
    */
   public async handleMembershipCommand(msg: TelegramBot.Message): Promise<void> {
-    const text = `💳 <b>Odessa MemberShip</b>
+    const text = `<b>Odessa MemberShip</b> 🏴‍☠️
 
 <b>€150 / month</b>
 
 <b>What's included:</b>
 All regular Odessa events
 • Ecstatic Dance
-• Friday's Cacao Ecstatic
-• Saturday's Ecstatic Journeys
+• Cacao Ceremonies
+• Ecstatic Journeys
 
-Billed monthly. Cancel anytime. 🚢`;
+<b>Not included:</b>
+Special events like NYE, Christmas, festivals, retreats (charged separately)
+
+Billed monthly. Cancel anytime ⚓️`;
 
     const keyboard = {
       inline_keyboard: [
