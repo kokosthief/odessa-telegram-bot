@@ -538,7 +538,7 @@ ${djList}
   public async handleMembershipCommand(msg: TelegramBot.Message): Promise<void> {
     const text = `<b>Odessa MemberShip</b> 🏴‍☠️
 
-<b>€150,- per month</b>
+<b>€150,- every 4 weeks</b>
 
 <b>What's included:</b>
 All regular Odessa events
@@ -549,7 +549,7 @@ All regular Odessa events
 <b>Not included:</b>
 Special events like NYE, festivals & retreats
 
-Billed monthly. Cancel anytime ⚓️`;
+Billed every 4 weeks. Cancel anytime ⚓️`;
 
     const keyboard = {
       inline_keyboard: [
