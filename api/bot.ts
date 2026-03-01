@@ -323,7 +323,7 @@ ${djList}
       } else if (command === '/membership') {
         const messageText = `<b>Odessa MemberShip</b> 🏴‍☠️
 
-<b>€150,- per month</b>
+<b>€150,- per 4 weeks</b>
 
 <b>What's included:</b>
 All regular Odessa events
@@ -334,7 +334,7 @@ All regular Odessa events
 <b>Not included:</b>
 Special events like NYE, festivals & retreats
 
-Billed monthly. Cancel anytime ⚓️`;
+Cancel anytime ⚓️`;
 
         const keyboard = {
           inline_keyboard: [
