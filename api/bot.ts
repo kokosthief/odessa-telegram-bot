@@ -323,7 +323,7 @@ ${djList}
       } else if (command === '/membership') {
         const messageText = `<b>Odessa MemberShip</b> 🏴‍☠️
 
-<b>€150,- per 4 weeks</b>
+<b>€135,- per 4 weeks</b>
 
 <b>What's included:</b>
 All regular Odessa events

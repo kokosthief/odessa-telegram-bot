@@ -17,7 +17,7 @@ Telegram bot for Odessa — an ecstatic dance boat in Amsterdam. Scrapes event d
 | `/next` | Next upcoming event with countdown |
 | `/dj [name]` | DJ profile lookup (photo, bio, SoundCloud/Instagram links). No name = list all DJs |
 | `/discover` | Random DJ discovery |
-| `/membership` | MemberShip info — €120/mo, what's included, subscribe button → mijn.odessa.amsterdam |
+| `/membership` | MemberShip info — €135 per 4 weeks, what's included, subscribe button → mijn.odessa.amsterdam |
 | `/location` | Map pin + Google Maps link |
 | `/types` | Event types explained (ED, Cacao, Queerstatic, Journey) |
 | `/lostproperty` | Lost & found info |
@@ -94,7 +94,7 @@ npm run type-check    # Check types without building
 
 ## 🔗 Related Projects
 
-- **mijn.odessa.amsterdam** — Subscription platform (€120/mo membership)
+- **mijn.odessa.amsterdam** — Subscription platform (€135 per 4 weeks membership)
 - **team.odessa.amsterdam** — Team scheduling app (Flask + Supabase)
 
 ---

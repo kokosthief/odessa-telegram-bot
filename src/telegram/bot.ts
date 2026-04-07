@@ -538,7 +538,7 @@ ${djList}
   public async handleMembershipCommand(msg: TelegramBot.Message): Promise<void> {
     const text = `<b>Odessa MemberShip</b> 🏴‍☠️
 
-<b>€150,- per 4 weeks</b>
+<b>€135,- per 4 weeks</b>
 
 <b>What's included:</b>
 All regular Odessa events
