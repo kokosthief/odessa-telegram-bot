@@ -4,6 +4,7 @@ import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
 import { GroupTracker } from '../src/utils/group-tracker';
 import { DJLoader } from '../src/utils/dj-loader';
 import { utcToZonedTime } from 'date-fns-tz';
+import { blockquote, bold, escapeTelegramHtml, stripTelegramHtml } from '../src/telegram/formatting';
 
 // Odessa boat coordinates (Veemkade 259, 1019 CZ Amsterdam)
 const ODESSA_LATITUDE = 52.374501;
@@ -165,11 +166,11 @@ If this problem persists, contact the bot administrator.`;
 
           const messageText = `🚀 <b>Next up at Odessa:</b>
 
-🗓️ ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
+🗓️ ${escapeTelegramHtml(dayName)}, ${escapeTelegramHtml(monthName)} ${dayNum} at ${hours}:${minutes}
 
-🎶 ${nextEvent.title}
+🎶 ${escapeTelegramHtml(nextEvent.title)}
 
-⏰ ${relativeTime}`;
+⏰ ${escapeTelegramHtml(relativeTime)}`;
 
           // Build button rows
           const buttons: Array<{ text: string; url: string }> = [];
@@ -207,7 +208,7 @@ If this problem persists, contact the bot administrator.`;
             const allDJs = djLoader.getAllDJNames();
             // Filter out duplicates like Ma-rifa (keep Ma'rifa)
             const uniqueDJs = allDJs.filter((name: string) => name !== 'Ma-rifa' && name !== 'Faralduin');
-            const djList = uniqueDJs.sort().map((name: string) => `• ${name}`).join('\n');
+            const djList = uniqueDJs.sort().map((name: string) => `• ${escapeTelegramHtml(name)}`).join('\n');
 
             const messageText = `🎧 <b>Odessa DJs</b>
 
@@ -224,7 +225,7 @@ ${djList}
           const djInfo = djLoader.getDJInfo(djName);
 
           if (!djInfo) {
-            await sendTelegramMessage(chat.id, `❌ DJ "${djName}" not found. Try /dj to see all available DJs.`);
+            await sendTelegramMessage(chat.id, `❌ DJ "${escapeTelegramHtml(djName)}" not found. Try /dj to see all available DJs.`);
             return res.status(200).json({ ok: true });
           }
 
@@ -234,10 +235,10 @@ ${djList}
             n.toLowerCase().includes(djName.toLowerCase())
           ) || djName;
 
-          let messageText = `🎧 <b>${matchedName.toUpperCase()}</b>`;
+          let messageText = `🎧 ${bold(matchedName.toUpperCase())}`;
 
           if (djInfo.shortDescription) {
-            messageText += `\n\n<blockquote>${djInfo.shortDescription}</blockquote>`;
+            messageText += `\n\n${blockquote(djInfo.shortDescription, { expandable: true })}`;
           }
 
           // Build button row
@@ -285,10 +286,10 @@ ${djList}
 
           let messageText = `🎲 <b>Discover a DJ</b>
 
-✨ <b>${djName.toUpperCase()}</b> ✨`;
+✨ ${bold(djName.toUpperCase())} ✨`;
 
           if (djInfo?.shortDescription) {
-            messageText += `\n\n<blockquote>${djInfo.shortDescription}</blockquote>`;
+            messageText += `\n\n${blockquote(djInfo.shortDescription, { expandable: true })}`;
           }
 
           messageText += '\n\nGive them a listen before the next event!';
@@ -323,22 +324,23 @@ ${djList}
       } else if (command === '/membership') {
         const messageText = `<b>Odessa MemberShip</b> 🏴‍☠️
 
-<b>€135,- per 4 weeks</b>
+Dance more, think less.
 
-<b>What's included:</b>
-All regular Odessa events
+<b>€135,- per 4 weeks</b>
+Includes access to all regular Odessa events:
+
 • Ecstatic Dance
 • Cacao Ecstatic
 • Ecstatic Journeys
 
 <b>Not included:</b>
-Special events like NYE, festivals & retreats
+Special events, NYE, festivals & retreats.
 
 Cancel anytime ⚓️`;
 
         const keyboard = {
           inline_keyboard: [
-            [{ text: '✨ SUBSCRIBE', url: 'https://mijn.odessa.amsterdam' }]
+            [{ text: '✨ Become a member', url: 'https://mijn.odessa.amsterdam' }]
           ]
         };
 
@@ -455,6 +457,30 @@ becomes free later - check the signs!</i>`;
   }
 }
 
+function isTelegramHtmlParseError(errorText: string): boolean {
+  return /can't parse entities|can't find end tag|unsupported start tag|Bad Request: can't parse/i.test(errorText);
+}
+
+async function sendPlainTelegramMessage(chatId: number, text: string, replyMarkup?: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: stripTelegramHtml(text),
+      disable_web_page_preview: true,
+      reply_markup: replyMarkup
+    })
+  });
+
+  if (!response.ok) {
+    console.error('Failed to send Telegram plain fallback:', await response.text());
+  }
+}
+
 async function sendTelegramMessage(chatId: number, text: string) {
   const { TELEGRAM_BOT_TOKEN } = process.env;
   
@@ -473,7 +499,11 @@ async function sendTelegramMessage(chatId: number, text: string) {
     });
 
     if (!response.ok) {
-      console.error('Failed to send Telegram message:', await response.text());
+      const errorText = await response.text();
+      console.error('Failed to send Telegram message:', errorText);
+      if (isTelegramHtmlParseError(errorText)) {
+        await sendPlainTelegramMessage(chatId, text);
+      }
     }
   } catch (error) {
     console.error('Error sending Telegram message:', error);
@@ -499,7 +529,11 @@ async function sendTelegramMessageWithKeyboard(chatId: number, text: string, rep
     });
 
     if (!response.ok) {
-      console.error('Failed to send Telegram message with keyboard:', await response.text());
+      const errorText = await response.text();
+      console.error('Failed to send Telegram message with keyboard:', errorText);
+      if (isTelegramHtmlParseError(errorText)) {
+        await sendPlainTelegramMessage(chatId, text, replyMarkup);
+      }
     }
   } catch (error) {
     console.error('Error sending Telegram message with keyboard:', error);
@@ -525,9 +559,14 @@ async function sendTelegramMessageWithPhoto(chatId: number, caption: string, pho
     });
 
     if (!response.ok) {
-      console.error('Failed to send Telegram photo:', await response.text());
+      const errorText = await response.text();
+      console.error('Failed to send Telegram photo:', errorText);
       // Fallback to text message
-      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+      if (isTelegramHtmlParseError(errorText)) {
+        await sendPlainTelegramMessage(chatId, caption, replyMarkup);
+      } else {
+        await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+      }
     }
     
   } catch (error) {
@@ -557,9 +596,14 @@ async function sendTelegramMessageWithPhotos(chatId: number, caption: string, ph
     });
 
     if (!response.ok) {
-      console.error('Failed to send Telegram photo:', await response.text());
+      const errorText = await response.text();
+      console.error('Failed to send Telegram photo:', errorText);
       // Fallback to text message
-      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+      if (isTelegramHtmlParseError(errorText)) {
+        await sendPlainTelegramMessage(chatId, caption, replyMarkup);
+      } else {
+        await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+      }
     }
     
   } catch (error) {
@@ -588,9 +632,14 @@ async function sendTelegramMessageWithVideo(chatId: number, caption: string, vid
     });
 
     if (!response.ok) {
-      console.error('Failed to send Telegram video:', await response.text());
+      const errorText = await response.text();
+      console.error('Failed to send Telegram video:', errorText);
       // Fallback to text message
-      await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+      if (isTelegramHtmlParseError(errorText)) {
+        await sendPlainTelegramMessage(chatId, caption, replyMarkup);
+      } else {
+        await sendTelegramMessageWithKeyboard(chatId, caption, replyMarkup);
+      }
     }
 
   } catch (error) {

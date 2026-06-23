@@ -4,6 +4,7 @@ import { WeeklyScheduleGenerator } from '../weekly-schedule-generator';
 import { DJLoader } from '../utils/dj-loader';
 import { WixDJLoader } from '../utils/wix-dj-loader';
 import { utcToZonedTime } from 'date-fns-tz';
+import { blockquote, bold, escapeTelegramHtml } from './formatting';
 
 export class OdessaBot {
   private bot: TelegramBot;
@@ -31,22 +32,22 @@ export class OdessaBot {
    */
   public initialize(): void {
     // Handle /whosplaying command
-    this.bot.onText(/\/whosplaying/, async (msg) => {
+    this.bot.onText(/\/whosplaying/, async msg => {
       await this.handleWhosPlayingCommand(msg);
     });
 
     // Handle /help command
-    this.bot.onText(/\/help/, async (msg) => {
+    this.bot.onText(/\/help/, async msg => {
       await this.handleHelpCommand(msg);
     });
 
     // Handle /schedule command
-    this.bot.onText(/\/schedule/, async (msg) => {
+    this.bot.onText(/\/schedule/, async msg => {
       await this.handleScheduleCommand(msg);
     });
 
     // Handle /next command
-    this.bot.onText(/\/next/, async (msg) => {
+    this.bot.onText(/\/next/, async msg => {
       await this.handleNextCommand(msg);
     });
 
@@ -56,37 +57,37 @@ export class OdessaBot {
     });
 
     // Handle /discover command
-    this.bot.onText(/\/discover/, async (msg) => {
+    this.bot.onText(/\/discover/, async msg => {
       await this.handleDiscoverCommand(msg);
     });
 
     // Handle /membership command
-    this.bot.onText(/\/membership/, async (msg) => {
+    this.bot.onText(/\/membership/, async msg => {
       await this.handleMembershipCommand(msg);
     });
 
     // Handle /types command
-    this.bot.onText(/\/types/, async (msg) => {
+    this.bot.onText(/\/types/, async msg => {
       await this.handleTypesCommand(msg);
     });
 
     // Handle /lostproperty command
-    this.bot.onText(/\/lostproperty/, async (msg) => {
+    this.bot.onText(/\/lostproperty/, async msg => {
       await this.handleLostPropertyCommand(msg);
     });
 
     // Handle /location command
-    this.bot.onText(/\/location/, async (msg) => {
+    this.bot.onText(/\/location/, async msg => {
       await this.handleLocationCommand(msg);
     });
 
     // Handle /commands command
-    this.bot.onText(/\/commands/, async (msg) => {
+    this.bot.onText(/\/commands/, async msg => {
       await this.handleCommandsCommand(msg);
     });
 
     // Handle /report command
-    this.bot.onText(/\/report/, async (msg) => {
+    this.bot.onText(/\/report/, async msg => {
       await this.handleReportCommand(msg);
     });
   }
@@ -101,8 +102,10 @@ export class OdessaBot {
     // Check rate limiting
     const now = Date.now();
     const lastRequest = this.userRateLimits.get(userId);
-    if (lastRequest && now - lastRequest < 60000) { // 60 seconds
-      await this.bot.sendMessage(msg.chat.id,
+    if (lastRequest && now - lastRequest < 60000) {
+      // 60 seconds
+      await this.bot.sendMessage(
+        msg.chat.id,
         '⏰ Please wait a moment before requesting again. You can request again in 60 seconds.',
         { parse_mode: 'HTML' }
       );
@@ -135,9 +138,9 @@ export class OdessaBot {
       if (todaySchedule.messages && todaySchedule.messages.length > 0) {
         // Send intro message first
         await this.bot.sendMessage(msg.chat.id, todaySchedule.text, {
-          parse_mode: 'HTML'
+          parse_mode: 'HTML',
         });
-        
+
         // Send separate message for each DJ with their photo
         for (const message of todaySchedule.messages) {
           if (message.photo) {
@@ -145,13 +148,13 @@ export class OdessaBot {
             await this.bot.sendPhoto(msg.chat.id, message.photo, {
               caption: message.text,
               parse_mode: 'HTML',
-              reply_markup: message.keyboard
+              reply_markup: message.keyboard,
             });
           } else {
             // Send without photo
             await this.bot.sendMessage(msg.chat.id, message.text, {
               parse_mode: 'HTML',
-              reply_markup: message.keyboard
+              reply_markup: message.keyboard,
             });
           }
         }
@@ -163,26 +166,26 @@ export class OdessaBot {
           await this.bot.sendPhoto(msg.chat.id, todaySchedule.photos[0], {
             caption: todaySchedule.text,
             parse_mode: 'HTML',
-            reply_markup: todaySchedule.keyboard
+            reply_markup: todaySchedule.keyboard,
           });
         } else if (todaySchedule.keyboard) {
           // Send with keyboard
           await this.bot.sendMessage(msg.chat.id, todaySchedule.text, {
             parse_mode: 'HTML',
-            reply_markup: todaySchedule.keyboard
+            reply_markup: todaySchedule.keyboard,
           });
         } else {
           // Send plain text
           await this.bot.sendMessage(msg.chat.id, todaySchedule.text, {
-            parse_mode: 'HTML'
+            parse_mode: 'HTML',
           });
         }
       }
-
     } catch (error) {
       console.error('Error handling /whosplaying command:', error);
-      await this.bot.sendMessage(msg.chat.id,
-        '❌ Sorry, I couldn\'t fetch today\'s schedule. Please try again later.',
+      await this.bot.sendMessage(
+        msg.chat.id,
+        "❌ Sorry, I couldn't fetch today's schedule. Please try again later.",
         { parse_mode: 'HTML' }
       );
     }
@@ -220,8 +223,10 @@ export class OdessaBot {
     // Check rate limiting
     const now = Date.now();
     const lastRequest = this.userRateLimits.get(userId);
-    if (lastRequest && now - lastRequest < 60000) { // 60 seconds
-      await this.bot.sendMessage(msg.chat.id,
+    if (lastRequest && now - lastRequest < 60000) {
+      // 60 seconds
+      await this.bot.sendMessage(
+        msg.chat.id,
         '⏰ Please wait a moment before requesting again. You can request again in 60 seconds.',
         { parse_mode: 'HTML' }
       );
@@ -242,13 +247,13 @@ export class OdessaBot {
       await this.bot.sendVideo(msg.chat.id, weeklySchedule.video, {
         caption: weeklySchedule.text,
         parse_mode: 'HTML',
-        reply_markup: weeklySchedule.keyboard
+        reply_markup: weeklySchedule.keyboard,
       });
-
     } catch (error) {
       console.error('Error handling /schedule command:', error);
-      await this.bot.sendMessage(msg.chat.id,
-        '❌ Sorry, I couldn\'t fetch the weekly schedule right now. Please try again later.',
+      await this.bot.sendMessage(
+        msg.chat.id,
+        "❌ Sorry, I couldn't fetch the weekly schedule right now. Please try again later.",
         { parse_mode: 'HTML' }
       );
     }
@@ -265,10 +270,9 @@ export class OdessaBot {
     const now = Date.now();
     const lastRequest = this.userRateLimits.get(userId);
     if (lastRequest && now - lastRequest < 60000) {
-      await this.bot.sendMessage(msg.chat.id,
-        '⏰ Please wait a moment before requesting again.',
-        { parse_mode: 'HTML' }
-      );
+      await this.bot.sendMessage(msg.chat.id, '⏰ Please wait a moment before requesting again.', {
+        parse_mode: 'HTML',
+      });
       return;
     }
 
@@ -280,10 +284,9 @@ export class OdessaBot {
       const nextEvent = await this.generator.findNextUpcomingEvent();
 
       if (!nextEvent) {
-        await this.bot.sendMessage(msg.chat.id,
-          '🚢 No upcoming events found. Check back later!',
-          { parse_mode: 'HTML' }
-        );
+        await this.bot.sendMessage(msg.chat.id, '🚢 No upcoming events found. Check back later!', {
+          parse_mode: 'HTML',
+        });
         return;
       }
 
@@ -292,8 +295,29 @@ export class OdessaBot {
       const nowInAmsterdam = utcToZonedTime(new Date(), this.amsterdamTimezone);
 
       // Format date nicely
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dayNames = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       const dayName = dayNames[eventDateInAmsterdam.getDay()];
       const monthName = monthNames[eventDateInAmsterdam.getMonth()];
       const dayNum = eventDateInAmsterdam.getDate();
@@ -315,15 +339,17 @@ export class OdessaBot {
       }
 
       // Get DJ info
-      const djInfo = nextEvent.djName ? await this.wixDJLoader.getDJInfoWithFallback(nextEvent.djName) : null;
+      const djInfo = nextEvent.djName
+        ? await this.wixDJLoader.getDJInfoWithFallback(nextEvent.djName)
+        : null;
 
       const text = `🚀 <b>Next up at Odessa:</b>
 
-🗓️ ${dayName}, ${monthName} ${dayNum} at ${hours}:${minutes}
+🗓️ ${escapeTelegramHtml(dayName)}, ${escapeTelegramHtml(monthName)} ${dayNum} at ${hours}:${minutes}
 
-🎶 ${nextEvent.title}
+🎶 ${escapeTelegramHtml(nextEvent.title)}
 
-⏰ ${relativeTime}`;
+⏰ ${escapeTelegramHtml(relativeTime)}`;
 
       const buttons: Array<{ text: string; url: string }> = [];
       if (nextEvent.ticketUrl) {
@@ -339,19 +365,19 @@ export class OdessaBot {
         await this.bot.sendPhoto(msg.chat.id, djInfo.photo, {
           caption: text,
           parse_mode: 'HTML',
-          reply_markup: keyboard
+          reply_markup: keyboard,
         });
       } else {
         await this.bot.sendMessage(msg.chat.id, text, {
           parse_mode: 'HTML',
-          reply_markup: keyboard
+          reply_markup: keyboard,
         });
       }
-
     } catch (error) {
       console.error('Error handling /next command:', error);
-      await this.bot.sendMessage(msg.chat.id,
-        '❌ Sorry, I couldn\'t fetch the next event. Please try again later.',
+      await this.bot.sendMessage(
+        msg.chat.id,
+        "❌ Sorry, I couldn't fetch the next event. Please try again later.",
         { parse_mode: 'HTML' }
       );
     }
@@ -367,10 +393,9 @@ export class OdessaBot {
     const now = Date.now();
     const lastRequest = this.userRateLimits.get(userId);
     if (lastRequest && now - lastRequest < 60000) {
-      await this.bot.sendMessage(msg.chat.id,
-        '⏰ Please wait a moment before requesting again.',
-        { parse_mode: 'HTML' }
-      );
+      await this.bot.sendMessage(msg.chat.id, '⏰ Please wait a moment before requesting again.', {
+        parse_mode: 'HTML',
+      });
       return;
     }
 
@@ -382,7 +407,10 @@ export class OdessaBot {
       if (!djName || djName.trim() === '') {
         // List all DJs
         const allDJs = this.djLoader.getAllDJNames();
-        const djList = allDJs.sort().map(name => `• ${name}`).join('\n');
+        const djList = allDJs
+          .sort()
+          .map(name => `• ${escapeTelegramHtml(name)}`)
+          .join('\n');
 
         const text = `🎧 <b>Odessa DJs</b>
 
@@ -400,28 +428,29 @@ ${djList}
       const djInfo = await this.wixDJLoader.getDJInfoWithFallback(djName.trim());
 
       if (!djInfo) {
-        await this.bot.sendMessage(msg.chat.id,
-          `❌ DJ "${djName}" not found. Try /dj to see all available DJs.`,
+        await this.bot.sendMessage(
+          msg.chat.id,
+          `❌ DJ "${escapeTelegramHtml(djName)}" not found. Try /dj to see all available DJs.`,
           { parse_mode: 'HTML' }
         );
         return;
       }
 
-      let text = `🎧 <b>${djInfo.name.toUpperCase()}</b>`;
+      let text = `🎧 ${bold(djInfo.name.toUpperCase())}`;
 
       if (djInfo.shortDescription) {
-        text += `\n\n"${djInfo.shortDescription}"`;
+        text += `\n\n${blockquote(djInfo.shortDescription, { expandable: true })}`;
       }
 
       const links: string[] = [];
       if (djInfo.soundcloudUrl) {
-        links.push(`🔗 <a href="${djInfo.soundcloudUrl}">SoundCloud</a>`);
+        links.push(`🔗 <a href="${escapeTelegramHtml(djInfo.soundcloudUrl)}">SoundCloud</a>`);
       }
       if (djInfo.instagramUrl) {
-        links.push(`📸 <a href="${djInfo.instagramUrl}">Instagram</a>`);
+        links.push(`📸 <a href="${escapeTelegramHtml(djInfo.instagramUrl)}">Instagram</a>`);
       }
       if (djInfo.website) {
-        links.push(`🌐 <a href="${djInfo.website}">Website</a>`);
+        links.push(`🌐 <a href="${escapeTelegramHtml(djInfo.website)}">Website</a>`);
       }
 
       if (links.length > 0) {
@@ -439,19 +468,19 @@ ${djList}
         await this.bot.sendPhoto(msg.chat.id, djInfo.photo, {
           caption: text,
           parse_mode: 'HTML',
-          reply_markup: keyboard
+          reply_markup: keyboard,
         });
       } else {
         await this.bot.sendMessage(msg.chat.id, text, {
           parse_mode: 'HTML',
-          reply_markup: keyboard
+          reply_markup: keyboard,
         });
       }
-
     } catch (error) {
       console.error('Error handling /dj command:', error);
-      await this.bot.sendMessage(msg.chat.id,
-        '❌ Sorry, I couldn\'t fetch DJ info. Please try again later.',
+      await this.bot.sendMessage(
+        msg.chat.id,
+        "❌ Sorry, I couldn't fetch DJ info. Please try again later.",
         { parse_mode: 'HTML' }
       );
     }
@@ -467,10 +496,9 @@ ${djList}
     const now = Date.now();
     const lastRequest = this.userRateLimits.get(userId);
     if (lastRequest && now - lastRequest < 60000) {
-      await this.bot.sendMessage(msg.chat.id,
-        '⏰ Please wait a moment before requesting again.',
-        { parse_mode: 'HTML' }
-      );
+      await this.bot.sendMessage(msg.chat.id, '⏰ Please wait a moment before requesting again.', {
+        parse_mode: 'HTML',
+      });
       return;
     }
 
@@ -482,10 +510,9 @@ ${djList}
       const randomDJ = this.djLoader.getRandomDJ();
 
       if (!randomDJ) {
-        await this.bot.sendMessage(msg.chat.id,
-          '❌ No DJs found in the database.',
-          { parse_mode: 'HTML' }
-        );
+        await this.bot.sendMessage(msg.chat.id, '❌ No DJs found in the database.', {
+          parse_mode: 'HTML',
+        });
         return;
       }
 
@@ -494,10 +521,10 @@ ${djList}
 
       let text = `🎲 <b>Discover a DJ</b>
 
-✨ <b>${(djInfo?.name || randomDJ.name).toUpperCase()}</b> ✨`;
+✨ ${bold((djInfo?.name || randomDJ.name).toUpperCase())} ✨`;
 
       if (djInfo?.shortDescription) {
-        text += `\n\n"${djInfo.shortDescription}"`;
+        text += `\n\n${blockquote(djInfo.shortDescription, { expandable: true })}`;
       }
 
       text += '\n\nGive them a listen before the next event!';
@@ -514,19 +541,19 @@ ${djList}
         await this.bot.sendPhoto(msg.chat.id, djInfo.photo, {
           caption: text,
           parse_mode: 'HTML',
-          reply_markup: keyboard
+          reply_markup: keyboard,
         });
       } else {
         await this.bot.sendMessage(msg.chat.id, text, {
           parse_mode: 'HTML',
-          reply_markup: keyboard
+          reply_markup: keyboard,
         });
       }
-
     } catch (error) {
       console.error('Error handling /discover command:', error);
-      await this.bot.sendMessage(msg.chat.id,
-        '❌ Sorry, I couldn\'t fetch a random DJ. Please try again later.',
+      await this.bot.sendMessage(
+        msg.chat.id,
+        "❌ Sorry, I couldn't fetch a random DJ. Please try again later.",
         { parse_mode: 'HTML' }
       );
     }
@@ -538,39 +565,39 @@ ${djList}
   public async handleMembershipCommand(msg: TelegramBot.Message): Promise<void> {
     const text = `<b>Odessa MemberShip</b> 🏴‍☠️
 
-<b>€135,- per 4 weeks</b>
+Dance more, think less.
 
-<b>What's included:</b>
-All regular Odessa events
+<b>€135,- per 4 weeks</b>
+Includes access to all regular Odessa events:
+
 • Ecstatic Dance
 • Cacao Ecstatic
 • Ecstatic Journeys
 
 <b>Not included:</b>
-Special events like NYE, festivals & retreats
+Special events, NYE, festivals & retreats.
 
 Cancel anytime ⚓️`;
 
     const keyboard = {
-      inline_keyboard: [
-        [{ text: '✨ SUBSCRIBE', url: 'https://mijn.odessa.amsterdam' }]
-      ]
+      inline_keyboard: [[{ text: '✨ Become a member', url: 'https://mijn.odessa.amsterdam' }]],
     };
 
-    const imageUrl = 'https://raw.githubusercontent.com/kokosthief/odessa-telegram-bot/main/assets/membership.jpg';
+    const imageUrl =
+      'https://raw.githubusercontent.com/kokosthief/odessa-telegram-bot/main/assets/membership.jpg';
 
     try {
       await this.bot.sendPhoto(msg.chat.id, imageUrl, {
         caption: text,
         parse_mode: 'HTML',
-        reply_markup: keyboard
+        reply_markup: keyboard,
       });
     } catch (error) {
       console.error('Error sending membership photo:', error);
       // Fallback to text if photo fails
       await this.bot.sendMessage(msg.chat.id, text, {
         parse_mode: 'HTML',
-        reply_markup: keyboard
+        reply_markup: keyboard,
       });
     }
   }
@@ -623,11 +650,11 @@ Open in Google Maps:
 https://maps.google.com/?q=${this.ODESSA_LATITUDE},${this.ODESSA_LONGITUDE}`;
 
       await this.bot.sendMessage(msg.chat.id, text, { parse_mode: 'HTML' });
-
     } catch (error) {
       console.error('Error handling /location command:', error);
-      await this.bot.sendMessage(msg.chat.id,
-        '❌ Sorry, I couldn\'t send the location. Please try again.',
+      await this.bot.sendMessage(
+        msg.chat.id,
+        "❌ Sorry, I couldn't send the location. Please try again.",
         { parse_mode: 'HTML' }
       );
     }
@@ -697,4 +724,4 @@ Reply to the spam message and tag an admin, or forward it to <b>@odessa_amsterda
   public getBot(): TelegramBot {
     return this.bot;
   }
-} 
+}

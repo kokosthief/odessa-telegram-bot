@@ -20,6 +20,27 @@ export interface WeeklyEvent {
   facilitatorLinks?: string[] | undefined; // Array of facilitator links for B2B events
 }
 
+type FacilitatorLinkSource = {
+  soundcloudUrl?: string | undefined;
+  website?: string | undefined;
+  instagramUrl?: string | undefined;
+};
+
+export function getPreferredFacilitatorLink(
+  facilitatorData: FacilitatorLinkSource | null | undefined
+): string | undefined {
+  if (!facilitatorData) {
+    return undefined;
+  }
+
+  return (
+    facilitatorData.soundcloudUrl ??
+    facilitatorData.website ??
+    facilitatorData.instagramUrl ??
+    undefined
+  );
+}
+
 export class WeeklyScheduleGenerator {
   private hipsyScraper: HipsyScraper;
   private wixDJLoader: WixDJLoader;
@@ -296,8 +317,10 @@ export class WeeklyScheduleGenerator {
           // Try to get facilitator data from Wix API
           const facilitatorData = await this.wixDJLoader.getDJInfoWithFallback(event.facilitator);
           
-          if (facilitatorData && facilitatorData.soundcloudUrl) {
-            event.facilitatorLink = facilitatorData.soundcloudUrl;
+          const facilitatorLink = getPreferredFacilitatorLink(facilitatorData);
+
+          if (facilitatorLink) {
+            event.facilitatorLink = facilitatorLink;
           }
         } catch (error) {
           // Silently handle facilitator link errors
@@ -330,9 +353,11 @@ export class WeeklyScheduleGenerator {
             try {
               const facilitatorData = await this.wixDJLoader.getDJInfoWithFallback(facilitator);
               
-              if (facilitatorData && facilitatorData.soundcloudUrl) {
-                event.facilitatorLinks[j] = facilitatorData.soundcloudUrl;
-                console.log(`   ✅ Added link for facilitator "${facilitator}": ${facilitatorData.soundcloudUrl}`);
+              const facilitatorLink = getPreferredFacilitatorLink(facilitatorData);
+
+              if (facilitatorLink) {
+                event.facilitatorLinks[j] = facilitatorLink;
+                console.log(`   ✅ Added link for facilitator "${facilitator}": ${facilitatorLink}`);
               } else {
                 console.log(`   ⚠️ No link found for facilitator "${facilitator}"`);
                 // Keep empty string if no link found

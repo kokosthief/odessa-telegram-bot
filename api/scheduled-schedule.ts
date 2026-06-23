@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
 import { GroupTracker } from '../src/utils/group-tracker';
+import { stripTelegramHtml } from '../src/telegram/formatting';
 
 /**
  * Scheduled endpoint to automatically post weekly schedule every Wednesday at midday
@@ -119,6 +120,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
+function isTelegramHtmlParseError(errorText: string): boolean {
+  return /can't parse entities|can't find end tag|unsupported start tag|Bad Request: can't parse/i.test(errorText);
+}
+
+async function sendPlainTelegramMessage(chatId: number, text: string, replyMarkup?: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: stripTelegramHtml(text),
+      reply_markup: replyMarkup
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Telegram plain fallback error: ${response.status} ${errorText}`);
+  }
+}
+
 async function sendTelegramMessageWithVideo(chatId: number, caption: string, video: string, replyMarkup?: any) {
   const { TELEGRAM_BOT_TOKEN } = process.env;
   
@@ -144,6 +169,10 @@ async function sendTelegramMessageWithVideo(chatId: number, caption: string, vid
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Failed to send Telegram video:', errorText);
+      if (isTelegramHtmlParseError(errorText)) {
+        await sendPlainTelegramMessage(chatId, caption, replyMarkup);
+        return;
+      }
       throw new Error(`Telegram API error: ${response.status} ${errorText}`);
     }
 

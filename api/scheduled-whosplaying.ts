@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { OdessaTodayGenerator } from '../src/index';
 import { GroupTracker } from '../src/utils/group-tracker';
+import { stripTelegramHtml } from '../src/telegram/formatting';
 
 /**
  * Scheduled endpoint to automatically post "who's playing today" schedule
@@ -155,6 +156,30 @@ async function sendWhosPlayingToChat(
   }
 }
 
+function isTelegramHtmlParseError(errorText: string): boolean {
+  return /can't parse entities|can't find end tag|unsupported start tag|Bad Request: can't parse/i.test(errorText);
+}
+
+async function sendPlainTelegramMessage(chatId: number, text: string, replyMarkup?: any) {
+  const { TELEGRAM_BOT_TOKEN } = process.env;
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: stripTelegramHtml(text),
+      reply_markup: replyMarkup
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Telegram plain fallback error: ${response.status} ${errorText}`);
+  }
+}
+
 async function sendTelegramPhoto(chatId: number, photo: string, caption: string, replyMarkup?: any) {
   const { TELEGRAM_BOT_TOKEN } = process.env;
 
@@ -175,6 +200,10 @@ async function sendTelegramPhoto(chatId: number, photo: string, caption: string,
   if (!response.ok) {
     const errorText = await response.text();
     console.error('Failed to send Telegram photo:', errorText);
+    if (isTelegramHtmlParseError(errorText)) {
+      await sendPlainTelegramMessage(chatId, caption, replyMarkup);
+      return;
+    }
     throw new Error(`Telegram API error: ${response.status} ${errorText}`);
   }
 
@@ -201,6 +230,10 @@ async function sendTelegramMessage(chatId: number, text: string, replyMarkup?: a
   if (!response.ok) {
     const errorText = await response.text();
     console.error('Failed to send Telegram message:', errorText);
+    if (isTelegramHtmlParseError(errorText)) {
+      await sendPlainTelegramMessage(chatId, text, replyMarkup);
+      return;
+    }
     throw new Error(`Telegram API error: ${response.status} ${errorText}`);
   }
 
