@@ -4,6 +4,7 @@ import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
 import { GroupTracker } from '../src/utils/group-tracker';
 import { DJLoader } from '../src/utils/dj-loader';
 import { utcToZonedTime } from 'date-fns-tz';
+import { parseTelegramCommand } from '../src/telegram/commands';
 import { blockquote, bold, escapeTelegramHtml, stripTelegramHtml } from '../src/telegram/formatting';
 
 // Odessa boat coordinates (Veemkade 259, 1019 CZ Amsterdam)
@@ -32,8 +33,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (update.message) {
       const { text, chat } = update.message;
 
-      // Normalize command: strip @BotUsername suffix (group chats send /cmd@BotName)
-      const command = text?.split('@')[0];
+      const parsedCommand = parseTelegramCommand(text, process.env['TELEGRAM_BOT_USERNAME'] || 'odessa_tg_bot');
+      if (parsedCommand && !parsedCommand.isAddressedToThisBot) {
+        console.log(`Ignoring command addressed to @${parsedCommand.botUsername}: ${parsedCommand.command}`);
+        return res.status(200).json({ ok: true, ignored: true });
+      }
+      const command = parsedCommand?.command;
       
       // Automatically track group chats and channels
       const groupTracker = new GroupTracker();
