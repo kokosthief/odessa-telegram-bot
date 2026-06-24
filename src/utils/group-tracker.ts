@@ -29,12 +29,18 @@ export class GroupTracker {
   /**
    * Save group chat IDs to JSON file
    */
-  saveGroups(groups: number[]): void {
+  saveGroups(groups: number[]): boolean {
     try {
       const data: GroupData = { groups };
       writeFileSync(this.groupsFilePath, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (error) {
-      console.error('Error saving groups:', error);
+      return true;
+    } catch (error: any) {
+      if (error?.code === 'EROFS') {
+        console.warn('Skipping group tracking persistence on read-only filesystem');
+      } else {
+        console.error('Error saving groups:', error);
+      }
+      return false;
     }
   }
 
@@ -51,8 +57,9 @@ export class GroupTracker {
     const groups = this.loadGroups();
     if (!groups.includes(chatId)) {
       groups.push(chatId);
-      this.saveGroups(groups);
-      console.log(`✅ Added new group/channel: ${chatId}`);
+      if (this.saveGroups(groups)) {
+        console.log(`✅ Added new group/channel: ${chatId}`);
+      }
     }
   }
 
