@@ -256,7 +256,9 @@ export class WixDJLoader {
       return {
         name: djName,
         photo: jsonData.photo || undefined,
-        soundcloudUrl: jsonData.link || undefined
+        soundcloudUrl: jsonData.soundcloud || jsonData.link || undefined,
+        instagramUrl: jsonData.instagram || undefined,
+        website: jsonData.website || undefined
       };
     }
     
