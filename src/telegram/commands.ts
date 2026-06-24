@@ -1,5 +1,6 @@
 export interface ParsedTelegramCommand {
   command: string;
+  args: string;
   botUsername?: string;
   isAddressedToThisBot: boolean;
 }
@@ -12,7 +13,8 @@ export function parseTelegramCommand(
     return null;
   }
 
-  const [rawCommand = ''] = text.trim().split(/\s+/, 1);
+  const trimmed = text.trim();
+  const [rawCommand = '', ...argParts] = trimmed.split(/\s+/);
   const [command = '', botUsername] = rawCommand.split('@');
 
   if (!command) {
@@ -24,6 +26,7 @@ export function parseTelegramCommand(
 
   return {
     command,
+    args: argParts.join(' ').trim(),
     ...(botUsername ? { botUsername } : {}),
     isAddressedToThisBot: !addressed || !expected || addressed === expected,
   };

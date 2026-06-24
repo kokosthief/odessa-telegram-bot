@@ -3,6 +3,7 @@ import { OdessaTodayGenerator } from '../src/index';
 import { WeeklyScheduleGenerator } from '../src/weekly-schedule-generator';
 import { GroupTracker } from '../src/utils/group-tracker';
 import { DJLoader } from '../src/utils/dj-loader';
+import { formatDJsList } from '../src/formatters/djs-formatter';
 import { utcToZonedTime } from 'date-fns-tz';
 import { parseTelegramCommand } from '../src/telegram/commands';
 import { blockquote, bold, escapeTelegramHtml, stripTelegramHtml } from '../src/telegram/formatting';
@@ -39,6 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({ ok: true, ignored: true });
       }
       const command = parsedCommand?.command;
+      const commandArgs = parsedCommand?.args || '';
       
       // Automatically track group chats and channels
       const groupTracker = new GroupTracker();
@@ -204,26 +206,23 @@ If this problem persists, contact the bot administrator.`;
           console.error('Error handling /next:', error);
           await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch the next event. Please try again later.');
         }
-      } else if (command?.startsWith('/dj')) {
+      } else if (command === '/djs') {
         try {
-          const djName = (command || '').replace('/dj', '').trim();
+          const djLoader = new DJLoader();
+          const messageText = formatDJsList(djLoader.loadDJData());
+          await sendTelegramMessage(chat.id, messageText);
+        } catch (error) {
+          console.error('Error handling /djs:', error);
+          await sendTelegramMessage(chat.id, '❌ Sorry, I couldn\'t fetch the DJ list. Please try again later.');
+        }
+      } else if (command === '/dj') {
+        try {
+          const djName = commandArgs.trim();
           const djLoader = new DJLoader();
 
           if (!djName) {
-            const allDJs = djLoader.getAllDJNames();
-            // Filter out duplicates like Ma-rifa (keep Ma'rifa)
-            const uniqueDJs = allDJs.filter((name: string) => name !== 'Ma-rifa' && name !== 'Faralduin');
-            const djList = uniqueDJs.sort().map((name: string) => `• ${escapeTelegramHtml(name)}`).join('\n');
-
-            const messageText = `🎧 <b>Odessa DJs</b>
-
-Choose a DJ to learn more:
-
-${djList}
-
-<i>Usage: /dj Samaya</i>`;
-
-            await sendTelegramMessage(chat.id, messageText);
+            const messageText = formatDJsList(djLoader.loadDJData());
+            await sendTelegramMessage(chat.id, `${messageText}\n\n<i>Usage: /dj Samaya</i>`);
             return res.status(200).json({ ok: true });
           }
 
@@ -410,6 +409,7 @@ You can check the lost and found in the wardrobe/locker area during opening hour
 • /whosplaying — Who's facilitating today
 • /schedule — This week's schedule
 • /next — Who's facilitating next
+• /djs — List all DJs
 • /dj [name] — DJ profile lookup
 • /discover — Discover a random DJ
 • /membership — Join our MemberShip
